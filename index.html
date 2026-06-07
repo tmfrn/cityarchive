@@ -394,26 +394,26 @@ button{cursor:pointer;font-family:var(--font-body)}
 .tl-track{position:relative;height:72px;background:rgba(75,85,99,0.05);border:1px solid var(--border-subtle);border-radius:8px;overflow:visible;margin:0 4px}
 .tl-lane-labels{position:absolute;top:0;bottom:0;left:0;width:38px;display:flex;flex-direction:column;pointer-events:none;z-index:3;border-radius:8px 0 0 8px;overflow:hidden}
 .tl-lane-label{flex:1;display:flex;align-items:center;font-size:0.55rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;padding-left:5px;white-space:nowrap;color:var(--text-secondary)}
-.tl-lane-label.city-lane{border-bottom:1px solid #c8c5bc;background:rgba(26,45,74,0.07)}
-.tl-lane-label.opp-lane{background:rgba(75,85,99,0.05)}
+.tl-lane-label.top-lane{border-bottom:1px solid #c8c5bc;background:rgba(26,45,74,0.07)}
+.tl-lane-label.bot-lane{background:rgba(75,85,99,0.05)}
 .tl-centre-line{position:absolute;top:50%;left:0;right:0;height:1px;background:#c8c5bc;z-index:2}
 .tl-ht-line{position:absolute;top:-4px;bottom:-4px;width:2px;background:var(--border-primary);z-index:3;transform:translateX(-50%)}
 .tl-ht-label{position:absolute;bottom:calc(100%+4px);font-size:0.58rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-muted);transform:translateX(-50%);white-space:nowrap}
 .tl-vmarker{position:absolute;width:3px;z-index:4;transform:translateX(-50%);cursor:pointer}
 .tl-vmarker::before{content:'';position:absolute;left:0;width:3px;border-radius:2px;background:#6b7280}
-.tl-vmarker.city-lane{bottom:50%;height:36px}
-.tl-vmarker.city-lane::before{bottom:0;height:100%;border-radius:2px 2px 0 0}
-.tl-vmarker.opp-lane{top:50%;height:36px}
-.tl-vmarker.opp-lane::before{top:0;height:100%;border-radius:0 0 2px 2px}
+.tl-vmarker.top-lane{bottom:50%;height:36px}
+.tl-vmarker.top-lane::before{bottom:0;height:100%;border-radius:2px 2px 0 0}
+.tl-vmarker.bot-lane{top:50%;height:36px}
+.tl-vmarker.bot-lane::before{top:0;height:100%;border-radius:0 0 2px 2px}
 .tl-vmarker.redcard::before{background:#dc2626!important}
 .tl-vmarker.yellowcard::before{background:#ca8a04!important}
 .tl-vmarker.missedpen::before{background:repeating-linear-gradient(to bottom,#6b7280 0,#6b7280 4px,transparent 4px,transparent 8px)!important}
 .tl-vdot{position:absolute;font-size:11px;line-height:1;left:50%;transform:translateX(-50%);pointer-events:none;user-select:none;z-index:5}
-.tl-vmarker.city-lane .tl-vdot{top:-18px}
-.tl-vmarker.opp-lane  .tl-vdot{bottom:-18px}
+.tl-vmarker.top-lane .tl-vdot{top:-18px}
+.tl-vmarker.bot-lane  .tl-vdot{bottom:-18px}
 .tl-vtooltip{position:absolute;left:50%;transform:translateX(-50%);background:var(--text-bright);color:#fff;font-size:0.7rem;font-weight:600;padding:4px 8px;border-radius:5px;white-space:nowrap;z-index:20;pointer-events:none;opacity:0;transition:opacity 0.15s;width:max-content;max-width:180px}
-.tl-vmarker.city-lane .tl-vtooltip{bottom:calc(100% + 22px)}
-.tl-vmarker.opp-lane  .tl-vtooltip{top:calc(100% + 22px)}
+.tl-vmarker.top-lane .tl-vtooltip{bottom:calc(100% + 22px)}
+.tl-vmarker.bot-lane  .tl-vtooltip{top:calc(100% + 22px)}
 .tl-vmarker:hover .tl-vtooltip{opacity:1}
 .tl-vaxis{position:relative;height:14px;margin-top:5px}
 .tl-vaxis-tick{position:absolute;font-size:0.6rem;color:var(--text-muted);font-weight:500;transform:translateX(-50%)}
@@ -1133,13 +1133,24 @@ function parseDateStr(s) {
   const str = String(s).trim();
   // gviz Date() format: Date(YYYY,M,D) — 0-indexed month
   const gv = str.match(/^Date\((\d+),(\d+),(\d+)\)/);
-  if (gv) return new Date(+gv[1], +gv[2], +gv[3]);
+  if (gv) {
+    const d = new Date(+gv[1], +gv[2], +gv[3]);
+    return isNaN(d) ? null : d;
+  }
   // ISO: YYYY-MM-DD
   const iso = str.match(/^(\d{4})-(\d{2})-(\d{2})/);
-  if (iso) return new Date(+iso[1], +iso[2]-1, +iso[3]);
+  if (iso) {
+    const [yr, mo, dy] = [+iso[1], +iso[2]-1, +iso[3]];
+    const d = new Date(yr, mo, dy);
+    return (d.getFullYear()===yr && d.getMonth()===mo && d.getDate()===dy) ? d : null;
+  }
   // DD/MM/YYYY (Google Sheets UK locale — what this sheet uses)
   const dmy = str.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
-  if (dmy) return new Date(+dmy[3], +dmy[2]-1, +dmy[1]);
+  if (dmy) {
+    const [dy, mo, yr] = [+dmy[1], +dmy[2]-1, +dmy[3]];
+    const d = new Date(yr, mo, dy);
+    return (d.getFullYear()===yr && d.getMonth()===mo && d.getDate()===dy) ? d : null;
+  }
   return null;
 }
 function n(v) { const x = parseInt(v); return isNaN(x) ? null : x; }
@@ -1516,34 +1527,41 @@ function findLongestStreak(type) {
   const def = STREAK_LABELS[type+'-streak'] || STREAK_LABELS[type];
   if (!def) return [];
 
-  // Competitive matches in chronological order
   const chron = MATCHES
     .filter(m => !isFriendly(m) && m._result !== null)
     .filter(m => !selectedSeason || m.Season === selectedSeason)
     .filter(m => !selectedComp   || m.Competition === selectedComp)
     .sort((a,b) => (a._date||0)-(b._date||0));
 
-  // Find all runs and keep the longest
-  let longest = [], current = [];
+  // Find ALL streaks of max length (West: report joint-longest)
+  let maxLen = 0, allStreaks = [], current = [];
   for (const m of chron) {
     if (def.qualifies(m)) {
       current.push(m);
     } else {
-      if (current.length > longest.length) longest = current;
-      current = [];
+      if (current.length > 0) {
+        if (current.length > maxLen)       { maxLen = current.length; allStreaks = [[...current]]; }
+        else if (current.length === maxLen) { allStreaks.push([...current]); }
+        current = [];
+      }
     }
   }
-  if (current.length > longest.length) longest = current;
+  if (current.length > 0) {
+    if (current.length > maxLen)       { allStreaks = [[...current]]; }
+    else if (current.length === maxLen) { allStreaks.push([...current]); }
+  }
 
-  // Store streak info for the result count banner
+  const primary = allStreaks[0] || [];
+  primary._allStreaks = allStreaks;
+
   window._streakInfo = {
-    length: longest.length,
-    adj: def.adj,
-    isActive: longest.length > 0 && longest[longest.length-1] === chron[chron.length-1],
+    length:   primary.length,
+    adj:      def.adj,
+    isActive: primary.length > 0 && primary[primary.length-1] === chron[chron.length-1],
+    joint:    allStreaks.length,
   };
 
-  // Return chronological (oldest → newest) so the run reads naturally
-  return longest;
+  return primary;
 }
 
 /* ============================================================
@@ -1573,7 +1591,8 @@ function getFiltered() {
       if ((m.Venue||'').toLowerCase().includes(t)) return true;
       if ((m.Round||'').toLowerCase().includes(t)) return true;
       if ((m.Season||'').toLowerCase().includes(t)) return true;
-      // Score search — matches both orientations (e.g. "7-0" finds 7–0 wins and 0–7 losses)
+      if ((m.Notes||'').toLowerCase().includes(t)) return true;   // West searches Notes
+      // Score search — matches both orientations
       if (isScoreSearch && m._gf !== null && m._ga !== null) {
         if (scoreTerm === `${m._gf}-${m._ga}` || scoreTerm === `${m._ga}-${m._gf}`) return true;
       }
@@ -1595,16 +1614,23 @@ function renderMatches() {
   const filtered  = getFiltered();
   const displayed = filtered.slice(0, listCap);
 
-  // Result count — competitive / friendlies split like West
+  // Result count + sort/stats visibility
   const total = filtered.length;
   const compInView     = filtered.filter(m => !isFriendly(m) && m._result !== null).length;
   const friendlyInView = filtered.filter(m => isFriendly(m)).length;
-  const streakTypes = ['win-streak','unbeaten-streak','loss-streak','winless-streak'];
+  const streakTypes    = ['win-streak','unbeaten-streak','loss-streak','winless-streak'];
+  const rankedLens     = activeLens && !['on-this-day','random'].includes(activeLens);
+
+  // Hide sort toggle and stats bar for ranked/sorted lens views
+  document.getElementById('sortToggle').style.display = rankedLens ? 'none' : '';
+  document.getElementById('statsBar').style.display   = rankedLens ? 'none' : (compInView ? 'grid' : 'none');
+
   if (activeLens && streakTypes.includes(activeLens) && window._streakInfo) {
     const si = window._streakInfo;
     const activeNote = si.isActive ? ' · currently active' : '';
+    const jointNote  = si.joint > 1 ? ` (${si.joint} joint-longest occurrences)` : '';
     document.getElementById('resultCount').textContent =
-      `All-time longest ${si.adj} run: ${si.length} match${si.length!==1?'es':''}${activeNote}`;
+      `All-time longest ${si.adj} run: ${si.length} match${si.length!==1?'es':''}${activeNote}${jointNote}`;
   } else if (friendlyInView > 0 && compInView > 0) {
     document.getElementById('resultCount').textContent =
       `${compInView} competitive game${compInView!==1?'s':''} + ${friendlyInView} ${friendlyInView===1?'friendly':'friendlies'}`;
@@ -1613,23 +1639,19 @@ function renderMatches() {
       total === 1 ? '1 match' : `${total} match${total!==1?'es':''}`;
   }
 
-  // Stats bar
-  const compOnly = filtered.filter(m => m._result && !isFriendly(m));
-  if (compOnly.length) {
-    const w  = compOnly.filter(m=>m._result==='W').length;
-    const d  = compOnly.filter(m=>m._result==='D').length;
-    const l  = compOnly.filter(m=>m._result==='L').length;
-    const gf = compOnly.reduce((s,m)=>s+(m._gf||0),0);
-    const ga = compOnly.reduce((s,m)=>s+(m._ga||0),0);
+  // Stats bar values (only when visible)
+  if (!rankedLens && compInView) {
+    const w  = filtered.filter(m => !isFriendly(m) && m._result==='W').length;
+    const d  = filtered.filter(m => !isFriendly(m) && m._result==='D').length;
+    const l  = filtered.filter(m => !isFriendly(m) && m._result==='L').length;
+    const gf = filtered.filter(m => !isFriendly(m)).reduce((s,m)=>s+(m._gf||0),0);
+    const ga = filtered.filter(m => !isFriendly(m)).reduce((s,m)=>s+(m._ga||0),0);
     const gd = gf - ga;
-    document.getElementById('statP').textContent    = compOnly.length;
+    document.getElementById('statP').textContent    = compInView;
     document.getElementById('statWDL').textContent  = `${w} / ${d} / ${l}`;
-    document.getElementById('statPct').textContent  = Math.round(w/compOnly.length*100)+'%';
+    document.getElementById('statPct').textContent  = Math.round(w/(compInView||1)*100)+'%';
     document.getElementById('statGoals').textContent= `${gf} – ${ga}`;
     document.getElementById('statGD').textContent   = (gd>0?'+':'')+gd;
-    document.getElementById('statsBar').style.display = 'grid';
-  } else {
-    document.getElementById('statsBar').style.display = 'none';
   }
 
   // Build cards — group by season only in default view (no active lens, no filters, desc sort)
@@ -1656,15 +1678,30 @@ function renderMatches() {
     displayed.forEach((m, i) => { html += buildMatchCard(m, showRanks ? i+1 : null); });
   }
 
-  document.getElementById('matchList').innerHTML = html || '<div style="padding:32px;text-align:center;color:var(--text-muted);">No matches found.</div>';
+  document.getElementById('matchList').innerHTML = html || buildEmptyState();
 
   const showMore = document.getElementById('showMoreBtn');
   if (filtered.length > listCap) {
     showMore.style.display = '';
-    showMore.textContent   = `Show more (${filtered.length - listCap} remaining)`;
+    showMore.textContent   = `Show more — ${filtered.length - listCap} remaining`;
   } else {
     showMore.style.display = 'none';
   }
+}
+
+function buildEmptyState() {
+  if (activeLens === 'on-this-day') {
+    const d = new Date();
+    const lbl = d.toLocaleDateString('en-GB', {day:'numeric', month:'long'});
+    return `<div style="text-align:center;padding:48px 24px;color:var(--text-muted);font-size:0.9rem;">No matches in the archive on ${lbl}.</div>`;
+  }
+  if (selectedComp && selectedSeason)
+    return `<div style="text-align:center;padding:48px 24px;color:var(--text-muted);font-size:0.9rem;">No <strong style="color:var(--text-secondary)">${esc(compShort(selectedComp))}</strong> matches in <strong style="color:var(--text-secondary)">${esc(selectedSeason)}</strong>.</div>`;
+  if (selectedComp)
+    return `<div style="text-align:center;padding:48px 24px;color:var(--text-muted);font-size:0.9rem;">No matches found for <strong style="color:var(--text-secondary)">${esc(compShort(selectedComp))}</strong>.</div>`;
+  if (searchTerm)
+    return `<div style="text-align:center;padding:48px 24px;color:var(--text-muted);font-size:0.9rem;">No matches found for <strong style="color:var(--text-secondary)">\u201c${esc(searchTerm)}\u201d</strong>.</div>`;
+  return `<div style="text-align:center;padding:48px 24px;color:var(--text-muted);font-size:0.9rem;">No matches found.</div>`;
 }
 
 /* ============================================================
@@ -1908,11 +1945,14 @@ function buildModalBody(m) {
   }
 
   items.forEach(e => {
-    if (!htDone && e.min >= 45) {
+    // Use base minute (before '+') for HT/FT threshold — West pattern
+    // "45+6" has base=45 so it correctly stays before the HT row
+    const eBase = parseInt(String(e.minStr||'').split('+')[0]) || 0;
+    if (!htDone && eBase >= 46) {
       htDone = true;
       rows += `<div class="tl-row"><div class="tl-marker">Half time &middot; ${runScore()}</div></div>`;
     }
-    if (!ftDone && m.AET==='Y' && e.min > 90) {
+    if (!ftDone && m.AET==='Y' && eBase >= 91) {
       ftDone = true;
       rows += `<div class="tl-row"><div class="tl-marker">90 minutes &middot; ${runScore()}</div></div>`;
     }
@@ -1961,6 +2001,11 @@ function buildModalBody(m) {
       <div class="tl-away">${awayContent}</div>
     </div>`;
   });
+
+  // West pattern: if all events were in the first half, still insert HT at the end
+  if (!htDone && items.length > 0) {
+    rows += `<div class="tl-row"><div class="tl-marker">Half time &middot; ${runScore()}</div></div>`;
+  }
 
   // Final score row
   if (m._result && m._gf !== null) {
@@ -2168,7 +2213,7 @@ window.addEventListener('resize', () => {
    VISUAL MATCH TIMELINE TRACK
    ============================================================ */
 function buildVisualTrack(m, goals) {
-  if (!goals.length) return ''; // nothing to show without goals
+  if (!goals.length) return '';
 
   // Only render if all goals have valid minutes
   const allValid = goals.every(g => {
@@ -2185,25 +2230,41 @@ function buildVisualTrack(m, goals) {
   const htPct    = (45/totalMins)*100;
   const ftPct    = (90/totalMins)*100;
 
-  // City always on top lane for single-team archive consistency
+  // Home=top lane, Away=bottom lane (standard football convention, like West)
+  const isHome   = cityIsHome(m);
+  const cityLane = isHome ? 'top-lane' : 'bot-lane';
+  const oppLane  = isHome ? 'bot-lane' : 'top-lane';
+  const topLabel = isHome ? 'CITY' : (m.Opposition||'OPP').substring(0,4).toUpperCase();
+  const botLabel = isHome ? (m.Opposition||'OPP').substring(0,4).toUpperCase() : 'CITY';
+
+  // Stoppage-time aware positioning:
+  // "45+6" → just before the HT line, "90+5" → just before the FT/90' line
+  function posMin(minStr) {
+    const s = String(minStr||'').trim();
+    const mm = s.match(/^(\d+)\+(\d+)$/);
+    if (mm) {
+      const base = parseInt(mm[1]), stop = parseInt(mm[2]);
+      return ((base - 1) + Math.min(stop, 9) * 0.09) / totalMins * 100;
+    }
+    return parseFloat(s) / totalMins * 100;
+  }
+
   const NUDGE = 2.5;
-  const placed = {city:[], opp:[]};
+  const placed = {'top-lane':[], 'bot-lane':[]};
   let markers = '';
 
   const sorted = [...goals].sort((a,b) => parseMin(a.Minute)-parseMin(b.Minute));
   sorted.forEach(g => {
     const isCity = g['For/Against'] === 'For';
-    const lane   = isCity ? 'city' : 'opp';
-    let pct = (parseMin(g.Minute)/totalMins)*100;
+    const lane   = isCity ? cityLane : oppLane;
+    let pct = posMin(g.Minute);
     pct = Math.max(3, Math.min(97, pct));
     placed[lane].forEach(p => { if (Math.abs(pct-p) < NUDGE) pct = Math.min(97, p+NUDGE); });
     placed[lane].push(pct);
 
     const isOG  = g.OG==='Y', isPen = g.Penalty==='Y';
-    const ogL   = isOG  ? ' (og)'  : '';
-    const penL  = isPen ? ' (pen)' : '';
-    const tip   = `${g.Minute}' ${esc(g.Scorer||'?')}${ogL}${penL}`;
-    markers += `<div class="tl-vmarker ${lane}-lane" style="left:${pct.toFixed(1)}%">
+    const tip   = `${g.Minute}' ${esc(g.Scorer||'?')}${isOG?' (og)':''}${isPen?' (pen)':''}`;
+    markers += `<div class="tl-vmarker ${lane}" style="left:${pct.toFixed(1)}%">
       <div class="tl-vdot">⚽</div>
       <div class="tl-vtooltip">${tip}</div>
     </div>`;
@@ -2219,13 +2280,11 @@ function buildVisualTrack(m, goals) {
     return `<span class="tl-vaxis-tick" style="${style}">${t}'</span>`;
   }).join('');
 
-  const oppShort = (m.Opposition||'Opp').substring(0,4).toUpperCase();
-
   return `<div class="tl-visual-wrap">
     <div class="tl-track">
       <div class="tl-lane-labels">
-        <div class="tl-lane-label city-lane">CITY</div>
-        <div class="tl-lane-label opp-lane">${oppShort}</div>
+        <div class="tl-lane-label top-lane">${topLabel}</div>
+        <div class="tl-lane-label bot-lane">${botLabel}</div>
       </div>
       <div class="tl-centre-line"></div>
       ${htLine}${ft90}${markers}
