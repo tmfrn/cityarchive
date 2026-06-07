@@ -421,6 +421,62 @@ button{cursor:pointer;font-family:var(--font-body)}
 /* ── ATTENDANCE CHART ── */
 .att-section-hd{font-size:0.95rem}
 
+/* ── SITE NAV ── */
+.site-nav{background:var(--navy);border-bottom:3px solid var(--sky);position:sticky;top:0;z-index:500;width:100%}
+.site-nav-inner{max-width:1100px;margin:0 auto;padding:0 24px;display:flex;align-items:center;height:50px;gap:0}
+.site-nav-brand{font-family:var(--font-display);font-size:0.95rem;font-weight:700;color:#fff;white-space:nowrap;padding-right:20px;border-right:1px solid rgba(255,255,255,0.12);letter-spacing:-0.01em;flex-shrink:0;cursor:pointer}
+.site-nav-brand em{color:var(--sky);font-style:normal}
+.site-nav-links{display:flex;align-items:center;gap:2px;padding-left:6px;overflow-x:auto;scrollbar-width:none}
+.site-nav-links::-webkit-scrollbar{display:none}
+.site-nav-link{color:rgba(255,255,255,0.55);font-family:var(--font-body);font-size:0.78rem;font-weight:600;text-transform:uppercase;letter-spacing:0.04em;padding:7px 11px;border-radius:var(--radius-sm);white-space:nowrap;text-decoration:none;transition:color 0.15s,background 0.15s;cursor:pointer}
+.site-nav-link:hover{color:#fff;background:rgba(255,255,255,0.08)}
+.site-nav-link.active{color:var(--sky);background:rgba(108,171,221,0.12)}
+
+/* ── PAGE VIEWS ── */
+.page-view{max-width:1100px;margin:0 auto;padding-bottom:64px}
+.pv-hd{background:var(--navy);border-bottom:3px solid var(--sky);padding:24px 32px 20px}
+.pv-hd h1{font-family:var(--font-display);font-size:clamp(1.6rem,3.5vw,2.4rem);font-weight:800;color:#fff;letter-spacing:-0.02em;line-height:1.1}
+.pv-sub{font-size:0.76rem;color:rgba(255,255,255,0.45);margin-top:5px;text-transform:uppercase;letter-spacing:0.08em}
+.pv-body{padding:24px 32px}
+.pv-search{margin-bottom:16px;position:relative}
+.pv-search input{width:100%;padding:10px 14px;border:1.5px solid var(--border-primary);border-radius:var(--radius-md);font-size:0.88rem;font-family:var(--font-body);background:var(--bg-card);color:var(--text-primary);transition:border-color 0.15s}
+.pv-search input:focus{outline:none;border-color:var(--accent)}
+.pv-search input::placeholder{color:var(--text-muted)}
+
+/* ── DATA TABLES ── */
+.dt-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;border:1px solid var(--border-primary);border-radius:var(--radius-lg);overflow:hidden}
+.data-table{width:100%;border-collapse:collapse;font-size:0.86rem}
+.data-table th{font-size:0.66rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-muted);padding:9px 12px;border-bottom:2px solid var(--border-primary);background:var(--bg-surface);text-align:left;white-space:nowrap;cursor:pointer;user-select:none;transition:color 0.15s}
+.data-table th:hover{color:var(--text-secondary)}
+.data-table th .sort-icon{opacity:0.4;margin-left:3px;font-size:0.8em}
+.data-table th.sorted .sort-icon{opacity:1;color:var(--accent)}
+.data-table td{padding:10px 12px;border-bottom:1px solid var(--border-subtle);color:var(--text-primary);vertical-align:middle}
+.data-table tr:last-child td{border-bottom:none}
+.data-table tbody tr{background:var(--bg-card);transition:background 0.1s;cursor:pointer}
+.data-table tbody tr:hover td{background:var(--bg-card-hover)}
+.td-num{font-family:var(--font-mono);text-align:right!important;white-space:nowrap}
+.td-link{font-weight:600;color:var(--text-primary);white-space:nowrap}
+.td-link:hover{color:var(--accent)}
+.td-muted{color:var(--text-muted)}
+.td-rank{color:var(--text-muted);font-size:0.8rem;text-align:right;min-width:28px;cursor:default}
+.td-badge{display:inline-flex;align-items:center;padding:1px 7px;border-radius:100px;font-size:0.68rem;font-weight:700;letter-spacing:0.04em}
+.td-badge.w{background:var(--win-bg);color:var(--win)}
+.td-badge.l{background:var(--loss-bg);color:var(--loss)}
+.dt-hidden{display:none!important}
+
+/* ── RECORDS PAGE ── */
+.records-section-hd{font-family:var(--font-display);font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-muted);margin:28px 0 12px;padding-bottom:6px;border-bottom:2px solid var(--sky)}
+.records-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin-bottom:8px}
+.records-card{background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:var(--radius-md);padding:14px 16px;cursor:pointer;transition:all 0.2s}
+.records-card:hover{border-color:var(--accent-border)}
+.records-card .rc-lbl{font-size:0.66rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-muted);margin-bottom:6px}
+.records-card .rc-val{font-family:var(--font-display);font-size:1.1rem;font-weight:800;color:var(--text-bright);line-height:1.3}
+.records-card .rc-ctx{font-size:0.74rem;color:var(--text-muted);margin-top:4px;line-height:1.3}
+.records-card.no-cursor{cursor:default}
+
+/* ── VENUE MAP ── */
+#venueMapEl{height:400px;border-radius:var(--radius-lg);border:1px solid var(--border-primary);margin-bottom:20px}
+
 /* ── RESPONSIVE ── */
 @media(max-width:700px){
   .header{padding:32px 20px 28px}
@@ -444,7 +500,20 @@ button{cursor:pointer;font-family:var(--font-body)}
   </style>
 </head>
 <body>
-<div class="container">
+<nav class="site-nav">
+  <div class="site-nav-inner">
+    <span class="site-nav-brand" onclick="showPage('')">Man City <em>Women</em></span>
+    <div class="site-nav-links">
+      <span class="site-nav-link active" data-page=""          onclick="showPage('')">Archive</span>
+      <span class="site-nav-link"        data-page="players"   onclick="showPage('players')">Players</span>
+      <span class="site-nav-link"        data-page="opponents" onclick="showPage('opponents')">Opponents</span>
+      <span class="site-nav-link"        data-page="venues"    onclick="showPage('venues')">Venues</span>
+      <span class="site-nav-link"        data-page="records"   onclick="showPage('records')">Records</span>
+    </div>
+  </div>
+</nav>
+
+<div id="matchesView" class="container">
 
   <div class="header">
     <div class="header-content">
@@ -578,7 +647,13 @@ button{cursor:pointer;font-family:var(--font-body)}
     <button class="show-more-btn" id="showMoreBtn" style="display:none" onclick="showMore()">Show more</button>
   </div>
 
-</div>
+</div><!-- /matchesView -->
+
+<!-- PAGE VIEWS (rendered dynamically) -->
+<div id="playersView"   class="page-view" style="display:none"></div>
+<div id="opponentsView" class="page-view" style="display:none"></div>
+<div id="venuesView"    class="page-view" style="display:none"></div>
+<div id="recordsView"   class="page-view" style="display:none"></div>
 
 <!-- SEASON SUMMARY MODAL (reuses h2h-overlay/h2h-modal CSS) -->
 <div class="h2h-overlay" id="seasonOverlay" onclick="if(event.target===this)closeSeasonSummary()">
@@ -1117,6 +1192,14 @@ function onDataReady() {
 
   document.getElementById('goalscorersBox').style.display = '';
   document.getElementById('streakBox').style.display       = '';
+
+  // Handle initial page from URL hash
+  const initHash = location.hash.slice(1);
+  if (initHash && !initHash.startsWith('match/') && ['players','opponents','venues','records'].includes(initHash)) {
+    showPage(initHash, false);
+  } else if (initHash.startsWith('match/')) {
+    showMatchModal(initHash.slice(6));
+  }
 
   // Check if a match was linked directly
   if (location.hash.startsWith('#match/')) {
@@ -2602,6 +2685,535 @@ function openMatchFromH2H(matchID) {
 function closeH2H() {
   document.getElementById('h2hOverlay').classList.remove('active');
   document.body.style.overflow = '';
+}
+
+/* ============================================================
+   PAGE ROUTER
+   ============================================================ */
+let currentPage = '';
+
+function showPage(page, pushState = true) {
+  const prev = currentPage;
+  currentPage = page || '';
+
+  document.getElementById('matchesView').style.display   = !page ? '' : 'none';
+  ['players','opponents','venues','records'].forEach(p => {
+    const el = document.getElementById(p+'View');
+    if (el) el.style.display = p === page ? '' : 'none';
+  });
+
+  document.querySelectorAll('.site-nav-link').forEach(a => {
+    a.classList.toggle('active', (a.dataset.page||'') === currentPage);
+  });
+
+  if (pushState) history.pushState({page: currentPage}, '', currentPage ? '#'+currentPage : location.pathname);
+
+  if (page && page !== prev) {
+    switch(page) {
+      case 'players':   renderPlayersPage();   break;
+      case 'opponents': renderOpponentsPage(); break;
+      case 'venues':    renderVenuesPage();    break;
+      case 'records':   renderRecordsPage();   break;
+    }
+  }
+  window.scrollTo(0, 0);
+}
+
+window.addEventListener('popstate', () => {
+  const h = location.hash.slice(1);
+  if (!h.startsWith('match/')) showPage(h || '', false);
+});
+
+/* ============================================================
+   PLAYERS PAGE
+   ============================================================ */
+function renderPlayersPage() {
+  // Build player stats: goals + seasons active from goal data
+  const allScorers = getTopScorers(null);
+  const scorerMap  = new Map(allScorers.map(s => [s.n, s.g]));
+
+  // First and last season each player scored
+  const pSeasonFirst = new Map(), pSeasonLast = new Map();
+  DB.goalsByMatch.forEach((goals, matchID) => {
+    const match = DB.matches.find(m => m.MatchID === matchID);
+    if (!match || isFriendly(match) || !match._result) return;
+    goals.forEach(g => {
+      if (g['For/Against']==='For' && g.OG!=='Y' && g.Scorer) {
+        const s = match.Season, ord = DB.seasonMap.get(s)?.order||0;
+        const prev1 = pSeasonFirst.get(g.Scorer);
+        const prev2 = pSeasonLast.get(g.Scorer);
+        if (!prev1 || ord < DB.seasonMap.get(prev1)?.order) pSeasonFirst.set(g.Scorer, s);
+        if (!prev2 || ord > DB.seasonMap.get(prev2)?.order) pSeasonLast.set(g.Scorer, s);
+      }
+    });
+  });
+
+  let players = [...DB.playerMap.values()].map(p => ({
+    name:        p.Name,
+    position:    p.Position || '—',
+    nationality: p.Nationality || '—',
+    goals:       scorerMap.get(p.Name) || 0,
+    firstSeason: pSeasonFirst.get(p.Name) || '—',
+    lastSeason:  pSeasonLast.get(p.Name)  || '—',
+  }));
+
+  let sortField = 'goals', sortDir = 'desc';
+
+  function sorted(list) {
+    return [...list].sort((a,b) => {
+      if (sortField==='name')     return (a.name.localeCompare(b.name)) * (sortDir==='asc'?1:-1);
+      if (sortField==='goals')    return sortDir==='asc' ? a.goals-b.goals : b.goals-a.goals || a.name.localeCompare(b.name);
+      if (sortField==='position') return a.position.localeCompare(b.position) * (sortDir==='asc'?1:-1);
+      return 0;
+    });
+  }
+
+  function row(p, i) {
+    const safe = p.name.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+    const goals = p.goals>0 ? `<span style="font-family:var(--font-display);font-weight:800;color:var(--accent-deep)">${p.goals}</span>` : '<span class="td-muted">—</span>';
+    const seasons = p.firstSeason==='—' ? '<span class="td-muted">—</span>'
+      : p.firstSeason===p.lastSeason ? esc(shortSeason(p.firstSeason))
+      : `${esc(shortSeason(p.firstSeason))}–${esc(shortSeason(p.lastSeason))}`;
+    return `<tr onclick="showPlayerModal('${safe}')">
+      <td class="td-rank">${i+1}</td>
+      <td class="td-link">${esc(p.name)}</td>
+      <td class="td-muted">${esc(p.position)}</td>
+      <td class="td-muted">${esc(p.nationality)}</td>
+      <td class="td-num">${goals}</td>
+      <td class="td-num td-muted">${seasons}</td>
+    </tr>`;
+  }
+
+  function thClick(field) {
+    if (sortField===field) sortDir = sortDir==='asc'?'desc':'asc';
+    else { sortField=field; sortDir = field==='name'?'asc':'desc'; }
+    rerender();
+    updateTh();
+  }
+
+  function updateTh() {
+    document.querySelectorAll('#playersView .data-table th[data-sort]').forEach(th => {
+      const active = th.dataset.sort === sortField;
+      th.classList.toggle('sorted', active);
+      th.querySelector('.sort-icon').textContent = active ? (sortDir==='asc'?'▲':'▼') : '▲▼';
+    });
+  }
+
+  let filterTerm = '';
+  function filtered() {
+    if (!filterTerm) return players;
+    const t = filterTerm.toLowerCase();
+    return players.filter(p => p.name.toLowerCase().includes(t) || p.nationality.toLowerCase().includes(t) || p.position.toLowerCase().includes(t));
+  }
+  function rerender() {
+    document.getElementById('playersTbody').innerHTML = sorted(filtered()).map(row).join('');
+  }
+
+  document.getElementById('playersView').innerHTML = `
+    <div class="pv-hd">
+      <h1>Players</h1>
+      <div class="pv-sub">${players.length} in the archive · click a name to see full career stats</div>
+    </div>
+    <div class="pv-body">
+      <div class="pv-search"><input type="text" id="playerSearch" placeholder="Search by name, nationality or position…"></div>
+      <div class="dt-wrap">
+        <table class="data-table">
+          <thead><tr>
+            <th class="td-rank">#</th>
+            <th data-sort="name" onclick="__thClick('name')">Name<span class="sort-icon">▲▼</span></th>
+            <th data-sort="position" onclick="__thClick('position')">Position<span class="sort-icon">▲▼</span></th>
+            <th>Nationality</th>
+            <th class="td-num sorted" data-sort="goals" onclick="__thClick('goals')">Goals<span class="sort-icon">▼</span></th>
+            <th class="td-num">Seasons</th>
+          </tr></thead>
+          <tbody id="playersTbody">${sorted(filtered()).map(row).join('')}</tbody>
+        </table>
+      </div>
+    </div>`;
+
+  window.__thClick = thClick;
+  document.getElementById('playerSearch').addEventListener('input', function() {
+    filterTerm = this.value;
+    rerender();
+  });
+}
+
+/* ============================================================
+   OPPONENTS PAGE
+   ============================================================ */
+function renderOpponentsPage() {
+  // Build stats from competitive matches
+  const statsMap = new Map();
+  DB.matches.filter(m => !isFriendly(m) && m._result !== null).forEach(m => {
+    const opp = m.Opposition;
+    if (!statsMap.has(opp)) statsMap.set(opp, {p:0,w:0,d:0,l:0,gf:0,ga:0,last:null});
+    const s = statsMap.get(opp);
+    s.p++; s.gf+=m._gf||0; s.ga+=m._ga||0;
+    if (m._result==='W') s.w++; else if (m._result==='D') s.d++; else s.l++;
+    if (!s.last || (m._date && m._date > s.last)) s.last = m._date;
+  });
+
+  let opps = [...statsMap.entries()].map(([opp, s]) => ({
+    opp, ...s,
+    gd:    s.gf - s.ga,
+    winPct: s.p ? Math.round(s.w/s.p*100) : 0,
+    short: (DB.opponentMap.get(opp) || {}).ShortName || opp,
+  }));
+
+  let sortField = 'p', sortDir = 'desc';
+
+  function sorted(list) {
+    return [...list].sort((a,b) => {
+      const v = sortDir==='asc' ? 1 : -1;
+      if (sortField==='name')    return a.opp.localeCompare(b.opp) * v;
+      if (sortField==='winPct')  return (a.winPct - b.winPct) * v || (b.p - a.p);
+      const diff = (a[sortField]||0) - (b[sortField]||0);
+      return diff === 0 ? a.opp.localeCompare(b.opp) : diff * v;
+    });
+  }
+
+  function row(opp) {
+    const safe = opp.opp.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+    const gdStr = opp.gd > 0 ? `+${opp.gd}` : String(opp.gd);
+    const gdCol = opp.gd > 0 ? 'var(--win)' : opp.gd < 0 ? 'var(--loss)' : 'var(--text-muted)';
+    const lastMet = opp.last ? fmtDate(opp.last, true) : '—';
+    const badge = opp.w > opp.l ? `<span class="td-badge w">${opp.winPct}%</span>` : opp.l > opp.w ? `<span class="td-badge l">${opp.winPct}%</span>` : `<span style="color:var(--text-muted);font-size:0.8rem">${opp.winPct}%</span>`;
+    return `<tr onclick="showH2H('${safe}')">
+      <td class="td-link">${esc(opp.opp)}</td>
+      <td class="td-num">${opp.p}</td>
+      <td class="td-num" style="color:var(--win)">${opp.w}</td>
+      <td class="td-num" style="color:var(--draw)">${opp.d}</td>
+      <td class="td-num" style="color:var(--loss)">${opp.l}</td>
+      <td class="td-num">${opp.gf}–${opp.ga}</td>
+      <td class="td-num" style="color:${gdCol}">${gdStr}</td>
+      <td class="td-num">${badge}</td>
+      <td class="td-muted" style="font-size:0.8rem;white-space:nowrap">${lastMet}</td>
+    </tr>`;
+  }
+
+  function thClick(field) {
+    if (sortField===field) sortDir = sortDir==='asc'?'desc':'asc';
+    else { sortField=field; sortDir = field==='name'?'asc':'desc'; }
+    rerender(); updateTh();
+  }
+  function updateTh() {
+    document.querySelectorAll('#opponentsView .data-table th[data-sort]').forEach(th => {
+      const active = th.dataset.sort === sortField;
+      th.classList.toggle('sorted', active);
+      th.querySelector('.sort-icon').textContent = active ? (sortDir==='asc'?'▲':'▼') : '▲▼';
+    });
+  }
+
+  let filterTerm = '';
+  function filtered() {
+    if (!filterTerm) return opps;
+    const t = filterTerm.toLowerCase();
+    return opps.filter(o => o.opp.toLowerCase().includes(t));
+  }
+  function rerender() {
+    document.getElementById('oppsTbody').innerHTML = sorted(filtered()).map(row).join('');
+  }
+
+  document.getElementById('opponentsView').innerHTML = `
+    <div class="pv-hd">
+      <h1>Opponents</h1>
+      <div class="pv-sub">${opps.length} opponents · competitive matches only · click a row for full H2H record</div>
+    </div>
+    <div class="pv-body">
+      <div class="pv-search"><input type="text" id="oppsSearch" placeholder="Search opponents…"></div>
+      <div class="dt-wrap">
+        <table class="data-table">
+          <thead><tr>
+            <th data-sort="name" onclick="__oppThClick('name')">Opponent<span class="sort-icon">▲▼</span></th>
+            <th class="td-num sorted" data-sort="p" onclick="__oppThClick('p')">P<span class="sort-icon">▼</span></th>
+            <th class="td-num" data-sort="w" onclick="__oppThClick('w')">W<span class="sort-icon">▲▼</span></th>
+            <th class="td-num" data-sort="d" onclick="__oppThClick('d')">D<span class="sort-icon">▲▼</span></th>
+            <th class="td-num" data-sort="l" onclick="__oppThClick('l')">L<span class="sort-icon">▲▼</span></th>
+            <th class="td-num" data-sort="gf" onclick="__oppThClick('gf')">Goals<span class="sort-icon">▲▼</span></th>
+            <th class="td-num" data-sort="gd" onclick="__oppThClick('gd')">GD<span class="sort-icon">▲▼</span></th>
+            <th class="td-num" data-sort="winPct" onclick="__oppThClick('winPct')">Win %<span class="sort-icon">▲▼</span></th>
+            <th class="td-num">Last met</th>
+          </tr></thead>
+          <tbody id="oppsTbody">${sorted(filtered()).map(row).join('')}</tbody>
+        </table>
+      </div>
+    </div>`;
+
+  window.__oppThClick = thClick;
+  document.getElementById('oppsSearch').addEventListener('input', function() {
+    filterTerm = this.value;
+    rerender();
+  });
+}
+
+/* ============================================================
+   VENUES PAGE
+   ============================================================ */
+async function renderVenuesPage() {
+  // Build venue usage stats
+  const venueStats = new Map();
+  DB.matches.forEach(m => {
+    if (!m.Venue) return;
+    if (!venueStats.has(m.Venue)) venueStats.set(m.Venue, {count:0, home:0, away:0, last:null, maxAtt:0, maxAttOpp:''});
+    const s = venueStats.get(m.Venue);
+    s.count++;
+    if (m['Home/Away']==='H') s.home++; else s.away++;
+    if (m._date && (!s.last || m._date > s.last)) s.last = m._date;
+    const att = parseInt(m.Attendance);
+    if (!isNaN(att) && att > s.maxAtt) { s.maxAtt = att; s.maxAttOpp = m.Opposition; }
+  });
+
+  const venues = [...DB.venueMap.values()].map(v => ({
+    ...v,
+    ...(venueStats.get(v.Name) || {count:0, home:0, away:0, last:null, maxAtt:0, maxAttOpp:''}),
+  })).filter(v => v.count > 0).sort((a,b) => b.count - a.count);
+
+  const hasMap = venues.some(v => v.Lat && v.Long);
+
+  document.getElementById('venuesView').innerHTML = `
+    <div class="pv-hd">
+      <h1>Venues</h1>
+      <div class="pv-sub">${venues.length} venues used · ${DB.matches.length} matches total</div>
+    </div>
+    <div class="pv-body">
+      ${hasMap ? `<div id="venueMapEl"></div>` : ''}
+      <div class="pv-search"><input type="text" id="venuesSearch" placeholder="Search venues…"></div>
+      <div class="dt-wrap">
+        <table class="data-table">
+          <thead><tr>
+            <th>Venue</th>
+            <th>City</th>
+            <th class="td-num">Matches</th>
+            <th class="td-num">Home</th>
+            <th class="td-num">Away</th>
+            <th class="td-num" style="min-width:60px">Capacity</th>
+            <th>Last used</th>
+          </tr></thead>
+          <tbody id="venuesTbody">
+            ${venues.map(v => `<tr>
+              <td class="td-link">${esc(v.Name)}</td>
+              <td class="td-muted">${esc(v.City||'—')}</td>
+              <td class="td-num">${v.count}</td>
+              <td class="td-num td-muted">${v.home||0}</td>
+              <td class="td-num td-muted">${v.away||0}</td>
+              <td class="td-num td-muted">${v.Capacity ? parseInt(v.Capacity).toLocaleString('en-GB') : '—'}</td>
+              <td class="td-muted" style="font-size:0.8rem">${v.last ? fmtDate(v.last, true) : '—'}</td>
+            </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>`;
+
+  document.getElementById('venuesSearch').addEventListener('input', function() {
+    const t = this.value.toLowerCase();
+    document.querySelectorAll('#venuesTbody tr').forEach(tr => {
+      const name = tr.querySelector('td')?.textContent?.toLowerCase() || '';
+      tr.classList.toggle('dt-hidden', t ? !name.includes(t) : false);
+    });
+  });
+
+  if (hasMap) {
+    try {
+      await loadLeaflet();
+      initVenueMap(venues);
+    } catch(e) {
+      const mapEl = document.getElementById('venueMapEl');
+      if (mapEl) mapEl.style.display = 'none';
+    }
+  }
+}
+
+function loadLeaflet() {
+  return new Promise((res, rej) => {
+    if (window.L) { res(); return; }
+    const css = document.createElement('link');
+    css.rel = 'stylesheet';
+    css.href = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css';
+    document.head.appendChild(css);
+    const js = document.createElement('script');
+    js.src = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js';
+    js.onload = res; js.onerror = rej;
+    document.head.appendChild(js);
+  });
+}
+
+function initVenueMap(venues) {
+  const el = document.getElementById('venueMapEl');
+  if (!el || !window.L) return;
+  const map = L.map('venueMapEl', {scrollWheelZoom: false}).setView([53.48, -2.24], 6);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+    maxZoom: 18,
+  }).addTo(map);
+
+  // City home venues get accent colour marker
+  const homeVenues = new Set(
+    DB.matches.filter(m => m['Home/Away']==='H' && m.Venue).map(m => m.Venue)
+  );
+
+  venues.forEach(v => {
+    if (!v.Lat || !v.Long) return;
+    const isHome = homeVenues.has(v.Name);
+    const colour  = isHome ? '#1A2D4A' : '#6b7280';
+    const icon    = L.divIcon({
+      html: `<div style="width:12px;height:12px;border-radius:50%;background:${colour};border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,0.3)"></div>`,
+      className: '',
+      iconSize: [12,12], iconAnchor: [6,6],
+    });
+    const pop = `<strong>${esc(v.Name)}</strong><br>${esc(v.City||'')}${v.Country&&v.Country!=='England'?', '+esc(v.Country):''}<br>${v.count} match${v.count!==1?'es':''}${v.maxAtt ? '<br>Record gate: '+v.maxAtt.toLocaleString('en-GB') : ''}`;
+    L.marker([+v.Lat, +v.Long], {icon}).addTo(map).bindPopup(pop);
+  });
+}
+
+/* ============================================================
+   RECORDS PAGE
+   ============================================================ */
+function renderRecordsPage() {
+  const comp = DB.matches.filter(m => !isFriendly(m) && m._result !== null && m._gf !== null);
+  const p = comp.length, w = comp.filter(m=>m._result==='W').length;
+  const d = comp.filter(m=>m._result==='D').length, l = comp.filter(m=>m._result==='L').length;
+  const gf = comp.reduce((s,m)=>s+(m._gf||0),0), ga = comp.reduce((s,m)=>s+(m._ga||0),0);
+
+  function matchCard(m, label) {
+    if (!m) return '';
+    const hs = homeScore(m), as_ = awayScore(m);
+    const safe = m.MatchID.replace(/'/g,"\\'");
+    return `<div class="records-card" onclick="showMatchModal('${safe}')">
+      <div class="rc-lbl">${label}</div>
+      <div class="rc-val">${m._gf}–${m._ga}</div>
+      <div class="rc-ctx">vs ${esc(m.Opposition)} · ${m._date ? fmtDate(m._date, true) : ''} · ${esc(compShort(m.Competition))}</div>
+    </div>`;
+  }
+
+  // Best performances
+  const wins   = comp.filter(m=>m._result==='W');
+  const losses = comp.filter(m=>m._result==='L');
+  const bigWin  = wins.sort((a,b)=>(b._gf-b._ga)-(a._gf-a._ga)||b._gf-a._gf)[0];
+  const bigLoss = losses.sort((a,b)=>(b._ga-b._gf)-(a._ga-a._gf)||b._ga-a._ga)[0];
+  const highScore = [...comp].sort((a,b)=>(b._gf+b._ga)-(a._gf+a._ga))[0];
+  const withAtt = comp.filter(m=>m.Attendance&&!isNaN(parseInt(m.Attendance)));
+  const recAtt  = withAtt.sort((a,b)=>parseInt(b.Attendance)-parseInt(a.Attendance))[0];
+
+  // Top 10 wins
+  const top10wins = [...wins].sort((a,b)=>(b._gf-b._ga)-(a._gf-a._ga)||b._gf-a._gf).slice(0,10);
+
+  // Top scorers all time
+  const allScorers = getTopScorers(null).slice(0,25);
+  const maxG = allScorers[0]?.g || 1;
+
+  // Top scorer by season
+  const topBySeasonRows = [...DB.seasonMap.entries()]
+    .sort((a,b) => b[1].order - a[1].order)
+    .map(([season]) => {
+      const ss = getTopScorers(season);
+      if (!ss.length) return null;
+      const top = ss[0].g, joint = ss.filter(s=>s.g===top).map(s=>esc(s.n)).join(', ');
+      return `<tr>
+        <td>${esc(season)}</td>
+        <td class="td-link" onclick="showPage('players')">${joint}</td>
+        <td class="td-num" style="font-family:var(--font-display);font-weight:800;color:var(--accent-deep)">${top}</td>
+      </tr>`;
+    }).filter(Boolean).join('');
+
+  // Streaks
+  const winRun  = allTimeLongestStreak('win');
+  const unbRun  = allTimeLongestStreak('unbeaten');
+  const lossRun = allTimeLongestStreak('loss');
+
+  function streakCard(run, label) {
+    if (!run.length) return '';
+    const from = run[0]._date ? fmtDate(run[0]._date, true) : '';
+    const to   = run[run.length-1]._date ? fmtDate(run[run.length-1]._date, true) : '';
+    const isActive = run[run.length-1] === DB.matches.filter(m=>!isFriendly(m)&&m._result)[DB.matches.filter(m=>!isFriendly(m)&&m._result).length-1];
+    return `<div class="records-card no-cursor">
+      <div class="rc-lbl">${label}</div>
+      <div class="rc-val">${run.length} matches</div>
+      <div class="rc-ctx">${from}${from!==to?` – ${to}`:''}${isActive?' · Currently active':''}</div>
+    </div>`;
+  }
+
+  document.getElementById('recordsView').innerHTML = `
+    <div class="pv-hd">
+      <h1>Records</h1>
+      <div class="pv-sub">WSL era · ${p} competitive matches</div>
+    </div>
+    <div class="pv-body">
+
+      <div class="records-section-hd">All-time record</div>
+      <div class="records-grid" style="grid-template-columns:repeat(auto-fit,minmax(130px,1fr))">
+        ${[['Played',p],['Won',w],['Drawn',d],['Lost',l],['Goals for',gf],['Goals against',ga],['Win %',Math.round(w/p*100)+'%']].map(([l,v])=>`
+          <div class="records-card no-cursor">
+            <div class="rc-lbl">${l}</div>
+            <div class="rc-val" style="font-size:1.4rem">${v}</div>
+          </div>`).join('')}
+      </div>
+
+      <div class="records-section-hd">Best &amp; worst performances</div>
+      <div class="records-grid">
+        ${matchCard(bigWin,  'Biggest win')}
+        ${matchCard(bigLoss, 'Biggest loss')}
+        ${matchCard(highScore, 'Highest scoring')}
+        ${recAtt ? `<div class="records-card" onclick="showMatchModal('${recAtt.MatchID.replace(/'/g,"\\'")}')">
+          <div class="rc-lbl">Record crowd</div>
+          <div class="rc-val">${parseInt(recAtt.Attendance).toLocaleString('en-GB')}</div>
+          <div class="rc-ctx">vs ${esc(recAtt.Opposition)} · ${esc(recAtt.Venue||'')} · ${recAtt._date?fmtDate(recAtt._date,true):''}</div>
+        </div>` : ''}
+      </div>
+
+      <div class="records-section-hd">Streaks</div>
+      <div class="records-grid">
+        ${streakCard(winRun,  'Longest winning run')}
+        ${streakCard(unbRun,  'Longest unbeaten run')}
+        ${streakCard(lossRun, 'Longest losing run')}
+      </div>
+
+      <div class="records-section-hd">Top ${top10wins.length} wins by margin</div>
+      <div class="dt-wrap">
+        <table class="data-table">
+          <thead><tr><th>#</th><th>Score</th><th>Opposition</th><th>Competition</th><th>Date</th></tr></thead>
+          <tbody>
+            ${top10wins.map((m,i) => {
+              const safe = m.MatchID.replace(/'/g,"\\'");
+              return `<tr onclick="showMatchModal('${safe}')">
+                <td class="td-rank">${i+1}</td>
+                <td style="font-family:var(--font-display);font-weight:800">${m._gf}–${m._ga}</td>
+                <td class="td-link">${esc(m.Opposition)}</td>
+                <td class="td-muted">${esc(compShort(m.Competition))}</td>
+                <td class="td-muted" style="font-size:0.8rem;white-space:nowrap">${m._date?fmtDate(m._date,true):''}</td>
+              </tr>`;
+            }).join('')}
+          </tbody>
+        </table>
+      </div>
+
+      <div class="records-section-hd">All-time top scorers (competitive goals)</div>
+      <div class="dt-wrap">
+        <table class="data-table">
+          <thead><tr><th class="td-rank">#</th><th>Player</th><th class="td-num">Goals</th><th></th></tr></thead>
+          <tbody>
+            ${allScorers.map((s,i) => {
+              const safe = s.n.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+              const pct = Math.round(s.g/maxG*100);
+              return `<tr onclick="showPlayerModal('${safe}')">
+                <td class="td-rank">${i+1}</td>
+                <td class="td-link">${esc(s.n)}</td>
+                <td class="td-num" style="font-family:var(--font-display);font-weight:800;color:var(--accent-deep)">${s.g}</td>
+                <td style="min-width:120px;padding-right:16px"><div style="background:var(--bg-surface);border-radius:3px;height:6px;overflow:hidden"><div style="height:6px;border-radius:3px;background:var(--accent);opacity:0.6;width:${pct}%"></div></div></td>
+              </tr>`;
+            }).join('')}
+          </tbody>
+        </table>
+      </div>
+
+      <div class="records-section-hd">Top scorer by season</div>
+      <div class="dt-wrap">
+        <table class="data-table">
+          <thead><tr><th>Season</th><th>Top scorer</th><th class="td-num">Goals</th></tr></thead>
+          <tbody>${topBySeasonRows}</tbody>
+        </table>
+      </div>
+
+    </div>`;
 }
 
 /* ============================================================
