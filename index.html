@@ -421,6 +421,10 @@ button{cursor:pointer;font-family:var(--font-body)}
 /* ── ATTENDANCE CHART ── */
 .att-section-hd{font-size:0.95rem}
 
+/* ── SCORER LINK (on match cards + modal) ── */
+.scorer-link{cursor:pointer;text-decoration:underline dotted;text-underline-offset:2px;text-decoration-color:var(--border-primary);transition:color 0.15s}
+.scorer-link:hover{color:var(--accent)}
+
 /* ── SITE NAV ── */
 .site-nav{background:var(--navy);border-bottom:3px solid var(--sky);position:sticky;top:0;z-index:500;width:100%}
 .site-nav-inner{max-width:1100px;margin:0 auto;padding:0 24px;display:flex;align-items:center;height:50px;gap:0}
@@ -741,11 +745,16 @@ function sheetCSV(name) {
 /* ============================================================
    STATE
    ============================================================ */
-let MATCHES   = [];   // sorted desc season → date
-let GOALS_MAP = new Map();   // MatchID → Goal[]
-let EVENTS_MAP= new Map();   // MatchID → Event[]
-let SEASON_ORDER = new Map(); // season string → SeasonOrder int
-let COMP_SORT    = new Map(); // competition name → SortOrder int
+let MATCHES      = [];
+let GOALS_MAP    = new Map();
+let EVENTS_MAP   = new Map();
+let SEASON_ORDER = new Map();
+let COMP_SORT    = new Map();
+let PLAYER_MAP   = new Map();  // Name → player row
+let PLAYER_SLUG  = new Map();  // Slug → player row
+let OPPONENT_MAP = new Map();  // Name → opponent row
+let VENUE_MAP    = new Map();  // Name → venue row
+let MANAGER_LIST = [];         // sorted by StartDate asc
 
 let searchTerm        = '';
 let selectedSeason    = '';
@@ -790,7 +799,7 @@ async function loadData() {
       fetchCSV(sheetCSV('Seasons')),
     ]);
 
-    buildData(rM, rG, rE, rC, rS);
+    buildData(rM, rG, rE, rP, rO, rC, rV, rMgr, rS);
     onDataReady();
 
   } catch(err) {
@@ -801,16 +810,31 @@ async function loadData() {
   }
 }
 
-function buildData(rM, rG, rE, rC, rS) {
-  // Season order map
-  rS.forEach(s => {
-    SEASON_ORDER.set(s.Season, parseInt(s.SeasonOrder) || 0);
+function buildData(rM, rG, rE, rP, rO, rC, rV, rMgr, rS) {
+  // Season order
+  rS.forEach(s => SEASON_ORDER.set(s.Season, parseInt(s.SeasonOrder) || 0));
+
+  // Competition sort
+  rC.forEach(c => COMP_SORT.set(c.Name, parseInt(c.SortOrder) || 99));
+
+  // Players
+  rP.forEach(p => {
+    PLAYER_MAP.set(p.Name, p);
+    if (p.Slug) PLAYER_SLUG.set(p.Slug, p);
   });
 
-  // Competition sort order
-  rC.forEach(c => {
-    COMP_SORT.set(c.Name, parseInt(c.SortOrder) || 99);
-  });
+  // Opponents
+  rO.forEach(o => OPPONENT_MAP.set(o.Name, o));
+
+  // Venues
+  rV.forEach(v => VENUE_MAP.set(v.Name, v));
+
+  // Managers — sorted by StartDate for date-range lookup
+  MANAGER_LIST = rMgr.map(m => ({
+    ...m,
+    _start: m.StartDate ? parseDateStr(m.StartDate) : null,
+    _end:   m.EndDate   ? parseDateStr(m.EndDate)   : null,
+  })).sort((a,b) => (a._start||0) - (b._start||0));
 
   // Goals indexed by MatchID
   rG.forEach(g => {
@@ -831,15 +855,14 @@ function buildData(rM, rG, rE, rC, rS) {
     const gf = n(m['Goals For']), ga = n(m['Goals Against']);
     return {
       ...m,
-      _gf:     gf,
-      _ga:     ga,
+      _gf:    gf,
+      _ga:    ga,
       _result: gf===null||ga===null ? null : gf>ga?'W':gf<ga?'L':'D',
-      _date:   parseDateStr(m.Date),
-      _sord:   SEASON_ORDER.get(m.Season) || 0,
+      _date:  parseDateStr(m.Date),
+      _sord:  SEASON_ORDER.get(m.Season) || 0,
     };
   });
 
-  // Sort: newest season first, within season newest date first
   MATCHES.sort((a, b) => {
     if (b._sord !== a._sord) return b._sord - a._sord;
     if (a._date && b._date)  return b._date - a._date;
@@ -1236,6 +1259,15 @@ function parseDateStr(s) {
   }
   return null;
 }
+function getManager(date) {
+  if (!date) return null;
+  const d = date instanceof Date ? date : parseDateStr(String(date));
+  if (!d || isNaN(d)) return null;
+  return MANAGER_LIST.find(m =>
+    m._start && d >= m._start && (!m._end || d <= m._end)
+  ) || null;
+}
+
 function n(v) { const x = parseInt(v); return isNaN(x) ? null : x; }
 function esc(s) {
   return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
@@ -1835,9 +1867,15 @@ function buildMatchCard(m, rank) {
   function fmtGoals(gs, isCityGoals) {
     if (!gs.length) return '<span class="match-scorer-names no-data">—</span>';
     const lines = gs.map(g => {
-      let s = esc(g.Scorer || '?');
-      if (g.OG==='Y') s += ' <span style="opacity:0.6;font-size:0.85em;">(og)</span>';
-      if (g.Penalty==='Y') s += ' <span style="opacity:0.6;font-size:0.85em;">(pen)</span>';
+      const isOG  = g.OG==='Y', isPen = g.Penalty==='Y';
+      const rawName = g.Scorer || '?';
+      // Make City non-OG scorers clickable (stop propagation so card click doesn't fire)
+      const nameHtml = (isCityGoals && !isOG && g.Scorer && PLAYER_MAP.has(g.Scorer))
+        ? `<span class="scorer-link" onclick="event.stopPropagation();showPlayerModal('${g.Scorer.replace(/\\/g,'\\\\').replace(/'/g,"\\'")}'">${esc(rawName)}</span>`
+        : esc(rawName);
+      let s = nameHtml;
+      if (isOG)  s += ' <span style="opacity:0.6;font-size:0.85em;">(og)</span>';
+      if (isPen) s += ' <span style="opacity:0.6;font-size:0.85em;">(pen)</span>';
       return s + (g.Minute ? ` <span style="color:var(--text-muted);font-size:0.9em;">${g.Minute}'</span>` : '');
     });
     const cls = isCityGoals ? 'city-scorers' : '';
@@ -1931,11 +1969,13 @@ function showMatchModal(matchID) {
   const dateStr  = m._date ? fmtDate(m._date, true) : '';
   const venueStr = m.Venue ? ` · ${m.Venue}` : '';
   const attStr   = m.Attendance ? ` · Att. ${fmtAtt(m.Attendance)}` : '';
+  const mgr      = getManager(m._date);
+  const mgrStr   = mgr ? ` · ${esc(mgr.Name)}${mgr.Caretaker==='Y'?' (caretaker)':''}` : '';
   const friendlyNote = isFriendly(m) ? ' · Friendly' : '';
 
   document.getElementById('tlMeta').innerHTML =
     `<span class="tl-meta-result ${resCls}">${resWord ? resWord+' · ' : ''}${haWord}${aetPens}${friendlyNote}</span>` +
-    `<span class="tl-meta-detail">${esc(compLine)} · ${dateStr}${venueStr}${attStr}</span>`;
+    `<span class="tl-meta-detail">${esc(compLine)} · ${dateStr}${venueStr}${attStr}${mgrStr}</span>`;
 
   // Body
   document.getElementById('tlBody').innerHTML = buildModalBody(m);
@@ -2734,21 +2774,21 @@ function renderPlayersPage() {
 
   // First and last season each player scored
   const pSeasonFirst = new Map(), pSeasonLast = new Map();
-  DB.goalsByMatch.forEach((goals, matchID) => {
-    const match = DB.matches.find(m => m.MatchID === matchID);
+  GOALS_MAP.forEach((goals, matchID) => {
+    const match = MATCHES.find(m => m.MatchID === matchID);
     if (!match || isFriendly(match) || !match._result) return;
     goals.forEach(g => {
       if (g['For/Against']==='For' && g.OG!=='Y' && g.Scorer) {
-        const s = match.Season, ord = DB.seasonMap.get(s)?.order||0;
-        const prev1 = pSeasonFirst.get(g.Scorer);
-        const prev2 = pSeasonLast.get(g.Scorer);
-        if (!prev1 || ord < DB.seasonMap.get(prev1)?.order) pSeasonFirst.set(g.Scorer, s);
-        if (!prev2 || ord > DB.seasonMap.get(prev2)?.order) pSeasonLast.set(g.Scorer, s);
+        const s = match.Season, ord = SEASON_ORDER.get(s) || 0;
+        const prevOrd1 = SEASON_ORDER.get(pSeasonFirst.get(g.Scorer)) || 0;
+        const prevOrd2 = SEASON_ORDER.get(pSeasonLast.get(g.Scorer))  || 0;
+        if (!pSeasonFirst.has(g.Scorer) || ord < prevOrd1) pSeasonFirst.set(g.Scorer, s);
+        if (!pSeasonLast.has(g.Scorer)  || ord > prevOrd2) pSeasonLast.set(g.Scorer, s);
       }
     });
   });
 
-  let players = [...DB.playerMap.values()].map(p => ({
+  let players = [...PLAYER_MAP.values()].map(p => ({
     name:        p.Name,
     position:    p.Position || '—',
     nationality: p.Nationality || '—',
@@ -2844,7 +2884,7 @@ function renderPlayersPage() {
 function renderOpponentsPage() {
   // Build stats from competitive matches
   const statsMap = new Map();
-  DB.matches.filter(m => !isFriendly(m) && m._result !== null).forEach(m => {
+  MATCHES.filter(m => !isFriendly(m) && m._result !== null).forEach(m => {
     const opp = m.Opposition;
     if (!statsMap.has(opp)) statsMap.set(opp, {p:0,w:0,d:0,l:0,gf:0,ga:0,last:null});
     const s = statsMap.get(opp);
@@ -2857,7 +2897,7 @@ function renderOpponentsPage() {
     opp, ...s,
     gd:    s.gf - s.ga,
     winPct: s.p ? Math.round(s.w/s.p*100) : 0,
-    short: (DB.opponentMap.get(opp) || {}).ShortName || opp,
+    short: (OPPONENT_MAP.get(opp) || {}).ShortName || opp,
   }));
 
   let sortField = 'p', sortDir = 'desc';
@@ -2952,7 +2992,7 @@ function renderOpponentsPage() {
 async function renderVenuesPage() {
   // Build venue usage stats
   const venueStats = new Map();
-  DB.matches.forEach(m => {
+  MATCHES.forEach(m => {
     if (!m.Venue) return;
     if (!venueStats.has(m.Venue)) venueStats.set(m.Venue, {count:0, home:0, away:0, last:null, maxAtt:0, maxAttOpp:''});
     const s = venueStats.get(m.Venue);
@@ -2963,7 +3003,7 @@ async function renderVenuesPage() {
     if (!isNaN(att) && att > s.maxAtt) { s.maxAtt = att; s.maxAttOpp = m.Opposition; }
   });
 
-  const venues = [...DB.venueMap.values()].map(v => ({
+  const venues = [...VENUE_MAP.values()].map(v => ({
     ...v,
     ...(venueStats.get(v.Name) || {count:0, home:0, away:0, last:null, maxAtt:0, maxAttOpp:''}),
   })).filter(v => v.count > 0).sort((a,b) => b.count - a.count);
@@ -2973,7 +3013,7 @@ async function renderVenuesPage() {
   document.getElementById('venuesView').innerHTML = `
     <div class="pv-hd">
       <h1>Venues</h1>
-      <div class="pv-sub">${venues.length} venues used · ${DB.matches.length} matches total</div>
+      <div class="pv-sub">${venues.length} venues used · ${MATCHES.length} matches total</div>
     </div>
     <div class="pv-body">
       ${hasMap ? `<div id="venueMapEl"></div>` : ''}
@@ -3048,7 +3088,7 @@ function initVenueMap(venues) {
 
   // City home venues get accent colour marker
   const homeVenues = new Set(
-    DB.matches.filter(m => m['Home/Away']==='H' && m.Venue).map(m => m.Venue)
+    MATCHES.filter(m => m['Home/Away']==='H' && m.Venue).map(m => m.Venue)
   );
 
   venues.forEach(v => {
@@ -3069,7 +3109,7 @@ function initVenueMap(venues) {
    RECORDS PAGE
    ============================================================ */
 function renderRecordsPage() {
-  const comp = DB.matches.filter(m => !isFriendly(m) && m._result !== null && m._gf !== null);
+  const comp = MATCHES.filter(m => !isFriendly(m) && m._result !== null && m._gf !== null);
   const p = comp.length, w = comp.filter(m=>m._result==='W').length;
   const d = comp.filter(m=>m._result==='D').length, l = comp.filter(m=>m._result==='L').length;
   const gf = comp.reduce((s,m)=>s+(m._gf||0),0), ga = comp.reduce((s,m)=>s+(m._ga||0),0);
@@ -3102,7 +3142,7 @@ function renderRecordsPage() {
   const maxG = allScorers[0]?.g || 1;
 
   // Top scorer by season
-  const topBySeasonRows = [...DB.seasonMap.entries()]
+  const topBySeasonRows = [...SEASON_ORDER.entries()]
     .sort((a,b) => b[1].order - a[1].order)
     .map(([season]) => {
       const ss = getTopScorers(season);
@@ -3124,7 +3164,8 @@ function renderRecordsPage() {
     if (!run.length) return '';
     const from = run[0]._date ? fmtDate(run[0]._date, true) : '';
     const to   = run[run.length-1]._date ? fmtDate(run[run.length-1]._date, true) : '';
-    const isActive = run[run.length-1] === DB.matches.filter(m=>!isFriendly(m)&&m._result)[DB.matches.filter(m=>!isFriendly(m)&&m._result).length-1];
+    const compSorted = MATCHES.filter(m=>!isFriendly(m)&&m._result).sort((a,b)=>(a._date||0)-(b._date||0));
+    const isActive = run.length > 0 && compSorted.length > 0 && run[run.length-1] === compSorted[compSorted.length-1];
     return `<div class="records-card no-cursor">
       <div class="rc-lbl">${label}</div>
       <div class="rc-val">${run.length} matches</div>
