@@ -6,7 +6,7 @@
   <title>Manchester City Women — Match Archive</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800;900&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700;9..40,800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,700;12..96,800&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700;9..40,800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
   <style>
 :root {
@@ -21,11 +21,12 @@
   --text-secondary:#5a5a52;
   --text-muted:    #8a8a80;
   --text-bright:   #0d0d0c;
-  --accent:        #2a6395;
-  --accent-dim:    #3a7ab5;
-  --accent-deep:   #1a4d78;
-  --accent-surface:rgba(42,99,149,0.05);
-  --accent-border: rgba(42,99,149,0.18);
+  /* City blue: navy for fills/interactive, sky for decorative accents */
+  --accent:        #1A2D4A;
+  --accent-dim:    #243c60;
+  --accent-deep:   #0f1d2e;
+  --accent-surface:rgba(26,45,74,0.06);
+  --accent-border: rgba(26,45,74,0.20);
   --sky:           #6CABDD;
   --navy:          #1A2D4A;
   --win:           #166534;
@@ -34,7 +35,7 @@
   --draw-bg:       rgba(75,85,99,0.10);
   --loss:          #991b1b;
   --loss-bg:       rgba(153,27,27,0.08);
-  --font-display:  'Playfair Display', Georgia, serif;
+  --font-display:  'Bricolage Grotesque', 'Georgia', sans-serif;
   --font-body:     'DM Sans', -apple-system, sans-serif;
   --font-mono:     'JetBrains Mono', 'Courier New', monospace;
   --radius-sm:     6px;
@@ -54,7 +55,7 @@ button{cursor:pointer;font-family:var(--font-body)}
 /* ── HEADER ── */
 .header{padding:48px 32px 40px;text-align:center;position:relative;border-bottom:1px solid var(--border-primary)}
 .header::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,transparent,var(--sky),transparent);opacity:0.7}
-.header h1{font-family:var(--font-display);font-size:clamp(1.8rem,4.5vw,3rem);font-weight:900;color:var(--text-bright);letter-spacing:-0.03em;line-height:1.1;margin-bottom:8px}
+.header h1{font-family:var(--font-display);font-size:clamp(2rem,5vw,3.2rem);font-weight:800;color:var(--text-bright);letter-spacing:-0.03em;line-height:1.1;margin-bottom:10px}
 .header p{font-size:0.88rem;color:var(--text-muted);letter-spacing:0.08em;text-transform:uppercase}
 
 /* ── ERROR BANNER ── */
@@ -167,7 +168,7 @@ button{cursor:pointer;font-family:var(--font-body)}
 .fixture-home{font-weight:700;font-size:0.97rem;color:var(--text-primary);min-width:0;word-break:break-word}
 .fixture-away{font-weight:700;font-size:0.97rem;color:var(--text-primary);min-width:0;word-break:break-word;text-align:right}
 .match-score-block{text-align:center;flex-shrink:0}
-.match-score{font-family:var(--font-display);font-size:2rem;font-weight:900;color:var(--text-bright);white-space:nowrap;letter-spacing:-0.03em;line-height:1;display:block}
+.match-score{font-family:var(--font-display);font-size:2rem;font-weight:800;color:var(--text-bright);white-space:nowrap;letter-spacing:-0.03em;line-height:1;display:block}
 .match-header-badges{display:flex;justify-content:center;align-items:center;gap:4px;margin-top:5px;flex-wrap:wrap}
 
 .badge{display:inline-block;padding:2px 9px;border-radius:100px;font-size:0.65rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em}
@@ -388,6 +389,38 @@ button{cursor:pointer;font-family:var(--font-body)}
 .season-comp-name{color:var(--text-primary);font-weight:600}
 .season-comp-record{font-family:var(--font-mono);font-size:0.78rem;color:var(--text-muted)}
 
+/* ── VISUAL MATCH TIMELINE TRACK ── */
+.tl-visual-wrap{margin-bottom:18px}
+.tl-track{position:relative;height:72px;background:rgba(75,85,99,0.05);border:1px solid var(--border-subtle);border-radius:8px;overflow:visible;margin:0 4px}
+.tl-lane-labels{position:absolute;top:0;bottom:0;left:0;width:38px;display:flex;flex-direction:column;pointer-events:none;z-index:3;border-radius:8px 0 0 8px;overflow:hidden}
+.tl-lane-label{flex:1;display:flex;align-items:center;font-size:0.55rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;padding-left:5px;white-space:nowrap;color:var(--text-secondary)}
+.tl-lane-label.city-lane{border-bottom:1px solid #c8c5bc;background:rgba(26,45,74,0.07)}
+.tl-lane-label.opp-lane{background:rgba(75,85,99,0.05)}
+.tl-centre-line{position:absolute;top:50%;left:0;right:0;height:1px;background:#c8c5bc;z-index:2}
+.tl-ht-line{position:absolute;top:-4px;bottom:-4px;width:2px;background:var(--border-primary);z-index:3;transform:translateX(-50%)}
+.tl-ht-label{position:absolute;bottom:calc(100%+4px);font-size:0.58rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-muted);transform:translateX(-50%);white-space:nowrap}
+.tl-vmarker{position:absolute;width:3px;z-index:4;transform:translateX(-50%);cursor:pointer}
+.tl-vmarker::before{content:'';position:absolute;left:0;width:3px;border-radius:2px;background:#6b7280}
+.tl-vmarker.city-lane{bottom:50%;height:36px}
+.tl-vmarker.city-lane::before{bottom:0;height:100%;border-radius:2px 2px 0 0}
+.tl-vmarker.opp-lane{top:50%;height:36px}
+.tl-vmarker.opp-lane::before{top:0;height:100%;border-radius:0 0 2px 2px}
+.tl-vmarker.redcard::before{background:#dc2626!important}
+.tl-vmarker.yellowcard::before{background:#ca8a04!important}
+.tl-vmarker.missedpen::before{background:repeating-linear-gradient(to bottom,#6b7280 0,#6b7280 4px,transparent 4px,transparent 8px)!important}
+.tl-vdot{position:absolute;font-size:11px;line-height:1;left:50%;transform:translateX(-50%);pointer-events:none;user-select:none;z-index:5}
+.tl-vmarker.city-lane .tl-vdot{top:-18px}
+.tl-vmarker.opp-lane  .tl-vdot{bottom:-18px}
+.tl-vtooltip{position:absolute;left:50%;transform:translateX(-50%);background:var(--text-bright);color:#fff;font-size:0.7rem;font-weight:600;padding:4px 8px;border-radius:5px;white-space:nowrap;z-index:20;pointer-events:none;opacity:0;transition:opacity 0.15s;width:max-content;max-width:180px}
+.tl-vmarker.city-lane .tl-vtooltip{bottom:calc(100% + 22px)}
+.tl-vmarker.opp-lane  .tl-vtooltip{top:calc(100% + 22px)}
+.tl-vmarker:hover .tl-vtooltip{opacity:1}
+.tl-vaxis{position:relative;height:14px;margin-top:5px}
+.tl-vaxis-tick{position:absolute;font-size:0.6rem;color:var(--text-muted);font-weight:500;transform:translateX(-50%)}
+
+/* ── ATTENDANCE CHART ── */
+.att-section-hd{font-size:0.95rem}
+
 /* ── RESPONSIVE ── */
 @media(max-width:700px){
   .header{padding:32px 20px 28px}
@@ -450,6 +483,28 @@ button{cursor:pointer;font-family:var(--font-body)}
       <span class="section-chevron">▾</span>
     </div>
     <div class="section-body" id="summaryBody"></div>
+  </div>
+
+  <div class="summary-box" id="attChartBox" style="display:none">
+    <div class="section-toggle-header" onclick="toggleAttSection(this)">
+      <h2 id="attChartTitle">📈 Home Attendance Over Time</h2>
+      <span class="section-chevron">▾</span>
+    </div>
+    <div class="section-body" id="attBody">
+      <div id="attStats" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:18px"></div>
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px">
+        <button class="filter-btn active" id="attBtnWSL" onclick="setAttMode('wsl')">WSL home only</button>
+        <button class="filter-btn" id="attBtnAll" onclick="setAttMode('all')">All home</button>
+        <span style="margin-left:auto;display:flex;align-items:center;gap:14px;font-size:0.72rem;color:var(--text-muted);font-weight:600">
+          <span style="display:flex;align-items:center;gap:5px"><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:rgba(26,45,74,0.75)"></span>Season avg</span>
+          <span style="display:flex;align-items:center;gap:5px"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--sky)"></span>Peak gate</span>
+        </span>
+      </div>
+      <div style="position:relative">
+        <canvas id="attCanvas" style="width:100%;display:block"></canvas>
+      </div>
+      <div id="attTapPanel" style="display:none;margin-top:12px;background:var(--bg-elevated);border:1px solid var(--border-primary);border-radius:var(--radius-md);padding:11px 16px;font-size:0.84em;line-height:1.6"></div>
+    </div>
   </div>
 
   <div class="goalscorers-box" id="goalscorersBox">
@@ -1054,6 +1109,7 @@ function onDataReady() {
   computeRecords();
   computeMilestones();
   renderSummary();
+  maybeShowAttChart();
   displayStreakAndForm();
   displayOTD();
   renderGoalscorers();
@@ -1539,17 +1595,22 @@ function renderMatches() {
   const filtered  = getFiltered();
   const displayed = filtered.slice(0, listCap);
 
-  // Result count — with streak context if applicable
+  // Result count — competitive / friendlies split like West
   const total = filtered.length;
+  const compInView     = filtered.filter(m => !isFriendly(m) && m._result !== null).length;
+  const friendlyInView = filtered.filter(m => isFriendly(m)).length;
   const streakTypes = ['win-streak','unbeaten-streak','loss-streak','winless-streak'];
   if (activeLens && streakTypes.includes(activeLens) && window._streakInfo) {
     const si = window._streakInfo;
     const activeNote = si.isActive ? ' · currently active' : '';
     document.getElementById('resultCount').textContent =
       `All-time longest ${si.adj} run: ${si.length} match${si.length!==1?'es':''}${activeNote}`;
+  } else if (friendlyInView > 0 && compInView > 0) {
+    document.getElementById('resultCount').textContent =
+      `${compInView} competitive game${compInView!==1?'s':''} + ${friendlyInView} ${friendlyInView===1?'friendly':'friendlies'}`;
   } else {
     document.getElementById('resultCount').textContent =
-      total === 1 ? '1 match' : `${total} matches`;
+      total === 1 ? '1 match' : `${total} match${total!==1?'es':''}`;
   }
 
   // Stats bar
@@ -1925,7 +1986,252 @@ function buildModalBody(m) {
     ? `<div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border-subtle);font-size:0.84rem;color:var(--text-secondary);line-height:1.6">${esc(m.Notes)}</div>`
     : '';
 
-  return tieHtml + tlBlock + notesBlock;
+  const visualTrack = buildVisualTrack(m, goals);
+  const trackSection = visualTrack
+    ? `<div style="margin-bottom:18px"><div style="font-size:0.66rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-muted);margin-bottom:8px">Match timeline</div>${visualTrack}</div>`
+    : '';
+
+  return tieHtml + trackSection + tlBlock + notesBlock;
+}
+
+/* ============================================================
+   ATTENDANCE CHART
+   ============================================================ */
+;(function(){if(!CanvasRenderingContext2D.prototype.roundRect){CanvasRenderingContext2D.prototype.roundRect=function(x,y,w,h,r){const rad=Array.isArray(r)?r[0]:r;this.moveTo(x+rad,y);this.lineTo(x+w-rad,y);this.quadraticCurveTo(x+w,y,x+w,y+rad);this.lineTo(x+w,y+h);this.lineTo(x,y+h);this.lineTo(x,y+rad);this.quadraticCurveTo(x,y,x+rad,y);this.closePath();return this;};}}());
+
+function buildAttData(mode) {
+  const bySeason = new Map();
+  MATCHES.forEach(m => {
+    if (m['Home/Away'] !== 'H' || isFriendly(m)) return;
+    if (!m.Attendance || isNaN(parseInt(m.Attendance))) return;
+    if (mode === 'wsl' && m.Competition !== "Women's Super League") return;
+    const att = parseInt(m.Attendance), s = m.Season;
+    if (!bySeason.has(s)) bySeason.set(s, {total:0, count:0, peak:0, peakOpp:'', low:Infinity});
+    const d = bySeason.get(s);
+    d.total += att; d.count++;
+    if (att > d.peak) { d.peak = att; d.peakOpp = m.Opposition; }
+    if (att < d.low)    d.low = att;
+  });
+  return [...bySeason.entries()]
+    .map(([s, d]) => ({season:s, avg:Math.round(d.total/d.count), count:d.count, peak:d.peak, peakOpp:d.peakOpp, low:d.low===Infinity?0:d.low}))
+    .sort((a,b) => (SEASON_ORDER.get(a.season)||0) - (SEASON_ORDER.get(b.season)||0));
+}
+
+function renderAttStats(data) {
+  if (!data.length) return;
+  const latest = data[data.length-1], prev = data.length>=2?data[data.length-2]:null;
+  const bestAvg  = data.reduce((b,d) => d.avg>b.avg?d:b, data[0]);
+  const bestGate = data.reduce((b,d) => d.peak>b.peak?d:b, data[0]);
+  const total    = data.reduce((s,d) => s+d.count, 0);
+  let trend = '';
+  if (prev) {
+    const diff = latest.avg - prev.avg, pct = Math.abs(Math.round(diff/prev.avg*100));
+    const col  = diff>=0 ? 'var(--win)' : 'var(--loss)';
+    trend = ` <span style="color:${col};font-size:0.8em;font-weight:700;">${diff>=0?'▲':'▼'} ${pct}%</span>`;
+  }
+  const pills = [
+    {label:`${esc(latest.season)} avg`, value:latest.avg.toLocaleString('en-GB')+trend, sub: prev?`vs ${prev.avg.toLocaleString('en-GB')} prev season`:''},
+    {label:'Best season avg', value:bestAvg.avg.toLocaleString('en-GB'), sub:esc(bestAvg.season)},
+    {label:'Record home gate', value:bestGate.peak.toLocaleString('en-GB'), sub:`vs ${esc(bestGate.peakOpp)} (${esc(bestGate.season)})`},
+    {label:'Home games tracked', value:total, sub:`${data.length} season${data.length!==1?'s':''}`},
+  ];
+  document.getElementById('attStats').innerHTML = pills.map(p =>
+    `<div style="background:var(--bg-elevated);border:1px solid var(--border-subtle);border-radius:var(--radius-md);padding:13px 16px">
+      <div style="font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-muted);margin-bottom:5px">${p.label}</div>
+      <div style="font-family:var(--font-display);font-size:1.3rem;font-weight:800;color:var(--text-bright);line-height:1">${p.value}</div>
+      ${p.sub?`<div style="font-size:0.72rem;color:var(--text-muted);margin-top:4px">${p.sub}</div>`:''}
+    </div>`
+  ).join('');
+}
+
+function drawAttendanceChart() {
+  const canvas = document.getElementById('attCanvas');
+  if (!canvas) return;
+  const mode = window._attMode || 'wsl';
+  const data = buildAttData(mode);
+  if (!data.length) return;
+  renderAttStats(data);
+  document.getElementById('attChartTitle').textContent =
+    '📈 Home ' + (mode==='wsl'?'WSL ':'') + 'Attendance Over Time';
+
+  const container = canvas.parentElement;
+  const isMobile  = window.innerWidth < 600;
+  const W = container.clientWidth || 700;
+  const H = isMobile ? 220 : 270;
+  const DPR = window.devicePixelRatio || 1;
+  canvas.width = W*DPR; canvas.height = H*DPR;
+  canvas.style.width = W+'px'; canvas.style.height = H+'px';
+  const ctx = canvas.getContext('2d');
+  ctx.scale(DPR, DPR);
+
+  const PAD = {top:20, right: isMobile?8:16, bottom: isMobile?52:48, left: isMobile?46:58};
+  const cW = W-PAD.left-PAD.right, cH = H-PAD.top-PAD.bottom;
+  const maxVal = Math.ceil(Math.max(...data.map(d=>d.peak)) / 500) * 500 || 1000;
+  const yScale = v => PAD.top + cH - (v/maxVal)*cH;
+  const barW   = cW/data.length, BAR_GAP = Math.max(2, barW*0.15);
+
+  // Background
+  ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--bg-surface').trim()||'#fbfbf8';
+  ctx.fillRect(0,0,W,H);
+
+  // Gridlines + y-labels
+  const ticks = [0, 0.25, 0.5, 0.75, 1.0];
+  ctx.setLineDash([4,4]);
+  ctx.strokeStyle = '#eae8e1'; ctx.lineWidth=1;
+  ticks.forEach(t => {
+    const v = maxVal*t, y = yScale(v);
+    ctx.beginPath(); ctx.moveTo(PAD.left,y); ctx.lineTo(W-PAD.right,y); ctx.stroke();
+    ctx.fillStyle='#8a8a80';
+    ctx.font=`${isMobile?9:10}px "DM Sans",sans-serif`;
+    ctx.textAlign='right';
+    ctx.fillText(v>=1000?(v/1000).toFixed(v%1000===0?0:1)+'k':v, PAD.left-5, y+4);
+  });
+  ctx.setLineDash([]);
+
+  // Bars + peak dots + x-labels
+  data.forEach((d,i) => {
+    const x = PAD.left + i*barW + BAR_GAP/2, w = barW-BAR_GAP;
+    const yTop = yScale(d.avg), yBot = yScale(0);
+    ctx.fillStyle = 'rgba(26,45,74,0.75)';
+    ctx.beginPath();
+    ctx.roundRect(x, yTop, w, yBot-yTop, [3,3,0,0]);
+    ctx.fill();
+
+    if (d.peak > d.avg) {
+      ctx.fillStyle = '#6CABDD';
+      ctx.beginPath();
+      ctx.arc(x+w/2, yScale(d.peak), 4, 0, Math.PI*2);
+      ctx.fill();
+    }
+
+    const lab = shortSeason(d.season);
+    ctx.fillStyle='#8a8a80';
+    ctx.font=`${isMobile?8:10}px "DM Sans",sans-serif`;
+    ctx.textAlign='center';
+    ctx.save();
+    if (data.length>10 && isMobile) {
+      ctx.translate(x+w/2, H-PAD.bottom+12);
+      ctx.rotate(-Math.PI/4);
+      ctx.fillText(lab, 0, 0);
+    } else {
+      ctx.fillText(lab, x+w/2, H-PAD.bottom+13);
+    }
+    ctx.restore();
+  });
+
+  // Store for click
+  canvas._data=data; canvas._pad=PAD; canvas._barW=barW;
+}
+
+function setAttMode(mode) {
+  window._attMode = mode;
+  document.getElementById('attBtnWSL').classList.toggle('active', mode==='wsl');
+  document.getElementById('attBtnAll').classList.toggle('active', mode==='all');
+  drawAttendanceChart();
+}
+
+function toggleAttSection(header) {
+  header.classList.toggle('open');
+  const body = header.nextElementSibling;
+  body.classList.toggle('open');
+  if (body.classList.contains('open')) {
+    window._attMode = window._attMode || 'wsl';
+    setTimeout(drawAttendanceChart, 50); // allow layout to settle
+  }
+}
+
+function maybeShowAttChart() {
+  const has = MATCHES.some(m => m['Home/Away']==='H' && !isFriendly(m) && m.Attendance && !isNaN(parseInt(m.Attendance)));
+  if (has) document.getElementById('attChartBox').style.display = '';
+}
+
+// Click on bar to show season detail
+document.addEventListener('click', function(e) {
+  const canvas = document.getElementById('attCanvas');
+  if (!canvas || !canvas._data || e.target !== canvas) return;
+  const rect = canvas.getBoundingClientRect();
+  const x = e.clientX - rect.left;
+  const idx = Math.floor((x - canvas._pad.left) / canvas._barW);
+  if (idx < 0 || idx >= canvas._data.length) return;
+  const d = canvas._data[idx];
+  const panel = document.getElementById('attTapPanel');
+  panel.style.display = '';
+  panel.innerHTML = `<strong>${esc(d.season)}</strong> &nbsp;·&nbsp; ${d.count} home match${d.count!==1?'es':''} &nbsp;·&nbsp; Avg <strong>${d.avg.toLocaleString('en-GB')}</strong> &nbsp;·&nbsp; Peak <strong>${d.peak.toLocaleString('en-GB')}</strong> vs ${esc(d.peakOpp)} &nbsp;·&nbsp; Lowest <strong>${d.low.toLocaleString('en-GB')}</strong>`;
+});
+
+window.addEventListener('resize', () => {
+  const body = document.getElementById('attBody');
+  if (body && body.classList.contains('open')) drawAttendanceChart();
+});
+
+/* ============================================================
+   VISUAL MATCH TIMELINE TRACK
+   ============================================================ */
+function buildVisualTrack(m, goals) {
+  if (!goals.length) return ''; // nothing to show without goals
+
+  // Only render if all goals have valid minutes
+  const allValid = goals.every(g => {
+    const min = String(g.Minute||'').trim();
+    if (!min || min==='0') return false;
+    return !isNaN(parseInt(min.split('+')[0]));
+  });
+  if (!allValid) return '';
+
+  const isAET    = m.AET === 'Y';
+  const baseMins = isAET ? 120 : 90;
+  const maxMin   = Math.max(...goals.map(g => parseMin(g.Minute)));
+  const totalMins= Math.max(baseMins, Math.ceil(maxMin) + 3);
+  const htPct    = (45/totalMins)*100;
+  const ftPct    = (90/totalMins)*100;
+
+  // City always on top lane for single-team archive consistency
+  const NUDGE = 2.5;
+  const placed = {city:[], opp:[]};
+  let markers = '';
+
+  const sorted = [...goals].sort((a,b) => parseMin(a.Minute)-parseMin(b.Minute));
+  sorted.forEach(g => {
+    const isCity = g['For/Against'] === 'For';
+    const lane   = isCity ? 'city' : 'opp';
+    let pct = (parseMin(g.Minute)/totalMins)*100;
+    pct = Math.max(3, Math.min(97, pct));
+    placed[lane].forEach(p => { if (Math.abs(pct-p) < NUDGE) pct = Math.min(97, p+NUDGE); });
+    placed[lane].push(pct);
+
+    const isOG  = g.OG==='Y', isPen = g.Penalty==='Y';
+    const ogL   = isOG  ? ' (og)'  : '';
+    const penL  = isPen ? ' (pen)' : '';
+    const tip   = `${g.Minute}' ${esc(g.Scorer||'?')}${ogL}${penL}`;
+    markers += `<div class="tl-vmarker ${lane}-lane" style="left:${pct.toFixed(1)}%">
+      <div class="tl-vdot">⚽</div>
+      <div class="tl-vtooltip">${tip}</div>
+    </div>`;
+  });
+
+  const htLine = `<div class="tl-ht-line" style="left:${htPct.toFixed(1)}%"><div class="tl-ht-label">HT</div></div>`;
+  const ft90   = isAET ? `<div class="tl-ht-line" style="left:${ftPct.toFixed(1)}%;opacity:0.4"><div class="tl-ht-label" style="left:0">90'</div></div>` : '';
+
+  const tMins = isAET ? [0,15,30,45,60,75,90,120] : [0,15,30,45,60,75,90];
+  const ticks = tMins.map(t => {
+    const p = (t/totalMins)*100;
+    const style = t===0 ? 'left:0;transform:none' : t===tMins[tMins.length-1] ? `left:${p}%;transform:translateX(-100%)` : `left:${p}%`;
+    return `<span class="tl-vaxis-tick" style="${style}">${t}'</span>`;
+  }).join('');
+
+  const oppShort = (m.Opposition||'Opp').substring(0,4).toUpperCase();
+
+  return `<div class="tl-visual-wrap">
+    <div class="tl-track">
+      <div class="tl-lane-labels">
+        <div class="tl-lane-label city-lane">CITY</div>
+        <div class="tl-lane-label opp-lane">${oppShort}</div>
+      </div>
+      <div class="tl-centre-line"></div>
+      ${htLine}${ft90}${markers}
+    </div>
+    <div class="tl-vaxis">${ticks}</div>
+  </div>`;
 }
 
 /* ============================================================
