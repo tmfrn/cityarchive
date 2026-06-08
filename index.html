@@ -448,7 +448,7 @@ button{cursor:pointer;font-family:var(--font-body)}
 .pv-search input::placeholder{color:var(--text-muted)}
 
 /* ── DATA TABLES ── */
-.dt-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;border:1px solid var(--border-primary);border-radius:var(--radius-lg);overflow:hidden}
+.dt-wrap{border:1px solid var(--border-primary);border-radius:var(--radius-lg);overflow-x:auto;-webkit-overflow-scrolling:touch}
 .data-table{width:100%;border-collapse:collapse;font-size:0.86rem}
 .data-table th{font-size:0.66rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-muted);padding:9px 12px;border-bottom:2px solid var(--border-primary);background:var(--bg-surface);text-align:left;white-space:nowrap;cursor:pointer;user-select:none;transition:color 0.15s}
 .data-table th:hover{color:var(--text-secondary)}
@@ -558,16 +558,16 @@ button{cursor:pointer;font-family:var(--font-body)}
     <div class="section-body" id="summaryBody"></div>
   </div>
 
-  <div class="summary-box" id="attChartBox" style="display:none">
-    <div class="section-toggle-header" onclick="toggleAttSection(this)">
+  <div class="summary-box" id="attChartBox">
+    <div class="section-toggle-header open" onclick="toggleAttSection(this)">
       <h2 id="attChartTitle">📈 Home Attendance Over Time</h2>
       <span class="section-chevron">▾</span>
     </div>
-    <div class="section-body" id="attBody">
+    <div class="section-body open" id="attBody">
       <div id="attStats" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:18px"></div>
       <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px">
-        <button class="filter-btn active" id="attBtnWSL" onclick="setAttMode('wsl')">WSL home only</button>
-        <button class="filter-btn" id="attBtnAll" onclick="setAttMode('all')">All home</button>
+        <button class="filter-btn active" id="attBtnWSL" onclick="setAttMode('wsl')">League</button>
+        <button class="filter-btn" id="attBtnAll" onclick="setAttMode('all')">League &amp; cups</button>
         <span style="margin-left:auto;display:flex;align-items:center;gap:14px;font-size:0.72rem;color:var(--text-muted);font-weight:600">
           <span style="display:flex;align-items:center;gap:5px"><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:rgba(26,45,74,0.75)"></span>Season avg</span>
           <span style="display:flex;align-items:center;gap:5px"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--sky)"></span>Peak gate</span>
@@ -2217,10 +2217,18 @@ function drawAttendanceChart() {
   if (!canvas) return;
   const mode = window._attMode || 'wsl';
   const data = buildAttData(mode);
-  if (!data.length) return;
+
+  if (!data.length) {
+    canvas.style.display = 'none';
+    document.getElementById('attStats').innerHTML =
+      '<p style="color:var(--text-muted);font-size:0.86rem;padding:8px 0">No home attendance data found for this filter. Try switching to <strong>League &amp; cups</strong>.</p>';
+    return;
+  }
+  canvas.style.display = 'block';
   renderAttStats(data);
   document.getElementById('attChartTitle').textContent =
-    '📈 Home ' + (mode==='wsl'?'WSL ':'') + 'Attendance Over Time';
+    mode === 'wsl' ? '📈 Home League (WSL) Attendance Over Time'
+                   : '📈 Home Attendance Over Time — League &amp; Cups';
 
   const container = canvas.parentElement;
   const isMobile  = window.innerWidth < 600;
@@ -2309,8 +2317,9 @@ function toggleAttSection(header) {
 }
 
 function maybeShowAttChart() {
-  const has = MATCHES.some(m => m['Home/Away']==='H' && !isFriendly(m) && m.Attendance && !isNaN(parseInt(m.Attendance)));
-  if (has) document.getElementById('attChartBox').style.display = '';
+  // Section is always visible and open — draw the chart now
+  window._attMode = window._attMode || 'wsl';
+  setTimeout(drawAttendanceChart, 100);
 }
 
 // Click on bar to show season detail
