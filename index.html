@@ -521,7 +521,7 @@ button{cursor:pointer;font-family:var(--font-body)}
 
   <div class="header">
     <div class="header-content">
-      <h1>Manchester City Women test</h1>
+      <h1>Manchester City Women</h1>
       <p>Match Archive &middot; WSL era 2014&ndash;present</p>
     </div>
   </div>
@@ -556,28 +556,6 @@ button{cursor:pointer;font-family:var(--font-body)}
       <span class="section-chevron">▾</span>
     </div>
     <div class="section-body" id="summaryBody"></div>
-  </div>
-
-  <div class="summary-box" id="attChartBox">
-    <div class="section-toggle-header open" onclick="toggleAttSection(this)">
-      <h2 id="attChartTitle">📈 Home Attendance Over Time</h2>
-      <span class="section-chevron">▾</span>
-    </div>
-    <div class="section-body open" id="attBody">
-      <div id="attStats" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:18px"></div>
-      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px">
-        <button class="filter-btn active" id="attBtnWSL" onclick="setAttMode('wsl')">League</button>
-        <button class="filter-btn" id="attBtnAll" onclick="setAttMode('all')">League &amp; cups</button>
-        <span style="margin-left:auto;display:flex;align-items:center;gap:14px;font-size:0.72rem;color:var(--text-muted);font-weight:600">
-          <span style="display:flex;align-items:center;gap:5px"><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:rgba(26,45,74,0.75)"></span>Season avg</span>
-          <span style="display:flex;align-items:center;gap:5px"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--sky)"></span>Peak gate</span>
-        </span>
-      </div>
-      <div style="position:relative">
-        <canvas id="attCanvas" style="width:100%;display:block"></canvas>
-      </div>
-      <div id="attTapPanel" style="display:none;margin-top:12px;background:var(--bg-elevated);border:1px solid var(--border-primary);border-radius:var(--radius-md);padding:11px 16px;font-size:0.84em;line-height:1.6"></div>
-    </div>
   </div>
 
   <div class="goalscorers-box" id="goalscorersBox">
@@ -1207,7 +1185,6 @@ function onDataReady() {
   computeRecords();
   computeMilestones();
   renderSummary();
-  maybeShowAttChart();
   displayStreakAndForm();
   displayOTD();
   renderGoalscorers();
@@ -2762,10 +2739,15 @@ function showPage(page, pushState = true) {
       case 'players':   renderPlayersPage();   break;
       case 'opponents': renderOpponentsPage(); break;
       case 'venues':    renderVenuesPage();    break;
-      case 'records':   renderRecordsPage();   break;
+      case 'records':   renderRecordsPage(); window._attMode = window._attMode||'wsl'; setTimeout(drawAttendanceChart, 80); break;
     }
   }
   window.scrollTo(0, 0);
+}
+
+function drawAfterRecords() {
+  window._attMode = window._attMode || 'wsl';
+  setTimeout(drawAttendanceChart, 80);
 }
 
 window.addEventListener('popstate', () => {
@@ -3188,6 +3170,21 @@ function renderRecordsPage() {
       <div class="pv-sub">WSL era · ${p} competitive matches</div>
     </div>
     <div class="pv-body">
+
+      <div class="records-section-hd">Home attendance over time</div>
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:14px">
+        <button class="filter-btn active" id="attBtnWSL" onclick="setAttMode('wsl')">League</button>
+        <button class="filter-btn" id="attBtnAll" onclick="setAttMode('all')">League &amp; cups</button>
+        <span style="margin-left:auto;display:flex;align-items:center;gap:14px;font-size:0.72rem;color:var(--text-muted);font-weight:600">
+          <span style="display:flex;align-items:center;gap:5px"><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:rgba(26,45,74,0.75)"></span>Season avg</span>
+          <span style="display:flex;align-items:center;gap:5px"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--sky)"></span>Peak gate</span>
+        </span>
+      </div>
+      <div id="attStats" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:18px"></div>
+      <div style="position:relative;margin-bottom:8px">
+        <canvas id="attCanvas" style="width:100%;display:block"></canvas>
+      </div>
+      <div id="attTapPanel" style="display:none;margin-bottom:20px;background:var(--bg-elevated);border:1px solid var(--border-primary);border-radius:var(--radius-md);padding:11px 16px;font-size:0.84em;line-height:1.6"></div>
 
       <div class="records-section-hd">All-time record</div>
       <div class="records-grid" style="grid-template-columns:repeat(auto-fit,minmax(130px,1fr))">
