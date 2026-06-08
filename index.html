@@ -2203,9 +2203,10 @@ function drawAttendanceChart() {
   }
   canvas.style.display = 'block';
   renderAttStats(data);
-  document.getElementById('attChartTitle').textContent =
+  const titleEl = document.getElementById('attChartTitle');
+  if (titleEl) titleEl.textContent =
     mode === 'wsl' ? '📈 Home League (WSL) Attendance Over Time'
-                   : '📈 Home Attendance Over Time — League &amp; Cups';
+                   : '📈 Home Attendance Over Time — League & Cups';
 
   const container = canvas.parentElement;
   const isMobile  = window.innerWidth < 600;
