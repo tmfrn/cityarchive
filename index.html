@@ -110,16 +110,6 @@ button{cursor:pointer;font-family:var(--font-body)}
 .goalscorers-table tr:last-child{border-bottom:none}
 .goalscorers-table td{padding:10px 8px;font-size:0.9rem}
 .gs-rank{color:var(--text-muted);font-weight:700;width:32px;font-size:0.8rem}
-.gs-name{font-weight:600;color:var(--text-primary);cursor:pointer}
-.gs-name:hover{color:var(--accent)}
-.gs-bar-cell{width:50%;padding-right:16px}
-.gs-bar-track{background:var(--border-subtle);border-radius:3px;height:6px;overflow:hidden}
-.gs-bar-fill{background:var(--accent-dim);height:6px;border-radius:3px;opacity:0.75}
-.gs-goals{font-weight:800;color:var(--accent-deep);text-align:right;white-space:nowrap;width:44px;font-family:var(--font-display)}
-.gs-toggle{margin-top:14px;background:none;border:none;color:var(--text-muted);font-size:0.82rem;font-weight:600;cursor:pointer;padding:4px 0;text-decoration:underline;text-underline-offset:3px;text-decoration-style:dotted;text-decoration-color:var(--text-muted);transition:color 0.2s}
-.gs-toggle:hover{color:var(--text-primary)}
-.gs-season-sel{margin-bottom:14px;font-size:0.82rem;color:var(--text-secondary)}
-.gs-season-sel select{border:1.5px solid var(--border-primary);border-radius:var(--radius-sm);padding:5px 10px;font-size:0.82rem;background:var(--bg-card);color:var(--text-primary);cursor:pointer;font-family:var(--font-body)}
 
 /* ── CONTROLS ── */
 .controls{padding:24px 32px;background:var(--bg-surface);border-bottom:1px solid var(--border-primary)}
@@ -144,7 +134,8 @@ button{cursor:pointer;font-family:var(--font-body)}
 /* ── RESULTS HEADER + STATS ── */
 .results-header{padding:24px 32px;background:var(--bg-surface);border-bottom:1px solid var(--border-primary)}
 .result-count{font-family:var(--font-display);font-size:1.2rem;font-weight:700;color:var(--text-bright);margin-bottom:20px}
-.stats-bar{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;display:none}
+.stats-bar{display:none;grid-template-columns:repeat(5,1fr);gap:10px}
+.stats-bar.visible{display:grid}
 .stat-item{background:var(--bg-card);padding:14px 16px;border-radius:var(--radius-md);border:1px solid var(--border-subtle)}
 .stat-label{font-size:0.68rem;color:var(--text-muted);margin-bottom:5px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em}
 .stat-value{font-family:var(--font-display);font-size:1.15rem;font-weight:700;color:var(--text-bright)}
@@ -524,15 +515,14 @@ button{cursor:pointer;font-family:var(--font-body)}
   .streak-box,.goalscorers-box,.otd-detail,.otd-summary{padding-left:20px;padding-right:20px}
   .section-toggle-header{padding-left:20px;padding-right:20px}
   .section-body{padding-left:20px;padding-right:20px}
-  .stats-bar{display:flex;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;gap:0;margin-top:6px}
-  .stats-bar::-webkit-scrollbar{display:none}
+  .stats-bar.visible{display:flex;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;gap:0;margin-top:6px}
+  .stats-bar.visible::-webkit-scrollbar{display:none}
   .stat-item{flex:0 0 auto;padding:8px 14px 6px;background:none;border:none;border-right:1px solid var(--border-subtle);border-radius:0}
   .stat-item:last-child{border-right:none}
   .stat-label{font-size:0.58rem}
   .stat-value{font-size:0.9rem}
   .pv-body{padding:16px 20px}
   .pv-body .dt-wrap{margin-left:-4px;margin-right:-4px}
-  .gs-bar-cell{display:none}
   .match-fixture{padding:12px 12px 6px}
   .match-score{font-size:1.6rem}
   .fixture-home,.fixture-away{font-size:0.88rem}
@@ -700,6 +690,7 @@ button{cursor:pointer;font-family:var(--font-body)}
       <span class="player-total-number" id="playerTotalGoals"></span>
       <span class="player-total-label">competitive goals</span>
     </div>
+    <div id="playerStatStrip" style="display:none;margin:-4px 0 16px;display:flex;flex-wrap:wrap;gap:8px"></div>
     <div class="player-season-bars" id="playerSeasonBars"></div>
     <div class="player-comps" id="playerComps"></div>
     <div class="player-milestones" id="playerMilestones" style="display:none"></div>
@@ -1549,7 +1540,8 @@ function renderMatches() {
 
   // Hide sort toggle and stats bar for ranked/sorted lens views
   document.getElementById('sortToggle').style.display = rankedLens ? 'none' : '';
-  document.getElementById('statsBar').style.display   = rankedLens ? 'none' : (compInView ? 'grid' : 'none');
+  const showStats = !rankedLens && compInView > 0;
+  document.getElementById('statsBar').classList.toggle('visible', showStats);
 
   if (activeLens && streakTypes.includes(activeLens) && window._streakInfo) {
     const si = window._streakInfo;
@@ -1560,6 +1552,9 @@ function renderMatches() {
   } else if (activeLens === 'analysis-filter' && window._analysisFilter) {
     document.getElementById('resultCount').textContent =
       `${total} match${total!==1?'es':''} · ${window._analysisFilter.label}`;
+  } else if (activeLens === 'this-season' && window._lensSeasonName) {
+    document.getElementById('resultCount').textContent =
+      `${esc(window._lensSeasonName)} · ${total} match${total!==1?'es':''}`;
   } else if (friendlyInView > 0 && compInView > 0) {
     document.getElementById('resultCount').textContent =
       `${compInView} competitive game${compInView!==1?'s':''} + ${friendlyInView} ${friendlyInView===1?'friendly':'friendlies'}`;
@@ -2361,6 +2356,21 @@ function showPlayerModal(name) {
   document.getElementById('playerSubtitle').textContent= subtitle;
   document.getElementById('playerTotalGoals').textContent = total;
 
+  // Scoring streak + goal type breakdown
+  const streak  = getPlayerScoringStreak(name);
+  const penGoals= goalEntries.filter(({goal})=>goal.Penalty==='Y').length;
+  const openPlay= total - penGoals;
+  const chips   = [];
+  if (streak.len >= 3) {
+    const streakDates = streak.start && streak.end
+      ? `${fmtDate(streak.start._date,true)} – ${fmtDate(streak.end._date,true)}`
+      : '';
+    chips.push(`<span style="background:var(--win-bg);color:var(--win);padding:4px 10px;border-radius:100px;font-size:0.72rem;font-weight:700;white-space:nowrap" title="${streakDates}">🔥 ${streak.len} consecutive matches</span>`);
+  }
+  if (penGoals > 0) chips.push(`<span style="background:var(--accent-surface);color:var(--accent);padding:4px 10px;border-radius:100px;font-size:0.72rem;font-weight:700">${openPlay} open play · ${penGoals} pen${penGoals!==1?'s':''}</span>`);
+  const strip = document.getElementById('playerStatStrip');
+  if (strip) { strip.innerHTML = chips.join(''); strip.style.display = chips.length ? 'flex' : 'none'; }
+
   // Season bars
   document.getElementById('playerSeasonBars').innerHTML =
     `<div class="player-bars-hd">Goals by season</div>` +
@@ -2873,12 +2883,6 @@ async function renderVenuesPage() {
     return 'away';
   }
 
-  const typeBadge = {
-    home:    `<span style="display:inline-block;padding:2px 8px;border-radius:100px;font-size:0.68rem;font-weight:700;background:rgba(26,45,74,0.1);color:var(--navy);letter-spacing:0.04em">Home</span>`,
-    neutral: `<span style="display:inline-block;padding:2px 8px;border-radius:100px;font-size:0.68rem;font-weight:700;background:rgba(180,120,0,0.1);color:#a07800;letter-spacing:0.04em">Neutral</span>`,
-    away:    '',
-  };
-
   const venues = [...VENUE_MAP.values()].map(v => ({
     ...v,
     ...(venueStats.get(v.Name) || {count:0, home:0, away:0, neutral:0, last:null, maxAtt:0, maxAttOpp:''}),
@@ -2894,18 +2898,12 @@ async function renderVenuesPage() {
         <span style="font-size:0.76rem;color:var(--text-muted)">${MATCHES.length} matches total</span>
       </div>
       ${hasMap ? `<div id="venueMapEl"></div>` : ''}
-      <div style="display:flex;align-items:center;gap:14px;margin-bottom:12px;font-size:0.72rem;font-weight:600;color:var(--text-muted);flex-wrap:wrap">
-        <span style="display:flex;align-items:center;gap:5px"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--navy)"></span>Home ground</span>
-        <span style="display:flex;align-items:center;gap:5px"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#b08000"></span>Neutral venue</span>
-        <span style="display:flex;align-items:center;gap:5px"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#9ca3af"></span>Away ground</span>
-      </div>
       <div class="pv-search"><input type="text" id="venuesSearch" placeholder="Search venues…"></div>
       <div class="dt-wrap">
         <table class="data-table">
           <thead><tr>
             <th>Venue</th>
             <th>City</th>
-            <th></th>
             <th class="td-num">Matches</th>
             <th>Last used</th>
           </tr></thead>
@@ -2913,7 +2911,6 @@ async function renderVenuesPage() {
             ${venues.map(v => `<tr>
               <td class="td-link">${esc(v.Name)}</td>
               <td class="td-muted">${esc(v.City||'—')}</td>
-              <td style="white-space:nowrap">${typeBadge[v.type]}</td>
               <td class="td-num">${v.count}</td>
               <td class="td-muted" style="font-size:0.8rem">${v.last ? fmtDate(v.last, true) : '—'}</td>
             </tr>`).join('')}
@@ -3056,6 +3053,27 @@ function renderRecordsPage() {
           <div class="records-card no-cursor"><div class="rc-lbl">${lbl}</div><div class="rc-val" style="font-size:1.4rem">${v}</div></div>`).join('')}
       </div>
 
+      ${(()=>{
+        const {sf,cf}=getScoreFirstStats();
+        const sfPct=sf.n?Math.round(sf.w/sf.n*100):0;
+        const cfPct=cf.n?Math.round(cf.w/cf.n*100):0;
+        const sfCol=sfPct>=70?'var(--win)':sfPct>=50?'var(--text-bright)':'var(--loss)';
+        const cfCol=cfPct>=50?'var(--win)':cfPct>=30?'var(--text-bright)':'var(--loss)';
+        return `<div class="records-section-hd">When scoring first vs conceding first</div>
+        <div class="records-grid">
+          <div class="records-card no-cursor">
+            <div class="rc-lbl">Score first (${sf.n} matches)</div>
+            <div class="rc-val" style="color:${sfCol}">${sfPct}%</div>
+            <div class="rc-ctx">${sf.w}W ${sf.d}D ${sf.l}L</div>
+          </div>
+          <div class="records-card no-cursor">
+            <div class="rc-lbl">Concede first (${cf.n} matches)</div>
+            <div class="rc-val" style="color:${cfCol}">${cfPct}%</div>
+            <div class="rc-ctx">${cf.w}W ${cf.d}D ${cf.l}L · came back ${cf.w+cf.d} time${cf.w+cf.d!==1?'s':''}</div>
+          </div>
+        </div>`;
+      })()}
+
       <div class="records-section-hd">Best &amp; worst performances</div>
       <div class="records-grid">
         ${matchCard(bigWin,'Biggest win')}
@@ -3075,6 +3093,25 @@ function renderRecordsPage() {
         ${streakCard(lossRun,'Longest losing run')}
       </div>
 
+      ${(()=>{
+        const ps=getPenaltyStats();
+        const pct=ps.scored+ps.missed>0?Math.round(ps.scored/(ps.scored+ps.missed)*100):0;
+        const topLine=ps.topScorer?`Top scorer: <strong>${esc(ps.topScorer[0])}</strong> (${ps.topScorer[1].s})${ps.topScorer[1].m?' · '+ps.topScorer[1].m+' missed':''}`:'';
+        return `<div class="records-section-hd">Penalties &amp; shootouts</div>
+        <div class="records-grid">
+          <div class="records-card no-cursor">
+            <div class="rc-lbl">Open-play penalties</div>
+            <div class="rc-val">${ps.scored} scored</div>
+            <div class="rc-ctx">${ps.missed} missed · ${pct}% success${topLine?'<br>'+topLine:''}</div>
+          </div>
+          ${ps.shootW+ps.shootL>0?`<div class="records-card no-cursor">
+            <div class="rc-lbl">Penalty shootouts</div>
+            <div class="rc-val">${ps.shootW}W ${ps.shootL}L</div>
+            <div class="rc-ctx">${ps.shootW+ps.shootL} total</div>
+          </div>`:''}
+        </div>`;
+      })()}
+
       <div class="records-section-hd">Top scorers</div>
       <div style="margin-bottom:12px">
         <select id="rcScorersSelect" aria-label="Filter top scorers by season" onchange="renderRecordsScorers()" style="padding:7px 12px;border:1.5px solid var(--border-primary);border-radius:var(--radius-md);font-size:0.84rem;font-family:var(--font-body);background:var(--bg-card);color:var(--text-primary);cursor:pointer">
@@ -3087,6 +3124,29 @@ function renderRecordsPage() {
           <tbody id="rcScorersTbody"></tbody>
         </table>
       </div>
+
+      ${(()=>{
+        const tricks=getHatTricks();
+        if(!tricks.length) return '';
+        const rows=tricks.map(t=>{
+          const safe=t.match.MatchID.replace(/'/g,"\\'");
+          const goalsLabel=t.goals===3?'Hat-trick':t.goals===4?'Four goals':t.goals+' goals';
+          return `<tr onclick="showMatchModal('${safe}')">
+            <td class="td-link">${esc(t.scorer)}</td>
+            <td><span style="font-size:0.78rem;font-weight:700;background:rgba(234,179,8,0.12);color:#854d0e;padding:2px 8px;border-radius:100px">${goalsLabel}</span></td>
+            <td class="td-muted">${esc(t.match.Opposition)}</td>
+            <td class="td-muted">${esc(compShort(t.match.Competition))}</td>
+            <td class="td-muted" style="font-size:0.8rem;white-space:nowrap">${t.match._date?fmtDate(t.match._date,true):''}</td>
+          </tr>`;
+        }).join('');
+        return `<div class="records-section-hd">Hat-tricks &amp; four-goal hauls (${tricks.length})</div>
+        <div class="dt-wrap">
+          <table class="data-table">
+            <thead><tr><th>Player</th><th></th><th>Opposition</th><th>Competition</th><th>Date</th></tr></thead>
+            <tbody>${rows}</tbody>
+          </table>
+        </div>`;
+      })()}
 
       <div class="records-section-hd">Top scorer by season</div>
       <div class="dt-wrap">
@@ -3165,10 +3225,10 @@ function renderAnalysisPage() {
           <div class="an-filter-tip">Click a bar to see those goals in the Archive</div>
         </div>
         <div class="an-card">
-          <div class="an-title">Win % by season</div>
-          <div class="an-sub">Darker = stronger season · dashed line = all-time average</div>
-          <canvas id="anSeasonForm"   role="img" aria-label="Win percentage by season bar chart" class="an-canvas"></canvas>
-          <div class="an-filter-tip">Click a bar to view that season in full</div>
+          <div class="an-title" id="anFormTitle">Win % by season</div>
+          <div class="an-sub"   id="anFormSub">Darker = stronger season · dashed line = all-time average</div>
+          <canvas id="anSeasonForm" role="img" aria-label="Win percentage by season bar chart" class="an-canvas"></canvas>
+          <div class="an-filter-tip" id="anFormTip">Click a bar to view that season in full</div>
         </div>
       </div>
 
@@ -3181,9 +3241,11 @@ function renderAnalysisPage() {
         </div>
         <div class="an-card">
           <div class="an-title">Performance by competition</div>
-          <div class="an-sub">Win rate · min 5 matches</div>
-          <canvas id="anCompWinRate"  role="img" aria-label="Win rate by competition bar chart" class="an-canvas"></canvas>
-          <div class="an-filter-tip">Click a bar to filter by competition</div>
+          <div class="an-sub" id="anCompSub">Win rate · min 5 matches</div>
+          <div id="anCompBody">
+            <canvas id="anCompWinRate" role="img" aria-label="Win rate by competition bar chart" class="an-canvas"></canvas>
+            <div class="an-filter-tip">Click a bar to filter by competition</div>
+          </div>
         </div>
       </div>
 
@@ -3214,10 +3276,47 @@ function refreshAnalysis() {
     if (comp)   parts.push(compShort(comp));
     label.textContent = parts.length ? parts.join(' · ') : '';
   }
+
+  // Update card titles based on active filters
+  const formTitle = document.getElementById('anFormTitle');
+  const formSub   = document.getElementById('anFormSub');
+  const formTip   = document.getElementById('anFormTip');
+  if (formTitle) {
+    if (season) {
+      formTitle.textContent = 'Season form — ' + season;
+      if (formSub) formSub.textContent = 'Each match in order · green = win · grey = draw · red = loss';
+      if (formTip) formTip.textContent = 'Click any result to open that match';
+    } else {
+      formTitle.textContent = 'Win % by season';
+      if (formSub) formSub.textContent = 'Darker = stronger season · dashed line = all-time average';
+      if (formTip) formTip.textContent = 'Click a bar to view that season in full';
+    }
+  }
+
+  // Hide competition chart when a competition filter is active — it would show one bar
+  const compBody = document.getElementById('anCompBody');
+  const compSub  = document.getElementById('anCompSub');
+  if (compBody) {
+    if (comp) {
+      compBody.innerHTML = `<div style="padding:20px 0 8px;color:var(--text-muted);font-size:0.82rem;line-height:1.5">
+        Filtered to <strong style="color:var(--text-secondary)">${esc(compShort(comp))}</strong> — the other three charts show this competition's data.
+        <br><span style="font-size:0.74rem">Clear the competition filter to compare across all competitions.</span>
+      </div>`;
+      if (compSub) compSub.textContent = '';
+    } else {
+      // Restore canvas if it was replaced
+      if (!document.getElementById('anCompWinRate')) {
+        compBody.innerHTML = `<canvas id="anCompWinRate" role="img" aria-label="Win rate by competition bar chart" class="an-canvas"></canvas>
+          <div class="an-filter-tip">Click a bar to filter by competition</div>`;
+        if (compSub) compSub.textContent = 'Win rate · min 5 matches';
+      }
+    }
+  }
+
   drawGoalMinuteChart();
   drawSeasonFormChart();
   drawHomeAwayStats();
-  drawCompWinRateChart();
+  if (!comp) drawCompWinRateChart();
 }
 
 function clearAnFilters() {
@@ -3373,7 +3472,90 @@ function drawGoalMinuteChart() {
 }
 
 /* ── Chart 2: Season form ── */
+/* ── Season form guide (used when season filter is active) ── */
+function drawSeasonFormGuide() {
+  const matches = anMatches().sort((a,b) => (a._date||0) - (b._date||0));
+  const isMob   = window.innerWidth < 600;
+  const sqSize  = isMob ? 16 : 20;
+  const gap     = 3;
+  const n       = matches.length;
+
+  // Get actual canvas width first with throwaway render
+  const tempC = anCtx('anSeasonForm', 20);
+  if (!tempC) return;
+  const W = tempC.W;
+
+  const perRow = Math.max(1, Math.floor(W / (sqSize + gap)));
+  const rows   = n > 0 ? Math.ceil(n / perRow) : 1;
+  const H      = rows * (sqSize + gap) + gap + 22;
+
+  const c = anCtx('anSeasonForm', H);
+  if (!c) return;
+  const { ctx } = c;
+  anDrawBg(ctx, W, H);
+
+  if (!matches.length) {
+    ctx.fillStyle = '#9a9a90';
+    ctx.font = `12px "DM Sans",sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.fillText('No matches found', W/2, H/2);
+    return;
+  }
+
+  const w = matches.filter(m=>m._result==='W').length;
+  const d = matches.filter(m=>m._result==='D').length;
+  const l = matches.filter(m=>m._result==='L').length;
+  const pct = Math.round(w/n*100);
+
+  // Summary header
+  ctx.fillStyle = '#5a5a52';
+  ctx.font = `${isMob?9:10}px "DM Sans",sans-serif`;
+  ctx.textAlign = 'left';
+  ctx.fillText(`${n} match${n!==1?'es':''} · ${w}W ${d}D ${l}L · ${pct}% wins`, 0, 13);
+
+  const canvas = document.getElementById('anSeasonForm');
+  canvas._formHits = [];
+
+  matches.forEach((m, i) => {
+    const col = i % perRow;
+    const row = Math.floor(i / perRow);
+    const x   = col * (sqSize + gap);
+    const y   = 20 + row * (sqSize + gap);
+
+    const colour = m._result === 'W' ? 'rgba(34,197,94,0.75)'
+                 : m._result === 'L' ? 'rgba(220,38,38,0.65)'
+                 : 'rgba(120,120,120,0.4)';
+    ctx.fillStyle = colour;
+    ctx.beginPath(); ctx.roundRect(x, y, sqSize, sqSize, 2); ctx.fill();
+
+    // Tiny score label if squares are large enough
+    if (sqSize >= 20 && m._gf !== null) {
+      ctx.fillStyle = 'rgba(255,255,255,0.9)';
+      ctx.font = `bold ${isMob?6:7}px "DM Sans",sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.fillText(`${m._gf}–${m._ga}`, x + sqSize/2, y + sqSize/2 + 2.5);
+    }
+
+    canvas._formHits.push({x, y, w: sqSize, h: sqSize, match: m});
+  });
+
+  canvas.onclick = e => {
+    const rect = canvas.getBoundingClientRect();
+    const dpr  = window.devicePixelRatio || 1;
+    const sx   = (e.clientX - rect.left) * (canvas.width / rect.width / dpr);
+    const sy   = (e.clientY - rect.top)  * (canvas.height / rect.height / dpr);
+    for (const h of canvas._formHits) {
+      if (sx >= h.x && sx <= h.x + h.w && sy >= h.y && sy <= h.y + h.h) {
+        showPage(''); showMatchModal(h.match.MatchID); break;
+      }
+    }
+  };
+}
+
 function drawSeasonFormChart() {
+  const season = document.getElementById('anSeasonFilter')?.value || '';
+  if (season) { drawSeasonFormGuide(); return; }
+
   const seasons = [...SEASON_ORDER.entries()].sort((a,b)=>a[1]-b[1]).map(([s])=>s);
   const c = anCtx('anSeasonForm', window.innerWidth < 600 ? 190 : 220);
   if (!c) return;
@@ -3687,7 +3869,8 @@ getLensFiltered = function() {
 // Hide season nav when lens is cleared
 const _origClearLens = clearLens;
 clearLens = function() {
-  document.getElementById('lensSeasonNav').style.display = 'none';
+  const nav = document.getElementById('lensSeasonNav');
+  if (nav) nav.style.display = 'none';
   _origClearLens();
 };
 
@@ -3789,6 +3972,77 @@ function renderSeasonPage(season) {
       </div>
       ${compGroups.map(compSection).join('')}
     </div>`;
+}
+
+/* ============================================================
+   ANALYTICS HELPERS
+   ============================================================ */
+function getScoreFirstStats() {
+  const sf={w:0,d:0,l:0,n:0}, cf={w:0,d:0,l:0,n:0};
+  MATCHES.filter(m=>!isFriendly(m)&&m._result).forEach(m=>{
+    const goals=(GOALS_MAP.get(m.MatchID)||[])
+      .filter(g=>{const b=parseInt((g.Minute||'').split('+')[0]);return b>0;})
+      .sort((a,b)=>parseMin(a.Minute)-parseMin(b.Minute));
+    if(!goals.length) return;
+    const r=m._result.toLowerCase();
+    if(goals[0]['For/Against']==='For'){sf[r]++;sf.n++;}
+    else{cf[r]++;cf.n++;}
+  });
+  return {sf,cf};
+}
+
+function getHatTricks() {
+  const tricks=[];
+  MATCHES.filter(m=>!isFriendly(m)&&m._result).forEach(m=>{
+    const goals=(GOALS_MAP.get(m.MatchID)||[]).filter(g=>g['For/Against']==='For'&&g.OG!=='Y'&&g.Scorer);
+    const counts=new Map();
+    goals.forEach(g=>counts.set(g.Scorer,(counts.get(g.Scorer)||0)+1));
+    counts.forEach((c,s)=>{if(c>=3)tricks.push({scorer:s,goals:c,match:m});});
+  });
+  return tricks.sort((a,b)=>(b.match._date||0)-(a.match._date||0));
+}
+
+function getPenaltyStats() {
+  const byPlayer=new Map();
+  let scored=0,missed=0;
+  GOALS_MAP.forEach((goals,mid)=>{
+    const m=MATCHES.find(x=>x.MatchID===mid);
+    if(!m||isFriendly(m)||!m._result) return;
+    goals.filter(g=>g.Penalty==='Y'&&g['For/Against']==='For'&&g.OG!=='Y').forEach(g=>{
+      scored++;
+      if(g.Scorer){const p=byPlayer.get(g.Scorer)||{s:0,m:0};p.s++;byPlayer.set(g.Scorer,p);}
+    });
+  });
+  EVENTS_MAP.forEach((evs,mid)=>{
+    const m=MATCHES.find(x=>x.MatchID===mid);
+    if(!m||isFriendly(m)||!m._result) return;
+    evs.filter(e=>e.Type==='MissedPen'&&e.Team==='City').forEach(e=>{
+      missed++;
+      if(e.Player){const p=byPlayer.get(e.Player)||{s:0,m:0};p.m++;byPlayer.set(e.Player,p);}
+    });
+  });
+  const shootW=MATCHES.filter(m=>!isFriendly(m)&&m['Pen Result']==='W').length;
+  const shootL=MATCHES.filter(m=>!isFriendly(m)&&m['Pen Result']==='L').length;
+  const topScorer=[...byPlayer.entries()].filter(([,p])=>p.s>0).sort((a,b)=>b[1].s-a[1].s)[0];
+  return {scored,missed,shootW,shootL,byPlayer,topScorer};
+}
+
+function getPlayerScoringStreak(name) {
+  const inMatch=new Set();
+  GOALS_MAP.forEach((goals,mid)=>{
+    if(goals.some(g=>g.Scorer===name&&g['For/Against']==='For'&&g.OG!=='Y')) inMatch.add(mid);
+  });
+  const all=MATCHES.filter(m=>!isFriendly(m)&&m._result!==null)
+    .sort((a,b)=>(a._date||0)-(b._date||0));
+  let best={len:0,start:null,end:null},cur=0,curStart=null;
+  all.forEach(m=>{
+    if(inMatch.has(m.MatchID)){
+      if(cur===0) curStart=m;
+      cur++;
+      if(cur>best.len) best={len:cur,start:curStart,end:m};
+    } else{cur=0;curStart=null;}
+  });
+  return best;
 }
 
 /* ============================================================
