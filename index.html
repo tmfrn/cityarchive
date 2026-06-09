@@ -517,12 +517,21 @@ button{cursor:pointer;font-family:var(--font-body)}
 
 /* ── RESPONSIVE ── */
 @media(max-width:700px){
-  .header{padding:32px 20px 28px}
+  .header{padding:20px 20px 16px}
+  .header h1{font-size:1.5rem}
+  .header p{font-size:0.76rem}
   .controls,.matches,.results-header{padding-left:20px;padding-right:20px}
   .streak-box,.goalscorers-box,.otd-detail,.otd-summary{padding-left:20px;padding-right:20px}
   .section-toggle-header{padding-left:20px;padding-right:20px}
   .section-body{padding-left:20px;padding-right:20px}
-  .stats-bar{grid-template-columns:repeat(3,1fr)}
+  .stats-bar{display:flex;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;gap:0;margin-top:6px}
+  .stats-bar::-webkit-scrollbar{display:none}
+  .stat-item{flex:0 0 auto;padding:8px 14px 6px;background:none;border:none;border-right:1px solid var(--border-subtle);border-radius:0}
+  .stat-item:last-child{border-right:none}
+  .stat-label{font-size:0.58rem}
+  .stat-value{font-size:0.9rem}
+  .pv-body{padding:16px 20px}
+  .pv-body .dt-wrap{margin-left:-4px;margin-right:-4px}
   .gs-bar-cell{display:none}
   .match-fixture{padding:12px 12px 6px}
   .match-score{font-size:1.6rem}
@@ -592,14 +601,13 @@ button{cursor:pointer;font-family:var(--font-body)}
   <div class="controls">
     <div class="search-bar">
       <input type="text" class="search-input" id="searchInput" placeholder="Search opposition, scorer, venue, competition…">
-      <button class="search-clear" id="searchClear" onclick="clearSearch()">✕</button>
+      <button class="search-clear" id="searchClear" onclick="clearSearch()" aria-label="Clear search">✕</button>
     </div>
     <div class="lenses-row" id="lensesRow">
       <button class="lens-btn" id="lensBigWins"     onclick="activateLens('biggest-wins',this)">🏆 Biggest Wins</button>
       <button class="lens-btn" id="lensBigLosses"   onclick="activateLens('biggest-losses',this)">📉 Biggest Losses</button>
       <button class="lens-btn" id="lensHighScoring" onclick="activateLens('highest-scoring',this)">⚽ Highest Scoring</button>
       <button class="lens-btn" id="lensOTD"         onclick="activateLens('on-this-day',this)">🗓 On This Day</button>
-      <button class="lens-btn" id="lensRandom"      onclick="showRandom()">🎲 Random</button>
       <span class="lens-sep"></span>
       <button class="lens-btn" id="lensWinRun"      onclick="activateLens('win-streak',this)">Winning run</button>
       <button class="lens-btn" id="lensUnbeaten"    onclick="activateLens('unbeaten-streak',this)">Unbeaten run</button>
@@ -610,24 +618,24 @@ button{cursor:pointer;font-family:var(--font-body)}
       <button class="lens-clear" id="lensClear"     onclick="clearLens()">✕ Clear</button>
     </div>
     <div id="lensSeasonNav" style="display:none;align-items:center;gap:0;margin:0 0 4px;padding:6px 0">
-      <button id="lensSeasonPrev" onclick="stepLensSeason(-1)" style="background:none;border:1.5px solid var(--border-primary);border-radius:var(--radius-sm);padding:4px 11px;font-size:0.9rem;cursor:pointer;color:var(--text-secondary)">‹</button>
-      <span id="lensSeasonLabel" onclick="goToSeason(window._lensSeasonName)" style="margin:0 10px;font-family:var(--font-display);font-size:0.95rem;font-weight:700;cursor:pointer;color:var(--text-bright);text-decoration:underline dotted;text-underline-offset:3px;text-decoration-color:var(--border-primary)"></span>
-      <button id="lensSeasonNext" onclick="stepLensSeason(1)"  style="background:none;border:1.5px solid var(--border-primary);border-radius:var(--radius-sm);padding:4px 11px;font-size:0.9rem;cursor:pointer;color:var(--text-secondary)">›</button>
+      <button id="lensSeasonPrev" onclick="stepLensSeason(-1)" aria-label="Previous season" style="background:none;border:1.5px solid var(--border-primary);border-radius:var(--radius-sm);padding:4px 11px;font-size:0.9rem;cursor:pointer;color:var(--text-secondary)">‹</button>
+      <span id="lensSeasonLabel" onclick="goToSeason(window._lensSeasonName)" title="Go to season page" style="margin:0 10px;font-family:var(--font-display);font-size:0.95rem;font-weight:700;cursor:pointer;color:var(--accent);text-decoration:underline;text-decoration-style:dotted;text-underline-offset:3px"></span>
+      <button id="lensSeasonNext" onclick="stepLensSeason(1)" aria-label="Next season" style="background:none;border:1.5px solid var(--border-primary);border-radius:var(--radius-sm);padding:4px 11px;font-size:0.9rem;cursor:pointer;color:var(--text-secondary)">›</button>
     </div>
     <div class="filter-bar">
-      <select id="seasonSelect" onchange="filterBySeason()">
+      <select id="seasonSelect"      aria-label="Filter by season"     onchange="filterBySeason()">
         <option value="">All Seasons</option>
       </select>
-      <select id="competitionSelect" onchange="filterByCompetition()">
+      <select id="competitionSelect"  aria-label="Filter by competition" onchange="filterByCompetition()">
         <option value="">All Competitions</option>
       </select>
-      <select id="resultSelect" onchange="filterByResult()">
+      <select id="resultSelect"       aria-label="Filter by result"      onchange="filterByResult()">
         <option value="">All Results</option>
         <option value="wins">Wins</option>
         <option value="draws">Draws</option>
         <option value="losses">Losses</option>
       </select>
-      <select id="venueSelect" onchange="filterByVenue()">
+      <select id="venueSelect"        aria-label="Filter by home or away" onchange="filterByVenue()">
         <option value="">Home &amp; Away</option>
         <option value="home-games">Home Only</option>
         <option value="away-games">Away Only</option>
@@ -671,7 +679,7 @@ button{cursor:pointer;font-family:var(--font-body)}
         <h3 id="seasonTitle"></h3>
         <p id="seasonSubtitle"></p>
       </div>
-      <button class="h2h-close" onclick="closeSeasonSummary()">✕</button>
+      <button class="h2h-close" onclick="closeSeasonSummary()" aria-label="Close">✕</button>
     </div>
     <div id="seasonStats"></div>
     <div id="seasonBody"></div>
@@ -686,7 +694,7 @@ button{cursor:pointer;font-family:var(--font-body)}
         <h3 id="playerName"></h3>
         <p id="playerSubtitle"></p>
       </div>
-      <button class="player-close" onclick="closePlayerModal()">✕</button>
+      <button class="player-close" onclick="closePlayerModal()" aria-label="Close">✕</button>
     </div>
     <div class="player-total">
       <span class="player-total-number" id="playerTotalGoals"></span>
@@ -707,7 +715,7 @@ button{cursor:pointer;font-family:var(--font-body)}
         <h3 id="h2hTitle"></h3>
         <p id="h2hSubtitle"></p>
       </div>
-      <button class="h2h-close" onclick="closeH2H()">✕</button>
+      <button class="h2h-close" onclick="closeH2H()" aria-label="Close">✕</button>
     </div>
     <div class="h2h-stats" id="h2hStats"></div>
     <div class="h2h-extra" id="h2hExtra"></div>
@@ -724,7 +732,7 @@ button{cursor:pointer;font-family:var(--font-body)}
         <div class="timeline-modal-title" id="tlTitle"></div>
         <div class="tl-meta" id="tlMeta"></div>
       </div>
-      <button class="timeline-modal-close" onclick="closeMatch()">✕</button>
+      <button class="timeline-modal-close" onclick="closeMatch()" aria-label="Close match detail">✕</button>
     </div>
     <div class="timeline-modal-body" id="tlBody"></div>
   </div>
@@ -961,89 +969,6 @@ function computeMilestones() {
 /* ============================================================
    SEASON SUMMARY MODAL
    ============================================================ */
-function showSeasonSummary(season) {
-  const all  = MATCHES.filter(m => m.Season === season);
-  const comp = all.filter(m => !isFriendly(m) && m._result !== null);
-
-  const p  = comp.length;
-  const w  = comp.filter(m=>m._result==='W').length;
-  const d  = comp.filter(m=>m._result==='D').length;
-  const l  = comp.filter(m=>m._result==='L').length;
-  const gf = comp.reduce((s,m)=>s+(m._gf||0),0);
-  const ga = comp.reduce((s,m)=>s+(m._ga||0),0);
-  const gd = gf - ga;
-  const gdStr = (gd>0?'+':'')+gd;
-
-  const home = comp.filter(m=>m['Home/Away']==='H');
-  const away = comp.filter(m=>m['Home/Away']==='A');
-  function rec(ms) {
-    const w=ms.filter(m=>m._result==='W').length, d=ms.filter(m=>m._result==='D').length, l=ms.filter(m=>m._result==='L').length;
-    return `${w}W ${d}D ${l}L`;
-  }
-
-  // Competition breakdown (sorted by SortOrder)
-  const compMap = new Map();
-  comp.forEach(m => {
-    if (!compMap.has(m.Competition)) compMap.set(m.Competition, {p:0,w:0,d:0,l:0,gf:0,ga:0});
-    const c = compMap.get(m.Competition);
-    c.p++; c.gf+=m._gf||0; c.ga+=m._ga||0;
-    if (m._result==='W') c.w++;
-    else if (m._result==='D') c.d++;
-    else if (m._result==='L') c.l++;
-  });
-  const compRows = [...compMap.entries()]
-    .sort((a,b)=>(COMP_SORT.get(a[0])||99)-(COMP_SORT.get(b[0])||99))
-    .map(([name, c]) => `<div class="season-comp-row">
-      <span class="season-comp-name">${esc(compShort(name))}</span>
-      <span class="season-comp-record">${c.p}P &nbsp; ${c.w}W ${c.d}D ${c.l}L &nbsp; ${c.gf}–${c.ga}</span>
-    </div>`).join('');
-
-  // Top scorers
-  const scorers = getTopScorers(season).slice(0,8);
-  const maxG = scorers[0]?.g || 1;
-  const scorerRows = scorers.map((s,i) => {
-    const safeName = s.n.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
-    return `<tr>
-      <td class="gs-rank">${i+1}</td>
-      <td class="gs-name"><span class="gs-name-link" onclick="closeSeasonSummary();showPlayerModal('${safeName}')">${esc(s.n)}</span></td>
-      <td class="gs-bar-cell"><div class="gs-bar-track"><div class="gs-bar-fill" style="width:${Math.round(s.g/maxG*100)}%"></div></div></td>
-      <td class="gs-goals">${s.g}</td>
-    </tr>`;
-  }).join('');
-
-  const friendlyCount = all.filter(m=>isFriendly(m)).length;
-
-  document.getElementById('seasonTitle').textContent    = season;
-  document.getElementById('seasonSubtitle').textContent =
-    `${p} competitive match${p!==1?'es':''}${friendlyCount?` · ${friendlyCount} friendly${friendlyCount!==1?'ies':''}` : ''}`;
-
-  document.getElementById('seasonStats').innerHTML = `
-    <div class="h2h-stats" style="grid-template-columns:repeat(4,1fr)">
-      <div class="h2h-stat wins">  <div class="h2h-stat-value">${w}</div><div class="h2h-stat-label">Won</div></div>
-      <div class="h2h-stat draws"> <div class="h2h-stat-value">${d}</div><div class="h2h-stat-label">Drawn</div></div>
-      <div class="h2h-stat losses"><div class="h2h-stat-value">${l}</div><div class="h2h-stat-label">Lost</div></div>
-      <div class="h2h-stat">       <div class="h2h-stat-value">${Math.round(w/(p||1)*100)}%</div><div class="h2h-stat-label">Win %</div></div>
-    </div>
-    <div class="h2h-extra">
-      <div class="h2h-extra-item"><strong>Goals for:</strong> ${gf}</div>
-      <div class="h2h-extra-item"><strong>Goals against:</strong> ${ga}</div>
-      <div class="h2h-extra-item"><strong>Goal diff:</strong> ${gdStr}</div>
-      <div class="h2h-extra-item"><strong>Home:</strong> ${rec(home)} &nbsp; <strong>Away:</strong> ${rec(away)}</div>
-    </div>`;
-
-  document.getElementById('seasonBody').innerHTML = `
-    ${compRows ? `<div style="padding:12px 20px;border-bottom:1px solid var(--border-primary)">
-      <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-muted);margin-bottom:8px">By competition</div>
-      ${compRows}
-    </div>` : ''}
-    ${scorerRows ? `<div style="padding:14px 20px 20px">
-      <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-muted);margin-bottom:10px">Top scorers</div>
-      <table class="goalscorers-table">${scorerRows}</table>
-    </div>` : ''}`;
-
-  document.getElementById('seasonOverlay').classList.add('active');
-  document.body.style.overflow = 'hidden';
-}
 
 function closeSeasonSummary() {
   document.getElementById('seasonOverlay').classList.remove('active');
@@ -1135,10 +1060,14 @@ function onDataReady() {
 
   // Handle initial page from URL hash
   const initHash = location.hash.slice(1);
-  if (initHash && !initHash.startsWith('match/') && ['players','opponents','venues','records'].includes(initHash)) {
-    showPage(initHash, false);
+  if (!initHash) {
+    // default: already showing Archive
   } else if (initHash.startsWith('match/')) {
     showMatchModal(initHash.slice(6));
+  } else if (initHash.startsWith('season/')) {
+    showPage(initHash, false);
+  } else if (['players','opponents','venues','records','analysis'].includes(initHash)) {
+    showPage(initHash, false);
   }
 }
 
@@ -1434,18 +1363,6 @@ function activateLens(type, btn) {
   renderMatches();
 }
 
-function showRandom() {
-  const pool = MATCHES.filter(m => m._result !== null);
-  if (!pool.length) return;
-  activeLens = 'random';
-  window._randomMatch = pool[Math.floor(Math.random() * pool.length)];
-  document.querySelectorAll('.lens-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById('lensRandom').classList.add('active');
-  document.getElementById('lensesRow').classList.add('has-active');
-  document.getElementById('lensClear').classList.add('visible');
-  listCap = 20;
-  renderMatches();
-}
 
 function clearLens() {
   activeLens = null;
@@ -1495,14 +1412,29 @@ function getLensFiltered() {
     case 'random':
       return window._randomMatch ? [window._randomMatch] : [];
 
-    case 'win-streak':      return findLongestStreak('win');
-    case 'unbeaten-streak': return findLongestStreak('unbeaten');
-    case 'loss-streak':     return findLongestStreak('loss');
-    case 'winless-streak':  return findLongestStreak('winless');
+    case 'win-streak':      return streakLensMatches('win');
+    case 'unbeaten-streak': return streakLensMatches('unbeaten');
+    case 'loss-streak':     return streakLensMatches('loss');
+    case 'winless-streak':  return streakLensMatches('winless');
 
     default:
       return base;
   }
+}
+
+function streakLensMatches(type) {
+  const primary   = findLongestStreak(type);
+  const allGroups = window._streakInfo?.allGroups || [primary];
+  if (allGroups.length <= 1) return primary;
+
+  // Multiple equal runs — combine all; store group Sets (newest-first) for run dividers
+  const groupsDesc = [...allGroups].reverse();   // newest first
+  window._streakInfo.groupSets  = groupsDesc.map(g => new Set(g.map(m => m.MatchID)));
+  window._streakInfo.groupDates = groupsDesc.map(g => ({
+    start: g[0]._date,
+    end:   g[g.length-1]._date,
+  }));
+  return groupsDesc.flat().sort((a,b) => (b._date||0)-(a._date||0));
 }
 
 const STREAK_LABELS = {
@@ -1543,11 +1475,16 @@ function findLongestStreak(type) {
   const primary = allStreaks[0] || [];
   primary._allStreaks = allStreaks;
 
+  // isActive: check the MOST RECENT equal-length streak, not the first
+  const mostRecent = allStreaks[allStreaks.length - 1] || [];
+  const isActive = mostRecent.length > 0 && mostRecent[mostRecent.length-1] === chron[chron.length-1];
+
   window._streakInfo = {
-    length:   primary.length,
-    adj:      def.adj,
-    isActive: primary.length > 0 && primary[primary.length-1] === chron[chron.length-1],
-    joint:    allStreaks.length,
+    length:    primary.length,
+    adj:       def.adj,
+    isActive,
+    joint:     allStreaks.length,
+    allGroups: allStreaks,   // all equal-length runs, oldest first
   };
 
   return primary;
@@ -1608,7 +1545,7 @@ function renderMatches() {
   const compInView     = filtered.filter(m => !isFriendly(m) && m._result !== null).length;
   const friendlyInView = filtered.filter(m => isFriendly(m)).length;
   const streakTypes    = ['win-streak','unbeaten-streak','loss-streak','winless-streak'];
-  const rankedLens = activeLens && !['on-this-day','random','analysis-filter'].includes(activeLens);
+  const rankedLens = activeLens && ['biggest-wins','biggest-losses','highest-scoring'].includes(activeLens);
 
   // Hide sort toggle and stats bar for ranked/sorted lens views
   document.getElementById('sortToggle').style.display = rankedLens ? 'none' : '';
@@ -1646,10 +1583,11 @@ function renderMatches() {
     document.getElementById('statGD').textContent   = (gd>0?'+':'')+gd;
   }
 
-  // Build cards — group by season only in default view (no active lens, no filters, desc sort)
-  const grouped = !hasActiveFilter() && !activeLens && sortOrder==='desc';
-  // Show rank badges for sorted lenses
+  // Build cards
+  const grouped   = !hasActiveFilter() && !activeLens && sortOrder==='desc';
   const showRanks = activeLens && ['biggest-wins','biggest-losses','highest-scoring'].includes(activeLens);
+  const isStreakLens = activeLens && ['win-streak','unbeaten-streak','loss-streak','winless-streak'].includes(activeLens);
+  const multiRun  = isStreakLens && window._streakInfo?.groupSets?.length > 1;
   let html = '';
 
   if (grouped) {
@@ -1663,6 +1601,23 @@ function renderMatches() {
         const note = sm.length ? ` &middot; ${sw}W ${sd}D ${sl}L` : '';
         html += `<div class="season-divider">${esc(m.Season)}${note}</div>`;
         lastSeason = m.Season;
+      }
+      html += buildMatchCard(m, null);
+    });
+  } else if (multiRun) {
+    const groups = window._streakInfo.groupSets;
+    const dates  = window._streakInfo.groupDates;
+    const total  = groups.length;
+    let lastGroup = -1;
+    displayed.forEach(m => {
+      const gi = groups.findIndex(s => s.has(m.MatchID));
+      if (gi !== -1 && gi !== lastGroup) {
+        lastGroup = gi;
+        const runNum   = total - gi;   // 1 = oldest, total = most recent
+        const d        = dates[gi];
+        const dateStr  = d.start ? fmtDate(d.start, true) + (d.end && d.end.getTime() !== d.start.getTime() ? ' \u2013 ' + fmtDate(d.end, true) : '') : '';
+        const activeMark = gi === 0 && window._streakInfo.isActive ? ' · currently active' : '';
+        html += `<div class="season-divider">Run ${runNum} of ${total} · ${dateStr}${activeMark}</div>`;
       }
       html += buildMatchCard(m, null);
     });
@@ -2692,7 +2647,6 @@ function renderPlayersPage() {
 
   let players = [...PLAYER_MAP.values()].map(p => ({
     name:        p.Name,
-    position:    p.Position || '—',
     nationality: p.Nationality || '—',
     goals:       scorerMap.get(p.Name) || 0,
     firstSeason: pSeasonFirst.get(p.Name) || '—',
@@ -2703,9 +2657,8 @@ function renderPlayersPage() {
 
   function sorted(list) {
     return [...list].sort((a,b) => {
-      if (sortField==='name')     return (a.name.localeCompare(b.name)) * (sortDir==='asc'?1:-1);
-      if (sortField==='goals')    return sortDir==='asc' ? a.goals-b.goals : b.goals-a.goals || a.name.localeCompare(b.name);
-      if (sortField==='position') return a.position.localeCompare(b.position) * (sortDir==='asc'?1:-1);
+      if (sortField==='name')  return (a.name.localeCompare(b.name)) * (sortDir==='asc'?1:-1);
+      if (sortField==='goals') return sortDir==='asc' ? a.goals-b.goals : b.goals-a.goals || a.name.localeCompare(b.name);
       return 0;
     });
   }
@@ -2719,7 +2672,6 @@ function renderPlayersPage() {
     return `<tr onclick="showPlayerModal('${safe}')">
       <td class="td-rank">${i+1}</td>
       <td class="td-link">${esc(p.name)}</td>
-      <td class="td-muted">${esc(p.position)}</td>
       <td class="td-muted">${esc(p.nationality)}</td>
       <td class="td-num">${goals}</td>
       <td class="td-num td-muted">${seasons}</td>
@@ -2745,7 +2697,7 @@ function renderPlayersPage() {
   function filtered() {
     if (!filterTerm) return players;
     const t = filterTerm.toLowerCase();
-    return players.filter(p => p.name.toLowerCase().includes(t) || p.nationality.toLowerCase().includes(t) || p.position.toLowerCase().includes(t));
+    return players.filter(p => p.name.toLowerCase().includes(t) || p.nationality.toLowerCase().includes(t));
   }
   function rerender() {
     document.getElementById('playersTbody').innerHTML = sorted(filtered()).map(row).join('');
@@ -2757,13 +2709,12 @@ function renderPlayersPage() {
         <h2 style="font-family:var(--font-display);font-size:1.2rem;font-weight:800;color:var(--text-bright)">${players.length} players</h2>
         <span style="font-size:0.76rem;color:var(--text-muted)">click a name to see full career stats</span>
       </div>
-      <div class="pv-search"><input type="text" id="playerSearch" placeholder="Search by name, nationality or position…"></div>
+      <div class="pv-search"><input type="text" id="playerSearch" placeholder="Search by name or nationality…"></div>
       <div class="dt-wrap">
         <table class="data-table">
           <thead><tr>
             <th class="td-rank">#</th>
             <th data-sort="name" onclick="__thClick('name')">Name<span class="sort-icon">▲▼</span></th>
-            <th data-sort="position" onclick="__thClick('position')">Position<span class="sort-icon">▲▼</span></th>
             <th>Nationality</th>
             <th class="td-num sorted" data-sort="goals" onclick="__thClick('goals')">Goals<span class="sort-icon">▼</span></th>
             <th class="td-num">Seasons</th>
@@ -2892,22 +2843,37 @@ function renderOpponentsPage() {
    VENUES PAGE
    ============================================================ */
 async function renderVenuesPage() {
-  // Build venue usage stats
+  // Build venue usage stats and determine type
   const venueStats = new Map();
   MATCHES.forEach(m => {
     if (!m.Venue) return;
-    if (!venueStats.has(m.Venue)) venueStats.set(m.Venue, {count:0, home:0, away:0, last:null, maxAtt:0, maxAttOpp:''});
+    if (!venueStats.has(m.Venue)) venueStats.set(m.Venue, {count:0, home:0, away:0, neutral:0, last:null, maxAtt:0, maxAttOpp:''});
     const s = venueStats.get(m.Venue);
     s.count++;
-    if (m['Home/Away']==='H') s.home++; else s.away++;
+    const ha = m['Home/Away'];
+    if (ha==='H') s.home++; else if (ha==='N') s.neutral++; else s.away++;
     if (m._date && (!s.last || m._date > s.last)) s.last = m._date;
     const att = parseInt(m.Attendance);
     if (!isNaN(att) && att > s.maxAtt) { s.maxAtt = att; s.maxAttOpp = m.Opposition; }
   });
 
+  // Venue type: home takes priority (e.g. Academy used for a neutral final is still a home ground)
+  function venueType(s) {
+    if (s.home > 0)    return 'home';
+    if (s.neutral > 0) return 'neutral';
+    return 'away';
+  }
+
+  const typeBadge = {
+    home:    `<span style="display:inline-block;padding:2px 8px;border-radius:100px;font-size:0.68rem;font-weight:700;background:rgba(26,45,74,0.1);color:var(--navy);letter-spacing:0.04em">Home</span>`,
+    neutral: `<span style="display:inline-block;padding:2px 8px;border-radius:100px;font-size:0.68rem;font-weight:700;background:rgba(180,120,0,0.1);color:#a07800;letter-spacing:0.04em">Neutral</span>`,
+    away:    '',
+  };
+
   const venues = [...VENUE_MAP.values()].map(v => ({
     ...v,
-    ...(venueStats.get(v.Name) || {count:0, home:0, away:0, last:null, maxAtt:0, maxAttOpp:''}),
+    ...(venueStats.get(v.Name) || {count:0, home:0, away:0, neutral:0, last:null, maxAtt:0, maxAttOpp:''}),
+    type: venueType(venueStats.get(v.Name) || {home:0,neutral:0}),
   })).filter(v => v.count > 0).sort((a,b) => b.count - a.count);
 
   const hasMap = venues.some(v => v.Lat && v.Long);
@@ -2919,26 +2885,27 @@ async function renderVenuesPage() {
         <span style="font-size:0.76rem;color:var(--text-muted)">${MATCHES.length} matches total</span>
       </div>
       ${hasMap ? `<div id="venueMapEl"></div>` : ''}
+      <div style="display:flex;align-items:center;gap:14px;margin-bottom:12px;font-size:0.72rem;font-weight:600;color:var(--text-muted);flex-wrap:wrap">
+        <span style="display:flex;align-items:center;gap:5px"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--navy)"></span>Home ground</span>
+        <span style="display:flex;align-items:center;gap:5px"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#b08000"></span>Neutral venue</span>
+        <span style="display:flex;align-items:center;gap:5px"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#9ca3af"></span>Away ground</span>
+      </div>
       <div class="pv-search"><input type="text" id="venuesSearch" placeholder="Search venues…"></div>
       <div class="dt-wrap">
         <table class="data-table">
           <thead><tr>
             <th>Venue</th>
             <th>City</th>
+            <th></th>
             <th class="td-num">Matches</th>
-            <th class="td-num">Home</th>
-            <th class="td-num">Away</th>
-            <th class="td-num" style="min-width:60px">Capacity</th>
             <th>Last used</th>
           </tr></thead>
           <tbody id="venuesTbody">
             ${venues.map(v => `<tr>
               <td class="td-link">${esc(v.Name)}</td>
               <td class="td-muted">${esc(v.City||'—')}</td>
+              <td style="white-space:nowrap">${typeBadge[v.type]}</td>
               <td class="td-num">${v.count}</td>
-              <td class="td-num td-muted">${v.home||0}</td>
-              <td class="td-num td-muted">${v.away||0}</td>
-              <td class="td-num td-muted">${v.Capacity ? parseInt(v.Capacity).toLocaleString('en-GB') : '—'}</td>
               <td class="td-muted" style="font-size:0.8rem">${v.last ? fmtDate(v.last, true) : '—'}</td>
             </tr>`).join('')}
           </tbody>
@@ -2988,21 +2955,15 @@ function initVenueMap(venues) {
     maxZoom: 18,
   }).addTo(map);
 
-  // City home venues get accent colour marker
-  const homeVenues = new Set(
-    MATCHES.filter(m => m['Home/Away']==='H' && m.Venue).map(m => m.Venue)
-  );
-
   venues.forEach(v => {
     if (!v.Lat || !v.Long) return;
-    const isHome = homeVenues.has(v.Name);
-    const colour  = isHome ? '#1A2D4A' : '#6b7280';
-    const icon    = L.divIcon({
+    const colour = v.type === 'home' ? '#1A2D4A' : v.type === 'neutral' ? '#b08000' : '#9ca3af';
+    const icon   = L.divIcon({
       html: `<div style="width:12px;height:12px;border-radius:50%;background:${colour};border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,0.3)"></div>`,
-      className: '',
-      iconSize: [12,12], iconAnchor: [6,6],
+      className: '', iconSize: [12,12], iconAnchor: [6,6],
     });
-    const pop = `<strong>${esc(v.Name)}</strong><br>${esc(v.City||'')}${v.Country&&v.Country!=='England'?', '+esc(v.Country):''}<br>${v.count} match${v.count!==1?'es':''}${v.maxAtt ? '<br>Record gate: '+v.maxAtt.toLocaleString('en-GB') : ''}`;
+    const typeLabel = v.type === 'home' ? 'Home ground' : v.type === 'neutral' ? 'Neutral venue' : 'Away ground';
+    const pop = `<strong>${esc(v.Name)}</strong><br><em style="color:#888;font-size:0.85em">${typeLabel}</em><br>${esc(v.City||'')}${v.Country&&v.Country!=='England'?', '+esc(v.Country):''}<br>${v.count} match${v.count!==1?'es':''}${v.maxAtt ? '<br>Record gate: '+v.maxAtt.toLocaleString('en-GB') : ''}`;
     L.marker([+v.Lat, +v.Long], {icon}).addTo(map).bindPopup(pop);
   });
 }
@@ -3077,7 +3038,7 @@ function renderRecordsPage() {
         </span>
       </div>
       <div id="attStats" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:18px"></div>
-      <div style="position:relative;margin-bottom:8px"><canvas id="attCanvas" style="width:100%;display:block"></canvas></div>
+      <div style="position:relative;margin-bottom:8px"><canvas id="attCanvas" role="img" aria-label="Home attendance bar chart" style="width:100%;display:block"></canvas></div>
       <div id="attTapPanel" style="display:none;margin-bottom:20px;background:var(--bg-elevated);border:1px solid var(--border-primary);border-radius:var(--radius-md);padding:11px 16px;font-size:0.84em;line-height:1.6"></div>
 
       <div class="records-section-hd">All-time record</div>
@@ -3107,7 +3068,7 @@ function renderRecordsPage() {
 
       <div class="records-section-hd">Top scorers</div>
       <div style="margin-bottom:12px">
-        <select id="rcScorersSelect" onchange="renderRecordsScorers()" style="padding:7px 12px;border:1.5px solid var(--border-primary);border-radius:var(--radius-md);font-size:0.84rem;font-family:var(--font-body);background:var(--bg-card);color:var(--text-primary);cursor:pointer">
+        <select id="rcScorersSelect" aria-label="Filter top scorers by season" onchange="renderRecordsScorers()" style="padding:7px 12px;border:1.5px solid var(--border-primary);border-radius:var(--radius-md);font-size:0.84rem;font-family:var(--font-body);background:var(--bg-card);color:var(--text-primary);cursor:pointer">
           ${seasonOpts}
         </select>
       </div>
@@ -3156,11 +3117,30 @@ function renderRecordsScorers() {
    ANALYSIS PAGE
    ============================================================ */
 function renderAnalysisPage() {
+  // Build filter options
+  const seasons = [...SEASON_ORDER.entries()].sort((a,b)=>b[1]-a[1]).map(([s])=>s);
+  const comps   = [...COMP_SORT.entries()].sort((a,b)=>a[1]-b[1]).map(([c])=>c).filter(c=>c!=='Friendly');
+  const selStyle = 'padding:7px 12px;border:1.5px solid var(--border-primary);border-radius:var(--radius-md);font-size:0.84rem;font-family:var(--font-body);background:var(--bg-card);color:var(--text-primary);cursor:pointer';
+
   document.getElementById('analysisView').innerHTML = `
     <div class="pv-body">
-      <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:20px">
+      <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:16px">
         <h2 style="font-family:var(--font-display);font-size:1.2rem;font-weight:800;color:var(--text-bright)">Analysis</h2>
         <span style="font-size:0.76rem;color:var(--text-muted)">click any bar to filter the Archive</span>
+      </div>
+
+      <!-- Filters -->
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px;align-items:center">
+        <select id="anSeasonFilter" aria-label="Filter analysis by season"      onchange="refreshAnalysis()" style="${selStyle}">
+          <option value="">All seasons</option>
+          ${seasons.map(s=>`<option value="${esc(s)}">${esc(s)}</option>`).join('')}
+        </select>
+        <select id="anCompFilter" aria-label="Filter analysis by competition"   onchange="refreshAnalysis()" style="${selStyle}">
+          <option value="">All competitions</option>
+          ${comps.map(c=>`<option value="${esc(c)}">${esc(compShort(c))}</option>`).join('')}
+        </select>
+        <button id="anClearBtn" onclick="clearAnFilters()" style="display:none;background:none;border:1.5px solid var(--border-primary);border-radius:var(--radius-md);padding:7px 12px;font-size:0.84rem;font-family:var(--font-body);color:var(--text-secondary);cursor:pointer">✕ Clear</button>
+        <span id="anFilterLabel" style="font-size:0.78rem;color:var(--text-muted)"></span>
       </div>
 
       <!-- Row 1: Goals by minute + Season form -->
@@ -3168,7 +3148,7 @@ function renderAnalysisPage() {
         <div class="an-card">
           <div class="an-title">Goals by minute</div>
           <div class="an-sub">When City score and concede · competitive matches</div>
-          <canvas id="anGoalMin" class="an-canvas"></canvas>
+          <canvas id="anGoalMin"      role="img" aria-label="Goals by minute bar chart" class="an-canvas"></canvas>
           <div class="an-legend">
             <div class="an-legend-item"><div class="an-legend-dot" style="background:rgba(26,45,74,0.8)"></div>City goals</div>
             <div class="an-legend-item"><div class="an-legend-dot" style="background:rgba(220,38,38,0.55)"></div>Opp. goals</div>
@@ -3176,16 +3156,10 @@ function renderAnalysisPage() {
           <div class="an-filter-tip">Click a bar to see those goals in the Archive</div>
         </div>
         <div class="an-card">
-          <div class="an-title">Season-by-season form</div>
-          <div class="an-sub">W/D/L and win % trend by season</div>
-          <canvas id="anSeasonForm" class="an-canvas"></canvas>
-          <div class="an-legend">
-            <div class="an-legend-item"><div class="an-legend-dot" style="background:var(--win)"></div>Wins</div>
-            <div class="an-legend-item"><div class="an-legend-dot" style="background:var(--draw)"></div>Draws</div>
-            <div class="an-legend-item"><div class="an-legend-dot" style="background:var(--loss)"></div>Losses</div>
-            <div class="an-legend-item"><div class="an-legend-dot" style="background:var(--sky);border-radius:50%"></div>Win %</div>
-          </div>
-          <div class="an-filter-tip">Click a season bar to see that season</div>
+          <div class="an-title">Win % by season</div>
+          <div class="an-sub">Darker = stronger season · dashed line = all-time average</div>
+          <canvas id="anSeasonForm"   role="img" aria-label="Win percentage by season bar chart" class="an-canvas"></canvas>
+          <div class="an-filter-tip">Click a bar to view that season in full</div>
         </div>
       </div>
 
@@ -3193,26 +3167,56 @@ function renderAnalysisPage() {
       <div class="an-grid">
         <div class="an-card" id="anHACard">
           <div class="an-title">Home vs Away</div>
-          <div class="an-sub">Competitive matches · all-time</div>
+          <div class="an-sub">Win rate · goals scored · clean sheets · click header to filter</div>
           <div id="anHABody"></div>
         </div>
         <div class="an-card">
           <div class="an-title">Performance by competition</div>
-          <div class="an-sub">Win rate · all-time · min 5 matches</div>
-          <canvas id="anCompWinRate" class="an-canvas"></canvas>
+          <div class="an-sub">Win rate · min 5 matches</div>
+          <canvas id="anCompWinRate"  role="img" aria-label="Win rate by competition bar chart" class="an-canvas"></canvas>
           <div class="an-filter-tip">Click a bar to filter by competition</div>
         </div>
       </div>
 
     </div>`;
 
-  // Draw all charts after layout settles
-  setTimeout(() => {
-    drawGoalMinuteChart();
-    drawSeasonFormChart();
-    drawHomeAwayStats();
-    drawCompWinRateChart();
-  }, 80);
+  setTimeout(refreshAnalysis, 80);
+}
+
+function anMatches() {
+  const season = document.getElementById('anSeasonFilter')?.value || '';
+  const comp   = document.getElementById('anCompFilter')?.value   || '';
+  let ms = MATCHES.filter(m => !isFriendly(m) && m._result);
+  if (season) ms = ms.filter(m => m.Season === season);
+  if (comp)   ms = ms.filter(m => m.Competition === comp);
+  return ms;
+}
+
+function refreshAnalysis() {
+  const season = document.getElementById('anSeasonFilter')?.value || '';
+  const comp   = document.getElementById('anCompFilter')?.value   || '';
+  const active = season || comp;
+  const clearBtn = document.getElementById('anClearBtn');
+  const label    = document.getElementById('anFilterLabel');
+  if (clearBtn) clearBtn.style.display = active ? '' : 'none';
+  if (label) {
+    const parts = [];
+    if (season) parts.push(season);
+    if (comp)   parts.push(compShort(comp));
+    label.textContent = parts.length ? parts.join(' · ') : '';
+  }
+  drawGoalMinuteChart();
+  drawSeasonFormChart();
+  drawHomeAwayStats();
+  drawCompWinRateChart();
+}
+
+function clearAnFilters() {
+  const sf = document.getElementById('anSeasonFilter');
+  const cf = document.getElementById('anCompFilter');
+  if (sf) sf.value = '';
+  if (cf) cf.value = '';
+  refreshAnalysis();
 }
 
 /* ── Chart helpers ── */
@@ -3260,9 +3264,7 @@ function drawGoalMinuteChart() {
   const oppBkts  = new Array(8).fill(0);
   const bucketGoals = Array.from({length:8}, ()=>({city:[], opp:[]})); // for click filtering
 
-  const compMatchIds = new Set(
-    MATCHES.filter(m=>!isFriendly(m)&&m._result).map(m=>m.MatchID)
-  );
+  const compMatchIds = new Set(anMatches().map(m=>m.MatchID));
 
   GOALS_MAP.forEach((goals, mid) => {
     if (!compMatchIds.has(mid)) return;
@@ -3277,12 +3279,12 @@ function drawGoalMinuteChart() {
       let bkt;
       if (base <= 15) bkt = 0;
       else if (base <= 30) bkt = 1;
-      else if (base <= 44) bkt = 2;
-      else if (base === 45 || (base === 45 && stop > 0)) bkt = 3;
+      else if (base <= 45 && stop === 0) bkt = 2;  // 31-45 incl. plain "45"
+      else if (base === 45 && stop > 0)  bkt = 3;  // genuine HT stoppage
       else if (base <= 60) bkt = 4;
       else if (base <= 75) bkt = 5;
-      else if (base <= 89) bkt = 6;
-      else bkt = 7;
+      else if (base <= 90 && stop === 0) bkt = 6;  // 76-90 incl. plain "90"
+      else bkt = 7;                                 // 90+ stoppage
       if (g['For/Against']==='For') { cityBkts[bkt]++; bucketGoals[bkt].city.push({matchID:mid, season:m.Season}); }
       else                           { oppBkts[bkt]++;  bucketGoals[bkt].opp.push({matchID:mid, season:m.Season}); }
     });
@@ -3364,61 +3366,65 @@ function drawGoalMinuteChart() {
 /* ── Chart 2: Season form ── */
 function drawSeasonFormChart() {
   const seasons = [...SEASON_ORDER.entries()].sort((a,b)=>a[1]-b[1]).map(([s])=>s);
-  const c = anCtx('anSeasonForm', window.innerWidth < 600 ? 190 : 230);
+  const c = anCtx('anSeasonForm', window.innerWidth < 600 ? 190 : 220);
   if (!c) return;
   const { ctx, W, H } = c;
   anDrawBg(ctx, W, H);
 
+  const _anMs = anMatches();
   const data = seasons.map(s => {
-    const ms = MATCHES.filter(m=>m.Season===s&&!isFriendly(m)&&m._result);
-    return {
-      season: s,
-      w: ms.filter(m=>m._result==='W').length,
-      d: ms.filter(m=>m._result==='D').length,
-      l: ms.filter(m=>m._result==='L').length,
-      p: ms.length,
-    };
-  }).filter(d=>d.p>0);
+    const ms = _anMs.filter(m => m.Season === s);
+    const p = ms.length, w = ms.filter(m=>m._result==='W').length;
+    return { season: s, p, winPct: p ? w/p : null };
+  }).filter(d => d.p > 0);
 
-  const isMob = window.innerWidth < 600;
-  const PAD   = {top:24, right: isMob?28:32, bottom: isMob?44:40, left: isMob?24:28};
-  const cW    = W - PAD.left - PAD.right, cH = H - PAD.top - PAD.bottom;
-  const maxP  = Math.max(...data.map(d=>d.p), 1);
-  const nTick = 4;
+  if (!data.length) return;
 
-  anGridLines(ctx, W, PAD, cH, Math.ceil(maxP/5)*5, nTick, isMob);
+  const isMob  = window.innerWidth < 600;
+  const PAD    = {top:20, right:8, bottom: isMob?44:40, left: isMob?30:36};
+  const cW     = W - PAD.left - PAD.right, cH = H - PAD.top - PAD.bottom;
 
-  const bktW  = cW / data.length;
-  const barW  = Math.max(6, bktW * 0.55);
+  // Y-axis 0-100%
+  ctx.setLineDash([3,3]); ctx.strokeStyle='#eae8e1'; ctx.lineWidth=1;
+  [0,25,50,75,100].forEach(pct => {
+    const y = PAD.top + cH - (pct/100)*cH;
+    ctx.beginPath(); ctx.moveTo(PAD.left, y); ctx.lineTo(W-PAD.right, y); ctx.stroke();
+    ctx.fillStyle='#9a9a90';
+    ctx.font=`${isMob?9:10}px "DM Sans",sans-serif`;
+    ctx.textAlign='right';
+    ctx.fillText(pct+'%', PAD.left-4, y+4);
+  });
+  ctx.setLineDash([]);
+
+  const bktW = cW / data.length;
+  const barW = Math.max(5, bktW * 0.62);
   const canvas = document.getElementById('anSeasonForm');
   canvas._seasonHits = [];
 
   data.forEach((d, i) => {
-    const cx    = PAD.left + i * bktW + bktW / 2;
-    const x     = cx - barW / 2;
-    const maxTk = Math.ceil(maxP/5)*5;
-    const scale = v => PAD.top + cH - (v / maxTk) * cH;
+    if (d.winPct === null) return;
+    const cx = PAD.left + i*bktW + bktW/2;
+    const x  = cx - barW/2;
+    const barH = d.winPct * cH;
+    const y  = PAD.top + cH - barH;
 
-    // Stacked W/D/L bars
-    let stackY = scale(0);
-    const segs = [
-      {v:d.l, col:'rgba(220,38,38,0.65)'},
-      {v:d.d, col:'rgba(100,100,100,0.45)'},
-      {v:d.w, col:'rgba(34,197,94,0.65)'},
-    ];
-    segs.forEach(seg => {
-      if (!seg.v) return;
-      const segH = (seg.v / maxTk) * cH;
-      ctx.fillStyle = seg.col;
-      ctx.beginPath();
-      ctx.roundRect(x, stackY - segH, barW, segH, [0,0,0,0]);
-      ctx.fill();
-      stackY -= segH;
-    });
+    // Bar colour: strong (≥75%) navy-full, mid (≥50%) navy-muted, weak (<50%) grey-red
+    const col = d.winPct >= 0.75 ? 'rgba(26,45,74,0.9)'
+               : d.winPct >= 0.50 ? 'rgba(26,45,74,0.55)'
+               : 'rgba(180,40,40,0.45)';
+    ctx.fillStyle = col;
+    ctx.beginPath(); ctx.roundRect(x, y, barW, barH, [2,2,0,0]); ctx.fill();
 
-    canvas._seasonHits.push({x, y: scale(d.p), w: barW, h: scale(0)-scale(d.p), season: d.season});
+    // Value label inside bar if tall enough
+    const label = Math.round(d.winPct*100)+'%';
+    if (barH > 16) {
+      ctx.fillStyle = 'rgba(255,255,255,0.9)';
+      ctx.font = `bold ${isMob?8:9}px "DM Sans",sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.fillText(label, cx, y + Math.min(barH-5, 13));
+    }
 
-    // X label (rotated on mobile)
+    // X-label
     const lab = shortSeason(d.season);
     ctx.fillStyle = '#9a9a90';
     ctx.font = `${isMob?8:9}px "DM Sans",sans-serif`;
@@ -3428,100 +3434,96 @@ function drawSeasonFormChart() {
     ctx.textAlign = 'center';
     ctx.fillText(lab, 0, 0);
     ctx.restore();
+
+    canvas._seasonHits.push({x, w: barW, season: d.season});
   });
 
-  // Win % line
-  ctx.strokeStyle = '#6CABDD'; ctx.lineWidth = 2.5;
-  ctx.lineJoin = 'round'; ctx.setLineDash([]);
-  ctx.beginPath();
-  const maxTk = Math.ceil(maxP/5)*5;
-  data.forEach((d, i) => {
-    const pct = d.p ? d.w / d.p : 0;
-    const cx  = PAD.left + i * bktW + bktW / 2;
-    const y   = PAD.top + cH - pct * cH;
-    i === 0 ? ctx.moveTo(cx, y) : ctx.lineTo(cx, y);
-  });
-  ctx.stroke();
-
-  // Win % axis labels (right side)
+  // All-time average reference line
+  const totalMs = _anMs, allW = totalMs.filter(m=>m._result==='W').length;
+  const avgPct  = totalMs.length ? allW/totalMs.length : 0;
+  const avgY    = PAD.top + cH - avgPct * cH;
+  ctx.strokeStyle = '#6CABDD'; ctx.lineWidth = 1.5; ctx.setLineDash([5,4]);
+  ctx.beginPath(); ctx.moveTo(PAD.left, avgY); ctx.lineTo(W-PAD.right, avgY); ctx.stroke();
+  ctx.setLineDash([]);
   ctx.fillStyle = '#6CABDD';
-  ctx.font = `${isMob?8:9}px "DM Sans",sans-serif`;
-  ctx.textAlign = 'left';
-  [0, 25, 50, 75, 100].forEach(pct => {
-    const y = PAD.top + cH - (pct / 100) * cH;
-    ctx.fillText(pct + '%', W - PAD.right + 3, y + 3);
-  });
-
-  // Win % dots
-  data.forEach((d, i) => {
-    const pct = d.p ? d.w / d.p : 0;
-    const cx  = PAD.left + i * bktW + bktW / 2;
-    const y   = PAD.top + cH - pct * cH;
-    ctx.fillStyle = '#6CABDD';
-    ctx.beginPath(); ctx.arc(cx, y, 3, 0, Math.PI*2); ctx.fill();
-  });
+  ctx.font = `bold ${isMob?8:9}px "DM Sans",sans-serif`;
+  ctx.textAlign = 'right';
+  ctx.fillText('avg '+Math.round(avgPct*100)+'%', W-PAD.right-2, avgY-4);
 
   canvas.onclick = e => {
     const rect = canvas.getBoundingClientRect();
     const sx = (e.clientX - rect.left) * (canvas.width / rect.width / (window.devicePixelRatio||1));
-    const sy = (e.clientY - rect.top)  * (canvas.height / rect.height / (window.devicePixelRatio||1));
     for (const h of canvas._seasonHits) {
-      if (sx >= h.x && sx <= h.x + h.w) {
-        goToSeason(h.season);
-        break;
-      }
+      if (sx >= h.x && sx <= h.x + h.w) { goToSeason(h.season); break; }
     }
   };
 }
 
 /* ── Chart 3: Home vs Away ── */
 function drawHomeAwayStats() {
-  const home = MATCHES.filter(m=>m['Home/Away']==='H'&&!isFriendly(m)&&m._result);
-  const away = MATCHES.filter(m=>m['Home/Away']==='A'&&!isFriendly(m)&&m._result);
-  const neutral = MATCHES.filter(m=>m['Home/Away']==='N'&&!isFriendly(m)&&m._result);
+  const _anMs = anMatches();
+  const home  = _anMs.filter(m=>m['Home/Away']==='H');
+  const away  = _anMs.filter(m=>m['Home/Away']==='A');
+  const neu   = _anMs.filter(m=>m['Home/Away']==='N');
 
   function stats(ms) {
     const p=ms.length, w=ms.filter(m=>m._result==='W').length;
-    const d=ms.filter(m=>m._result==='D').length, l=ms.filter(m=>m._result==='L').length;
-    const gf=ms.reduce((s,m)=>s+(m._gf||0),0), ga=ms.reduce((s,m)=>s+(m._ga||0),0);
+    const gf=ms.reduce((s,m)=>s+(m._gf||0),0);
     const cs=ms.filter(m=>m._ga===0).length;
-    return {p,w,d,l,gf,ga,cs,winPct:p?Math.round(w/p*100):0,gpg:p?(gf/p).toFixed(2):0};
+    return {
+      p,
+      winPct:  p ? Math.round(w/p*100)        : 0,
+      gpg:     p ? (gf/p).toFixed(2)           : '—',
+      csPct:   p ? Math.round(cs/p*100)        : 0,
+    };
   }
 
-  const h = stats(home), a = stats(away), n = stats(neutral);
+  const h = stats(home), a = stats(away);
 
-  function haCol(title, s) {
-    return `<div class="an-ha-col">
-      <div class="an-ha-label">${title}</div>
-      ${[
-        ['Played', s.p, s.p/Math.max(h.p,a.p,1)*100, 'var(--accent)'],
-        ['Won',    s.w, s.winPct,                      'var(--win)'],
-        ['Drawn',  s.d, s.p?s.d/s.p*100:0,             'var(--draw)'],
-        ['Lost',   s.l, s.p?s.l/s.p*100:0,             'var(--loss)'],
-        ['GF/game',s.gpg, Math.min(s.gpg/5*100,100),   'var(--sky)'],
-        ['Clean sheets', s.cs, s.p?s.cs/s.p*100:0,     'var(--accent)'],
-      ].map(([lbl,val,pct,bc])=>`
-        <div class="an-ha-stat">
-          <span style="font-size:0.72rem;color:var(--text-muted);min-width:76px">${lbl}</span>
-          <div class="an-ha-bar-wrap"><div class="an-ha-bar" style="width:${Math.round(pct)}%;background:${bc}"></div></div>
-          <span class="an-ha-val">${val}</span>
-        </div>`).join('')}
-    </div>`;
-  }
+  const metrics = [
+    { label:'Win rate',        hVal:h.winPct+'%',  aVal:a.winPct+'%',  hPct:h.winPct,    aPct:a.winPct,    col:'var(--win)' },
+    { label:'Goals per game',  hVal:h.gpg,         aVal:a.gpg,         hPct:Math.min(parseFloat(h.gpg)/5*100,100), aPct:Math.min(parseFloat(a.gpg)/5*100,100), col:'var(--sky)' },
+    { label:'Clean sheets',    hVal:h.csPct+'%',   aVal:a.csPct+'%',   hPct:h.csPct,     aPct:a.csPct,     col:'var(--accent)' },
+  ];
+
+  window._haFilterFn = function(val) {
+    showPage('');
+    selectedVenue = val;
+    document.getElementById('venueSelect').value = val;
+    clearLens();
+    renderMatches();
+  };
+
+  const colHdr = (label, filterVal) =>
+    `<div class="an-ha-label" style="cursor:pointer;text-decoration:underline dotted;text-underline-offset:2px" onclick="window._haFilterFn('${filterVal}')" title="Filter archive to ${label.toLowerCase()} games">${label} ↗</div>`;
 
   document.getElementById('anHABody').innerHTML = `
-    <div class="an-stat-row">
-      ${haCol('Home', h)}
-      ${haCol('Away', a)}
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:6px">
+      ${colHdr('Home','home-games')}
+      ${colHdr('Away','away-games')}
     </div>
-    ${n.p > 0 ? `<div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border-subtle);font-size:0.8rem;color:var(--text-muted)">${n.p} neutral-venue matches: ${n.w}W ${n.d}D ${n.l}L</div>` : ''}`;
+    ${metrics.map(m => `
+    <div style="margin-bottom:10px">
+      <div style="font-size:0.66rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-muted);margin-bottom:5px">${m.label}</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <div>
+          <div style="font-family:var(--font-display);font-size:1rem;font-weight:800;color:var(--text-bright);margin-bottom:4px">${m.hVal}</div>
+          <div class="an-ha-bar-wrap"><div class="an-ha-bar" style="width:${Math.round(m.hPct)}%;background:${m.col}"></div></div>
+        </div>
+        <div>
+          <div style="font-family:var(--font-display);font-size:1rem;font-weight:800;color:var(--text-bright);margin-bottom:4px">${m.aVal}</div>
+          <div class="an-ha-bar-wrap"><div class="an-ha-bar" style="width:${Math.round(m.aPct)}%;background:${m.col};opacity:0.55"></div></div>
+        </div>
+      </div>
+    </div>`).join('')}
+    ${neu.length > 0 ? `<div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--border-subtle);font-size:0.78rem;color:var(--text-muted)">${neu.length} neutral-venue match${neu.length!==1?'es':''} not shown above</div>` : ''}`;
 }
 
 /* ── Chart 4: Win rate by competition ── */
 function drawCompWinRateChart() {
   // Build per-competition stats
   const compData = new Map();
-  MATCHES.filter(m=>!isFriendly(m)&&m._result).forEach(m => {
+  anMatches().forEach(m => {
     const k = m.Competition;
     if (!compData.has(k)) compData.set(k, {w:0,d:0,l:0,p:0});
     const s = compData.get(k);
@@ -3656,7 +3658,7 @@ function updateLensSeasonNav() {
   const next = document.getElementById('lensSeasonNext');
   if (!nav) return;
   nav.style.display = 'flex';
-  lbl.textContent = seasons[_lensSeasonIdx] || '';
+  lbl.innerHTML = `${esc(seasons[_lensSeasonIdx] || '')} <span style="font-size:0.75em;opacity:0.7">↗</span>`;
   prev.disabled = _lensSeasonIdx >= seasons.length - 1;
   next.disabled = _lensSeasonIdx <= 0;
   prev.style.opacity = prev.disabled ? '0.3' : '1';
