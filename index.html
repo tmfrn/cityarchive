@@ -2079,7 +2079,9 @@ function drawAttendanceChart() {
 
   const container = canvas.parentElement;
   const isMobile  = window.innerWidth < 600;
-  const W = container.clientWidth || 700;
+  // Use container width if available; fall back to viewport minus padding (never 700px on mobile)
+  const W = container.clientWidth ||
+            Math.min(window.innerWidth, 1100) - (isMobile ? 40 : 64);
   const H = isMobile ? 220 : 270;
   const DPR = window.devicePixelRatio || 1;
   canvas.width = W*DPR; canvas.height = H*DPR;
@@ -2606,8 +2608,15 @@ function showPage(page, pushState = true) {
         case 'players':   if (!window._rendered_players)   { renderPlayersPage();   window._rendered_players   = true; } break;
         case 'opponents': if (!window._rendered_opponents) { renderOpponentsPage(); window._rendered_opponents = true; } break;
         case 'venues':    renderVenuesPage(); break;
-        case 'records':   if (!window._rendered_records)   { renderRecordsPage();   window._rendered_records   = true;
-                            window._attMode = window._attMode||'wsl'; setTimeout(drawAttendanceChart,80); } break;
+        case 'records':
+          if (!window._rendered_records) {
+            renderRecordsPage();
+            window._rendered_records = true;
+          }
+          // Always redraw — canvas may have had 0 width when pre-rendered with display:none
+          window._attMode = window._attMode || 'wsl';
+          setTimeout(drawAttendanceChart, 80);
+          break;
         case 'analysis':  if (!window._rendered_analysis)  { renderAnalysisPage();  window._rendered_analysis  = true; } break;
       }
     }
