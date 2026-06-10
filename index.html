@@ -303,6 +303,8 @@ button{cursor:pointer;font-family:var(--font-body)}
 .player-bar-count{width:22px;text-align:right;font-size:0.78rem;font-weight:700;color:var(--text-secondary);flex-shrink:0}
 .player-bar-count.peak{color:var(--accent-deep);font-weight:800}
 .player-comps{padding:12px 28px 14px;display:flex;flex-wrap:wrap;gap:6px;border-bottom:1px solid var(--border-primary)}
+.player-stat-strip{display:none;padding:10px 28px 14px;flex-wrap:wrap;gap:8px;align-items:center;border-bottom:1px solid var(--border-primary)}
+.player-opps{display:none;padding:12px 28px 14px;border-bottom:1px solid var(--border-primary)}
 .player-comp-chip{background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:100px;padding:3px 10px;font-size:0.76rem;font-weight:600;color:var(--text-secondary);display:flex;align-items:center;gap:5px}
 .player-comp-chip .chip-count{background:var(--bg-primary);border-radius:10px;padding:1px 6px;font-size:0.88em;font-weight:700;color:var(--text-muted)}
 .player-milestones{padding:12px 28px 14px;border-bottom:1px solid var(--border-primary)}
@@ -692,10 +694,10 @@ button{cursor:pointer;font-family:var(--font-body)}
       <span class="player-total-number" id="playerTotalGoals"></span>
       <span class="player-total-label">competitive goals</span>
     </div>
-    <div id="playerStatStrip" style="display:none;margin:-4px 0 16px;display:flex;flex-wrap:wrap;gap:8px"></div>
+    <div class="player-stat-strip" id="playerStatStrip"></div>
     <div class="player-season-bars" id="playerSeasonBars"></div>
     <div class="player-comps"  id="playerComps"></div>
-    <div id="playerOpps"        style="display:none;margin:12px 0 4px"></div>
+    <div class="player-opps"       id="playerOpps"></div>
     <div class="player-milestones" id="playerMilestones" style="display:none"></div>
     <div class="player-matches" id="playerMatches"></div>
   </div>
