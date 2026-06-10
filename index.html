@@ -1765,7 +1765,7 @@ function buildMatchCard(m, rank) {
         <span class="match-footer-detail">${date}${venue}${att}${seasonChip}</span>
       </div>
       <div class="match-footer-right" style="display:flex;gap:6px;align-items:center">
-        <button class="match-tl-btn" style="opacity:0.6;font-weight:600" onclick="copyMatchLink(event,'${safe}')">Share</button>
+        <button class="match-tl-btn" style="opacity:0.6;font-weight:600" onclick="copyMatchLink(event,'${esc(m.MatchID)}')">Share</button>
         <span class="match-tl-btn">Details →</span>
       </div>
     </div>
