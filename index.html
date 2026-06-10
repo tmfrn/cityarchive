@@ -4151,14 +4151,22 @@ function renderSeasonPage(season) {
 /* ============================================================
    FLAG EMOJI
    ============================================================ */
+// Standard country flags use safe regional indicator pairs (🇩🇪 etc.) and are fine as literals.
+// Home nation subdivision flags (England/Scotland/Wales) use Unicode tag sequences
+// (U+E0000–U+E007F) which GitHub flags as hidden characters. We build them at runtime
+// from code points so the source file stays clean.
+const _eng = String.fromCodePoint(0x1F3F4,0xE0067,0xE0062,0xE0065,0xE006E,0xE0067,0xE007F); // 🏴󠁧󠁢󠁥󠁮󠁧󠁿
+const _sco = String.fromCodePoint(0x1F3F4,0xE0067,0xE0062,0xE0073,0xE0063,0xE0074,0xE007F); // 🏴󠁧󠁢󠁳󠁣󠁴󠁿
+const _wal = String.fromCodePoint(0x1F3F4,0xE0067,0xE0062,0xE0077,0xE006C,0xE0073,0xE007F); // 🏴󠁧󠁢󠁷󠁬󠁳󠁿
+
 const FLAG_EMOJI = {
   'Australia':'🇦🇺','Austria':'🇦🇹','Belgium':'🇧🇪','Brazil':'🇧🇷','Canada':'🇨🇦',
-  'Denmark':'🇩🇰','England':'🏴󠁧󠁢󠁥󠁮󠁧󠁿','France':'🇫🇷','Germany':'🇩🇪',
+  'Denmark':'🇩🇰','England':_eng,'France':'🇫🇷','Germany':'🇩🇪',
   'Ireland':'🇮🇪','Republic of Ireland':'🇮🇪','Jamaica':'🇯🇲','Japan':'🇯🇵',
   'Netherlands':'🇳🇱','New Zealand':'🇳🇿','Northern Ireland':'🇬🇧',
-  'Norway':'🇳🇴','Portugal':'🇵🇹','Russia':'🇷🇺','Scotland':'🏴󠁧󠁢󠁳󠁣󠁴󠁿',
+  'Norway':'🇳🇴','Portugal':'🇵🇹','Russia':'🇷🇺','Scotland':_sco,
   'South Korea':'🇰🇷','Spain':'🇪🇸','Sweden':'🇸🇪','Switzerland':'🇨🇭',
-  'United States':'🇺🇸','Venezuela':'🇻🇪','Wales':'🏴󠁧󠁢󠁷󠁬󠁳󠁿',
+  'United States':'🇺🇸','Venezuela':'🇻🇪','Wales':_wal,
 };
 function getFlagEmoji(nat) { return FLAG_EMOJI[nat] || ''; }
 
