@@ -146,7 +146,7 @@ button{cursor:pointer;font-family:var(--font-body)}
 .season-divider::before,.season-divider::after{content:'';flex:1;height:1px;background:var(--border-primary)}
 .season-divider:first-child{margin-top:0}
 
-.match-card{background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:var(--radius-lg);margin-bottom:8px;overflow:hidden;transition:border-color 0.2s var(--ease),box-shadow 0.2s var(--ease);cursor:pointer}
+.match-card{background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:var(--radius-lg);margin-bottom:8px;overflow:hidden;transition:border-color 0.2s var(--ease),box-shadow 0.2s var(--ease)}
 .match-card:hover{border-color:var(--accent-border);box-shadow:0 4px 16px rgba(0,0,0,0.06)}
 
 .border-win   {border-top:3px solid var(--win)}
@@ -1701,7 +1701,7 @@ function buildMatchCard(m, rank) {
       const rawName = g.Scorer || '?';
       // Make City non-OG scorers clickable (stop propagation so card click doesn't fire)
       const nameHtml = (isCityGoals && !isOG && g.Scorer && PLAYER_MAP.has(g.Scorer))
-        ? `<span class="scorer-link" onclick="event.stopPropagation();showPlayerModal('${g.Scorer.replace(/\\/g,'\\\\').replace(/'/g,"\\'")}'">${esc(rawName)}</span>`
+        ? `<span class="scorer-link" onclick="showPlayerModal('${g.Scorer.replace(/\\/g,'\\\\').replace(/'/g,"\\'")}'">${esc(rawName)}</span>`
         : esc(rawName);
       let s = nameHtml;
       if (isOG)  s += ' <span style="opacity:0.6;font-size:0.85em;">(og)</span>';
@@ -1720,7 +1720,7 @@ function buildMatchCard(m, rank) {
   const att    = m.Attendance ? ` &middot; Att. ${fmtAtt(m.Attendance)}` : '';
   const safeSeason = (m.Season||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'");
   const seasonChip = m.Season && !selectedSeason
-    ? ` &middot; <span class="season-chip" onclick="event.stopPropagation();goToSeason('${safeSeason}')">${esc(m.Season)}</span>`
+    ? ` &middot; <span class="season-chip" onclick="goToSeason('${safeSeason}')">${esc(m.Season)}</span>`
     : '';
 
   // Milestone notes
@@ -1734,11 +1734,11 @@ function buildMatchCard(m, rank) {
     : '';
 
   const safeOpp = m.Opposition.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
-  const oppHtml = `<span class="opp-link" onclick="event.stopPropagation();showH2H('${safeOpp}')">${esc(m.Opposition)}</span>`;
+  const oppHtml = `<span class="opp-link" onclick="showH2H('${safeOpp}')">${esc(m.Opposition)}</span>`;
   const homeHtml = isHome ? esc('Man City Women') : oppHtml;
   const awayHtml = isHome ? oppHtml : esc('Man City Women');
 
-  return `<div class="match-card ${borderClass(m)}${friendlyCls}" onclick="showMatchModal('${esc(m.MatchID)}')">
+  return `<div class="match-card ${borderClass(m)}${friendlyCls}">
     ${tagsHtml}
     <div class="match-fixture">
       <div class="fixture-home">${homeHtml}</div>
@@ -1766,7 +1766,7 @@ function buildMatchCard(m, rank) {
       </div>
       <div class="match-footer-right" style="display:flex;gap:6px;align-items:center">
         <button class="match-tl-btn" style="opacity:0.6;font-weight:600" onclick="copyMatchLink(event,'${esc(m.MatchID)}')">Share</button>
-        <span class="match-tl-btn">Details →</span>
+        <button class="match-tl-btn" onclick="showMatchModal('${esc(m.MatchID)}')">Details →</button>
       </div>
     </div>
   </div>`;
