@@ -2386,17 +2386,10 @@ function showPlayerModal(name) {
   document.getElementById('playerSubtitle').textContent= subtitle;
   document.getElementById('playerTotalGoals').textContent = total;
 
-  // Scoring streak + goal type breakdown
-  const streak  = getPlayerScoringStreak(name);
-  const penGoals= goalEntries.filter(({goal})=>goal.Penalty==='Y').length;
-  const openPlay= total - penGoals;
-  const chips   = [];
-  if (streak.len >= 3) {
-    const streakDates = streak.start && streak.end
-      ? `${fmtDate(streak.start._date,true)} – ${fmtDate(streak.end._date,true)}`
-      : '';
-    chips.push(`<span style="background:var(--win-bg);color:var(--win);padding:4px 10px;border-radius:100px;font-size:0.72rem;font-weight:700;white-space:nowrap" title="${streakDates}">🔥 ${streak.len} consecutive matches</span>`);
-  }
+  // Goals breakdown chip (only if player has scored penalties)
+  const penGoals = goalEntries.filter(({goal})=>goal.Penalty==='Y').length;
+  const openPlay = total - penGoals;
+  const chips    = [];
   if (penGoals > 0) chips.push(`<span style="background:var(--accent-surface);color:var(--accent);padding:4px 10px;border-radius:100px;font-size:0.72rem;font-weight:700">${openPlay} open play · ${penGoals} pen${penGoals!==1?'s':''}</span>`);
   const strip = document.getElementById('playerStatStrip');
   if (strip) { strip.innerHTML = chips.join(''); strip.style.display = chips.length ? 'flex' : 'none'; }
@@ -2430,13 +2423,14 @@ function showPlayerModal(name) {
   const oppsEl  = document.getElementById('playerOpps');
   if (oppsEl) {
     if (topOpps.length) {
-      oppsEl.innerHTML = `<div class="player-bars-hd">Most goals against</div>` +
-        topOpps.map(([opp,c]) =>
-          `<div style="display:flex;align-items:center;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--border-subtle);font-size:0.83rem">
-            <span class="td-link" onclick="showH2H('${opp.replace(/'/g,"\\'")}');closePlayerModal()" style="color:var(--text-primary)">${esc(opp)}</span>
-            <span style="font-family:var(--font-mono);font-size:0.82rem;font-weight:600;color:var(--accent)">${c}</span>
-          </div>`
-        ).join('');
+      oppsEl.innerHTML =
+        `<div class="player-bars-hd">Most goals against</div>
+         <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px">
+           ${topOpps.map(([opp,c]) => {
+             const safeOpp = opp.replace(/'/g,"\\'");
+             return `<button class="player-comp-chip" style="cursor:pointer" onclick="closePlayerModal();showH2H('${safeOpp}')" title="View H2H vs ${esc(opp)}">${esc(opp)}<span class="chip-count">${c}</span></button>`;
+           }).join('')}
+         </div>`;
       oppsEl.style.display = '';
     } else {
       oppsEl.style.display = 'none';
