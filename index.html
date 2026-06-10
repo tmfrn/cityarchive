@@ -870,9 +870,9 @@ function buildData(rM, rG, rE, rP, rO, rC, rV, rMgr, rS) {
   });
 
   MATCHES.sort((a, b) => {
-    if (b._sord !== a._sord) return b._sord - a._sord;
-    if (a._date && b._date)  return b._date - a._date;
-    return 0;
+    if (b._sord !== a._sord)   return b._sord - a._sord;
+    if (a._date && b._date && a._date - b._date !== 0) return b._date - a._date;
+    return (a.MatchID||'').localeCompare(b.MatchID||'');  // tiebreak: MatchID keeps same-date matches stable
   });
 }
 
