@@ -513,6 +513,11 @@ button{cursor:pointer;font-family:var(--font-body)}
 .sp-meta{font-size:0.74rem;color:var(--text-muted)}
 .sp-date{font-size:0.78rem;color:var(--text-muted);text-align:right;white-space:nowrap}
 .sp-stat-strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(80px,1fr));gap:8px;margin-bottom:20px}
+.empty-state{text-align:center;padding:56px 24px 48px}
+.empty-state-icon{font-size:2.5rem;margin-bottom:12px;opacity:0.35}
+.empty-state-title{font-family:var(--font-display);font-size:1.05rem;font-weight:700;color:var(--text-secondary);margin-bottom:6px}
+.empty-state-sub{font-size:0.83rem;color:var(--text-muted);line-height:1.55;max-width:280px;margin:0 auto 18px}
+.empty-state-action{display:inline-flex;gap:8px;flex-wrap:wrap;justify-content:center}
 .sp-stat{background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:var(--radius-md);padding:10px 12px;text-align:center}
 .sp-stat-val{font-family:var(--font-display);font-size:1.3rem;font-weight:800;color:var(--text-bright);line-height:1}
 .sp-stat-lbl{font-size:0.62rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-muted);margin-top:3px}
@@ -1614,7 +1619,7 @@ function renderMatches() {
   document.getElementById('sortToggle').style.display = (rankedLens || isCrowdLens) ? 'none' : '';
   const crowdNav = document.getElementById('lensCrowdNav');
   if (crowdNav) crowdNav.style.display = isCrowdLens ? 'flex' : 'none';
-  const showStats = !rankedLens && compInView > 0;
+  const showStats = !rankedLens && !isCrowdLens && compInView > 0;
   document.getElementById('statsBar').classList.toggle('visible', showStats);
 
   if (activeLens && streakTypes.includes(activeLens) && window._streakInfo) {
@@ -1706,18 +1711,71 @@ function renderMatches() {
 }
 
 function buildEmptyState() {
+  const btnStyle = `background:none;border:1.5px solid var(--border-primary);border-radius:100px;padding:6px 16px;font-size:0.78rem;font-weight:600;cursor:pointer;color:var(--text-secondary);font-family:var(--font-body)`;
+  const hasFilter = hasActiveFilter();
+
+  // Context-specific messages
   if (activeLens === 'on-this-day') {
-    const d = new Date();
-    const lbl = d.toLocaleDateString('en-GB', {day:'numeric', month:'long'});
-    return `<div style="text-align:center;padding:48px 24px;color:var(--text-muted);font-size:0.9rem;">No matches in the archive on ${lbl}.</div>`;
+    const lbl = new Date().toLocaleDateString('en-GB', {day:'numeric', month:'long'});
+    return `<div class="empty-state">
+      <div class="empty-state-icon">🗓</div>
+      <div class="empty-state-title">Nothing on ${lbl}</div>
+      <div class="empty-state-sub">No matches in the archive on this date.</div>
+    </div>`;
   }
-  if (selectedComp && selectedSeason)
-    return `<div style="text-align:center;padding:48px 24px;color:var(--text-muted);font-size:0.9rem;">No <strong style="color:var(--text-secondary)">${esc(compShort(selectedComp))}</strong> matches in <strong style="color:var(--text-secondary)">${esc(selectedSeason)}</strong>.</div>`;
-  if (selectedComp)
-    return `<div style="text-align:center;padding:48px 24px;color:var(--text-muted);font-size:0.9rem;">No matches found for <strong style="color:var(--text-secondary)">${esc(compShort(selectedComp))}</strong>.</div>`;
-  if (searchTerm)
-    return `<div style="text-align:center;padding:48px 24px;color:var(--text-muted);font-size:0.9rem;">No matches found for <strong style="color:var(--text-secondary)">\u201c${esc(searchTerm)}\u201d</strong>.</div>`;
-  return `<div style="text-align:center;padding:48px 24px;color:var(--text-muted);font-size:0.9rem;">No matches found.</div>`;
+  if (activeLens === 'this-season') {
+    return `<div class="empty-state">
+      <div class="empty-state-icon">📋</div>
+      <div class="empty-state-title">No matches yet this season</div>
+      <div class="empty-state-sub">Check back once the season is underway.</div>
+    </div>`;
+  }
+  if (searchTerm && hasFilter) {
+    return `<div class="empty-state">
+      <div class="empty-state-icon">🔍</div>
+      <div class="empty-state-title">No matches for "${esc(searchTerm)}"</div>
+      <div class="empty-state-sub">Try removing a filter or adjusting your search.</div>
+      <div class="empty-state-action">
+        <button style="${btnStyle}" onclick="clearSearch()">Clear search</button>
+        <button style="${btnStyle}" onclick="clearFilterBar()">Clear filters</button>
+      </div>
+    </div>`;
+  }
+  if (searchTerm) {
+    return `<div class="empty-state">
+      <div class="empty-state-icon">🔍</div>
+      <div class="empty-state-title">No results for "${esc(searchTerm)}"</div>
+      <div class="empty-state-sub">Try a different search — you can search by opponent, score, player name, or competition.</div>
+      <div class="empty-state-action">
+        <button style="${btnStyle}" onclick="clearSearch()">Clear search</button>
+      </div>
+    </div>`;
+  }
+  if (selectedComp && selectedSeason) {
+    return `<div class="empty-state">
+      <div class="empty-state-icon">⚽</div>
+      <div class="empty-state-title">No ${esc(compShort(selectedComp))} in ${esc(selectedSeason)}</div>
+      <div class="empty-state-sub">City didn't enter this competition that season, or results aren't in the archive yet.</div>
+      <div class="empty-state-action">
+        <button style="${btnStyle}" onclick="clearFilterBar()">Clear filters</button>
+      </div>
+    </div>`;
+  }
+  if (hasFilter) {
+    return `<div class="empty-state">
+      <div class="empty-state-icon">⚽</div>
+      <div class="empty-state-title">No matches found</div>
+      <div class="empty-state-sub">No results match the current filters.</div>
+      <div class="empty-state-action">
+        <button style="${btnStyle}" onclick="clearFilterBar()">Clear filters</button>
+      </div>
+    </div>`;
+  }
+  return `<div class="empty-state">
+    <div class="empty-state-icon">⚽</div>
+    <div class="empty-state-title">No matches found</div>
+    <div class="empty-state-sub">Nothing to show right now.</div>
+  </div>`;
 }
 
 /* ============================================================
@@ -3203,11 +3261,6 @@ function renderRecordsPage() {
         ${matchCard(bigWin,'Biggest win')}
         ${matchCard(bigLoss,'Biggest loss')}
         ${matchCard(highScore,'Highest scoring')}
-        ${recAtt?`<div class="records-card" onclick="showMatchModal('${recAtt.MatchID.replace(/'/g,"\\'")}')">
-          <div class="rc-lbl">Record crowd</div>
-          <div class="rc-val">${parseInt(recAtt.Attendance).toLocaleString('en-GB')}</div>
-          <div class="rc-ctx">vs ${esc(recAtt.Opposition)} · ${esc(recAtt.Venue||'')} · ${recAtt._date?fmtDate(recAtt._date,true):''}</div>
-        </div>`:''}
       </div>
 
       <div class="records-section-hd">Streaks</div>
