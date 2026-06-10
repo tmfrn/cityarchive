@@ -259,6 +259,8 @@ button{cursor:pointer;font-family:var(--font-body)}
 .h2h-callout.unbeaten-run{background:var(--accent-surface);color:var(--accent);border-color:var(--accent)}
 .h2h-matches{padding:16px 20px 24px;max-height:360px;overflow-y:auto}
 .h2h-matches h4{font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-muted);margin-bottom:10px}
+.h2h-match-link{cursor:pointer;font-weight:700;text-decoration:underline dotted;text-underline-offset:2px;color:var(--text-bright)}
+.h2h-match-link:hover{color:var(--accent)}
 .h2h-match-row{display:grid;grid-template-columns:42px auto 1fr auto;align-items:center;gap:0 10px;padding:8px 0 8px 10px;border-bottom:1px solid var(--border-subtle);border-left:3px solid transparent;font-size:0.84rem;margin-left:-10px;cursor:pointer;transition:background 0.12s}
 .h2h-match-row:last-child{border-bottom:none}
 .h2h-match-row:hover{background:var(--bg-surface)}
@@ -692,7 +694,8 @@ button{cursor:pointer;font-family:var(--font-body)}
     </div>
     <div id="playerStatStrip" style="display:none;margin:-4px 0 16px;display:flex;flex-wrap:wrap;gap:8px"></div>
     <div class="player-season-bars" id="playerSeasonBars"></div>
-    <div class="player-comps" id="playerComps"></div>
+    <div class="player-comps"  id="playerComps"></div>
+    <div id="playerOpps"        style="display:none;margin:12px 0 4px"></div>
     <div class="player-milestones" id="playerMilestones" style="display:none"></div>
     <div class="player-matches" id="playerMatches"></div>
   </div>
@@ -1761,7 +1764,8 @@ function buildMatchCard(m, rank) {
         <span class="match-footer-comp">${comp}${round}</span>
         <span class="match-footer-detail">${date}${venue}${att}${seasonChip}</span>
       </div>
-      <div class="match-footer-right">
+      <div class="match-footer-right" style="display:flex;gap:6px;align-items:center">
+        <button class="match-tl-btn" style="opacity:0.6;font-weight:600" onclick="copyMatchLink(event,'${safe}')">Share</button>
         <span class="match-tl-btn">Details →</span>
       </div>
     </div>
@@ -2390,6 +2394,29 @@ function showPlayerModal(name) {
       `<div class="player-comp-chip">${esc(compShort(comp))}<span class="chip-count">${count}</span></div>`
     ).join('');
 
+  // Top opponents
+  const byOpp = new Map();
+  goalEntries.forEach(({match}) => {
+    const o = match.Opposition || 'Unknown';
+    byOpp.set(o, (byOpp.get(o)||0)+1);
+  });
+  const topOpps = [...byOpp.entries()].sort((a,b)=>b[1]-a[1]).filter(([,c])=>c>=2).slice(0,5);
+  const oppsEl  = document.getElementById('playerOpps');
+  if (oppsEl) {
+    if (topOpps.length) {
+      oppsEl.innerHTML = `<div class="player-bars-hd">Most goals against</div>` +
+        topOpps.map(([opp,c]) =>
+          `<div style="display:flex;align-items:center;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--border-subtle);font-size:0.83rem">
+            <span class="td-link" onclick="showH2H('${opp.replace(/'/g,"\\'")}');closePlayerModal()" style="color:var(--text-primary)">${esc(opp)}</span>
+            <span style="font-family:var(--font-mono);font-size:0.82rem;font-weight:600;color:var(--accent)">${c}</span>
+          </div>`
+        ).join('');
+      oppsEl.style.display = '';
+    } else {
+      oppsEl.style.display = 'none';
+    }
+  }
+
   // Milestones
   const msEl = document.getElementById('playerMilestones');
   if (milestones.length) {
@@ -2492,14 +2519,31 @@ function showH2H(opp) {
   const bigLoss = comp.filter(m=>m._result==='L')
     .sort((a,b) => (b._ga-b._gf)-(a._ga-a._gf) || b._ga-a._ga)[0] || null;
 
+  // Top City scorers in H2H
+  const h2hScorerMap = new Map();
+  comp.forEach(m => {
+    (GOALS_MAP.get(m.MatchID)||[])
+      .filter(g => g['For/Against']==='For' && g.OG!=='Y' && g.Scorer)
+      .forEach(g => h2hScorerMap.set(g.Scorer, (h2hScorerMap.get(g.Scorer)||0)+1));
+  });
+  const topH2HScorers = [...h2hScorerMap.entries()].sort((a,b)=>b[1]-a[1]).slice(0,4);
+
   function matchScore(m) {
     const hs = homeScore(m), as_ = awayScore(m);
     return `${hs}–${as_}`;
   }
   function matchScoreCity(m) { return `${m._gf}–${m._ga}`; }
 
-  const bigWinStr  = bigWin  ? `${matchScoreCity(bigWin)} (${fmtDate(bigWin._date)})` : '—';
-  const bigLossStr = bigLoss ? `${matchScoreCity(bigLoss)} (${fmtDate(bigLoss._date)})` : '—';
+  function h2hMatchLink(m, label) {
+    if (!m) return '<span style="color:var(--text-muted)">—</span>';
+    const safe = m.MatchID.replace(/'/g,"\\'");
+    const ha   = {H:'Home',A:'Away',N:'Neutral'}[m['Home/Away']] || '';
+    const ctx  = [ha, compShort(m.Competition), fmtDate(m._date, true)].filter(Boolean).join(' · ');
+    return `<span class="h2h-match-link" onclick="openMatchFromH2H('${safe}')">${label} <span style="font-size:0.72rem;font-weight:500;color:var(--text-muted)">${ctx}</span></span>`;
+  }
+
+  const bigWinStr  = bigWin  ? h2hMatchLink(bigWin,  matchScoreCity(bigWin))  : '—';
+  const bigLossStr = bigLoss ? h2hMatchLink(bigLoss, matchScoreCity(bigLoss)) : '—';
 
   // Callouts
   const callouts = [];
@@ -2537,7 +2581,8 @@ function showH2H(opp) {
     `<div class="h2h-extra-item"><strong>Goals for:</strong> ${gf}</div>` +
     `<div class="h2h-extra-item"><strong>Goals against:</strong> ${ga}</div>` +
     `<div class="h2h-extra-item"><strong>Biggest win:</strong> ${bigWinStr}</div>` +
-    `<div class="h2h-extra-item"><strong>Biggest loss:</strong> ${bigLossStr}</div>`;
+    `<div class="h2h-extra-item"><strong>Biggest loss:</strong> ${bigLossStr}</div>` +
+    (topH2HScorers.length ? `<div class="h2h-extra-item" style="grid-column:1/-1"><strong>Top scorers vs ${esc(opp)}:</strong> ${topH2HScorers.map(([n,c])=>`<span onclick="showPlayerModal('${n.replace(/'/g,"\\'")}');closeH2H()" style="cursor:pointer;text-decoration:underline dotted;text-underline-offset:2px">${esc(n)}</span> (${c})`).join(', ')}</div>` : '');
 
   document.getElementById('h2hCallouts').innerHTML =
     callouts.map(c => `<div class="h2h-callout ${c.cls}">${c.txt}</div>`).join('');
@@ -3053,27 +3098,6 @@ function renderRecordsPage() {
           <div class="records-card no-cursor"><div class="rc-lbl">${lbl}</div><div class="rc-val" style="font-size:1.4rem">${v}</div></div>`).join('')}
       </div>
 
-      ${(()=>{
-        const {sf,cf}=getScoreFirstStats();
-        const sfPct=sf.n?Math.round(sf.w/sf.n*100):0;
-        const cfPct=cf.n?Math.round(cf.w/cf.n*100):0;
-        const sfCol=sfPct>=70?'var(--win)':sfPct>=50?'var(--text-bright)':'var(--loss)';
-        const cfCol=cfPct>=50?'var(--win)':cfPct>=30?'var(--text-bright)':'var(--loss)';
-        return `<div class="records-section-hd">When scoring first vs conceding first</div>
-        <div class="records-grid">
-          <div class="records-card no-cursor">
-            <div class="rc-lbl">Score first (${sf.n} matches)</div>
-            <div class="rc-val" style="color:${sfCol}">${sfPct}%</div>
-            <div class="rc-ctx">${sf.w}W ${sf.d}D ${sf.l}L</div>
-          </div>
-          <div class="records-card no-cursor">
-            <div class="rc-lbl">Concede first (${cf.n} matches)</div>
-            <div class="rc-val" style="color:${cfCol}">${cfPct}%</div>
-            <div class="rc-ctx">${cf.w}W ${cf.d}D ${cf.l}L · came back ${cf.w+cf.d} time${cf.w+cf.d!==1?'s':''}</div>
-          </div>
-        </div>`;
-      })()}
-
       <div class="records-section-hd">Best &amp; worst performances</div>
       <div class="records-grid">
         ${matchCard(bigWin,'Biggest win')}
@@ -3094,21 +3118,69 @@ function renderRecordsPage() {
       </div>
 
       ${(()=>{
-        const ps=getPenaltyStats();
-        const pct=ps.scored+ps.missed>0?Math.round(ps.scored/(ps.scored+ps.missed)*100):0;
-        const topLine=ps.topScorer?`Top scorer: <strong>${esc(ps.topScorer[0])}</strong> (${ps.topScorer[1].s})${ps.topScorer[1].m?' · '+ps.topScorer[1].m+' missed':''}`:'';
-        return `<div class="records-section-hd">Penalties &amp; shootouts</div>
-        <div class="records-grid">
-          <div class="records-card no-cursor">
-            <div class="rc-lbl">Open-play penalties</div>
-            <div class="rc-val">${ps.scored} scored</div>
-            <div class="rc-ctx">${ps.missed} missed · ${pct}% success${topLine?'<br>'+topLine:''}</div>
-          </div>
-          ${ps.shootW+ps.shootL>0?`<div class="records-card no-cursor">
-            <div class="rc-lbl">Penalty shootouts</div>
-            <div class="rc-val">${ps.shootW}W ${ps.shootL}L</div>
-            <div class="rc-ctx">${ps.shootW+ps.shootL} total</div>
-          </div>`:''}
+        const cbs = getComebacks();
+        if (!cbs.length) return '';
+        const wins  = cbs.filter(c=>c.match._result==='W');
+        const draws = cbs.filter(c=>c.match._result==='D');
+        const rows  = cbs.slice(0,15).map(c => {
+          const m    = c.match;
+          const safe = m.MatchID.replace(/'/g,"\\'");
+          const defLabel = c.deficit === 1 ? '1 down' : `${c.deficit} down`;
+          const resultBadge = m._result==='W'
+            ? `<span style="color:var(--win);font-weight:800">Won</span>`
+            : `<span style="color:var(--draw);font-weight:800">Drew</span>`;
+          return `<tr onclick="showMatchModal('${safe}')">
+            <td>${resultBadge}</td>
+            <td style="font-size:0.78rem;font-weight:700;color:var(--text-muted)">from ${esc(defLabel)}</td>
+            <td class="td-link">${esc(m.Opposition)}</td>
+            <td class="td-num" style="font-family:var(--font-mono);font-size:0.9rem">${m._gf}–${m._ga}</td>
+            <td class="td-muted">${esc(compShort(m.Competition))}</td>
+            <td class="td-muted" style="font-size:0.78rem;white-space:nowrap">${m._date?fmtDate(m._date,true):''}</td>
+          </tr>`;
+        }).join('');
+        return `<div class="records-section-hd">Comebacks — won or drawn from behind (${wins.length}W ${draws.length}D)</div>
+        <div class="dt-wrap">
+          <table class="data-table">
+            <thead><tr><th></th><th></th><th>Opposition</th><th class="td-num">Score</th><th>Competition</th><th>Date</th></tr></thead>
+            <tbody>${rows}</tbody>
+          </table>
+        </div>`;
+      })()}
+
+      ${(()=>{
+        if (!MANAGER_LIST.length) return '';
+        const rows = MANAGER_LIST.map(mgr => {
+          const ms = MATCHES.filter(m =>
+            !isFriendly(m) && m._result && m._date &&
+            m._date >= mgr._start && (!mgr._end || m._date <= mgr._end)
+          );
+          const w=ms.filter(m=>m._result==='W').length;
+          const d=ms.filter(m=>m._result==='D').length;
+          const l=ms.filter(m=>m._result==='L').length;
+          const p=ms.length;
+          if (!p) return '';
+          const pct = Math.round(w/p*100);
+          const period = mgr._start
+            ? mgr._end
+              ? `${mgr._start.getFullYear()}–${mgr._end.getFullYear()}`
+              : `${mgr._start.getFullYear()}–present`
+            : '';
+          return `<tr>
+            <td style="font-weight:700">${esc(mgr.Name)}</td>
+            <td class="td-muted">${period}</td>
+            <td class="td-num">${p}</td>
+            <td class="td-num" style="color:var(--win)">${w}</td>
+            <td class="td-num" style="color:var(--draw)">${d}</td>
+            <td class="td-num" style="color:var(--loss)">${l}</td>
+            <td class="td-num" style="font-weight:700">${pct}%</td>
+          </tr>`;
+        }).filter(Boolean).join('');
+        return `<div class="records-section-hd">By manager</div>
+        <div class="dt-wrap">
+          <table class="data-table">
+            <thead><tr><th>Manager</th><th>Period</th><th class="td-num">P</th><th class="td-num">W</th><th class="td-num">D</th><th class="td-num">L</th><th class="td-num">Win %</th></tr></thead>
+            <tbody>${rows}</tbody>
+          </table>
         </div>`;
       })()}
 
@@ -4043,6 +4115,33 @@ function getPlayerScoringStreak(name) {
     } else{cur=0;curStart=null;}
   });
   return best;
+}
+
+function getComebacks() {
+  const comebacks = [];
+  MATCHES.filter(m => !isFriendly(m) && (m._result==='W'||m._result==='D')).forEach(m => {
+    const goals = (GOALS_MAP.get(m.MatchID)||[])
+      .filter(g => g.Minute)
+      .sort((a,b) => parseMin(a.Minute)-parseMin(b.Minute));
+    let city=0, opp=0, maxDef=0;
+    goals.forEach(g => {
+      if (g['For/Against']==='For') city++; else opp++;
+      const def = opp-city;
+      if (def > maxDef) maxDef = def;
+    });
+    if (maxDef > 0) comebacks.push({match:m, deficit:maxDef});
+  });
+  return comebacks.sort((a,b) => b.deficit-a.deficit || (b.match._date||0)-(a.match._date||0));
+}
+
+function copyMatchLink(e, matchID) {
+  e.stopPropagation();
+  const url  = location.origin + location.pathname + '#match/' + matchID;
+  const btn  = e.currentTarget;
+  const orig = btn.textContent;
+  navigator.clipboard.writeText(url)
+    .then(() => { btn.textContent = 'Copied ✓'; setTimeout(() => btn.textContent = orig, 1800); })
+    .catch(() => { btn.textContent = 'Error';   setTimeout(() => btn.textContent = orig, 1500); });
 }
 
 /* ============================================================
