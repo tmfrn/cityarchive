@@ -633,10 +633,16 @@ button{cursor:pointer;font-family:var(--font-body)}
       <button class="crowd-filter-btn"        id="crowdFilterAway"    onclick="setCrowdFilter('away')">Away</button>
       <button class="crowd-filter-btn"        id="crowdFilterNeutral" onclick="setCrowdFilter('neutral')">Neutral</button>
     </div>
-    <div id="lensSeasonNav" style="display:none;align-items:center;gap:0;margin:0 0 4px;padding:6px 0">
-      <button id="lensSeasonPrev" onclick="stepLensSeason(-1)" aria-label="Previous season" style="background:none;border:1.5px solid var(--border-primary);border-radius:var(--radius-sm);padding:4px 11px;font-size:0.9rem;cursor:pointer;color:var(--text-secondary)">‹</button>
-      <span id="lensSeasonLabel" onclick="goToSeason(window._lensSeasonName)" title="Go to season page" style="margin:0 10px;font-family:var(--font-display);font-size:0.95rem;font-weight:700;cursor:pointer;color:var(--accent);text-decoration:underline;text-decoration-style:dotted;text-underline-offset:3px"></span>
-      <button id="lensSeasonNext" onclick="stepLensSeason(1)" aria-label="Next season" style="background:none;border:1.5px solid var(--border-primary);border-radius:var(--radius-sm);padding:4px 11px;font-size:0.9rem;cursor:pointer;color:var(--text-secondary)">›</button>
+    <!-- This Season season navigation -->
+    <div id="lensSeasonNav" style="display:none;margin:0 0 10px">
+      <div style="display:flex;align-items:center;gap:6px;background:var(--bg-card);border:1.5px solid var(--border-primary);border-radius:var(--radius-md);padding:4px 6px">
+        <button id="lensSeasonPrev" onclick="stepLensSeason(-1)" aria-label="Previous season"
+          style="background:none;border:none;border-radius:var(--radius-sm);padding:6px 10px;font-size:0.8rem;font-weight:600;cursor:pointer;color:var(--text-secondary);white-space:nowrap;flex:0 0 auto;transition:color 0.15s"></button>
+        <span id="lensSeasonLabel" onclick="goToSeason(window._lensSeasonName)" title="Go to season page"
+          style="flex:1;text-align:center;font-family:var(--font-display);font-size:0.95rem;font-weight:700;cursor:pointer;color:var(--accent);text-decoration:underline;text-decoration-style:dotted;text-underline-offset:3px;white-space:nowrap"></span>
+        <button id="lensSeasonNext" onclick="stepLensSeason(1)" aria-label="Next season"
+          style="background:none;border:none;border-radius:var(--radius-sm);padding:6px 10px;font-size:0.8rem;font-weight:600;cursor:pointer;color:var(--text-secondary);white-space:nowrap;flex:0 0 auto;transition:color 0.15s"></button>
+      </div>
     </div>
     <div class="filter-bar">
       <select id="seasonSelect"      aria-label="Filter by season"     onchange="filterBySeason()">
@@ -656,7 +662,7 @@ button{cursor:pointer;font-family:var(--font-body)}
         <option value="home-games">Home Only</option>
         <option value="away-games">Away Only</option>
       </select>
-      <button class="filter-btn" id="sortToggle" onclick="toggleSortOrder()">↕ Newest first</button>
+      <button class="filter-btn" id="sortToggle" onclick="toggleSortOrder()">↓ Newest first</button>
       <button id="clearFiltersBtn" onclick="clearFilterBar()">✕ Clear</button>
     </div>
   </div>
@@ -1348,7 +1354,7 @@ function filterByVenue()      { selectedVenue  = document.getElementById('venueS
 
 function toggleSortOrder() {
   sortOrder = sortOrder==='desc' ? 'asc' : 'desc';
-  document.getElementById('sortToggle').textContent = sortOrder==='desc' ? '↕ Newest first' : '↕ Oldest first';
+  document.getElementById('sortToggle').textContent = sortOrder==='desc' ? '↓ Newest first' : '↑ Oldest first';
   listCap=20; renderMatches();
 }
 
@@ -1368,7 +1374,7 @@ function clearFilterBar() {
   document.getElementById('venueSelect').value='';
   document.getElementById('searchInput').value='';
   document.getElementById('searchClear').classList.remove('visible');
-  document.getElementById('sortToggle').textContent='↕ Newest first';
+  document.getElementById('sortToggle').textContent='↓ Newest first';
   document.querySelectorAll('.filter-bar select').forEach(s=>s.classList.remove('active-filter'));
   document.getElementById('clearFiltersBtn').classList.remove('visible');
   listCap=20; renderMatches();
@@ -1561,7 +1567,18 @@ function findLongestStreak(type) {
    FILTERED MATCH LIST
    ============================================================ */
 function getFiltered() {
-  if (activeLens) return getLensFiltered();
+  if (activeLens) {
+    let results = getLensFiltered();
+    // Ranked/crowd lenses are pre-sorted by their own criteria — don't override
+    const skipSort = ['biggest-wins','biggest-losses','highest-scoring',
+                      'biggest-crowd','smallest-crowd'].includes(activeLens);
+    if (!skipSort) {
+      results = [...results].sort((a,b) =>
+        sortOrder === 'asc' ? (a._date||0)-(b._date||0) : (b._date||0)-(a._date||0)
+      );
+    }
+    return results;
+  }
 
   // Normalise search term for score matching: "3–0", "3 0", "3-0" → "3-0"
   const scoreTerm = searchTerm
@@ -4068,17 +4085,26 @@ function stepLensSeason(dir) {
 
 function updateLensSeasonNav() {
   const seasons = getOrderedSeasons();
-  const nav = document.getElementById('lensSeasonNav');
-  const lbl = document.getElementById('lensSeasonLabel');
+  const nav  = document.getElementById('lensSeasonNav');
+  const lbl  = document.getElementById('lensSeasonLabel');
   const prev = document.getElementById('lensSeasonPrev');
   const next = document.getElementById('lensSeasonNext');
   if (!nav) return;
-  nav.style.display = 'flex';
-  lbl.innerHTML = `${esc(seasons[_lensSeasonIdx] || '')} <span style="font-size:0.75em;opacity:0.7">↗</span>`;
-  prev.disabled = _lensSeasonIdx >= seasons.length - 1;
-  next.disabled = _lensSeasonIdx <= 0;
-  prev.style.opacity = prev.disabled ? '0.3' : '1';
-  next.style.opacity = next.disabled ? '0.3' : '1';
+  nav.style.display = '';
+
+  lbl.textContent = seasons[_lensSeasonIdx] || '';
+
+  // Prev button → goes to older season (higher index = further back)
+  const hasPrev = _lensSeasonIdx < seasons.length - 1;
+  prev.textContent = hasPrev ? `← ${shortSeason(seasons[_lensSeasonIdx + 1])}` : '';
+  prev.style.visibility = hasPrev ? '' : 'hidden';
+  prev.style.pointerEvents = hasPrev ? '' : 'none';
+
+  // Next button → goes to more recent season (lower index = more recent)
+  const hasNext = _lensSeasonIdx > 0;
+  next.textContent = hasNext ? `${shortSeason(seasons[_lensSeasonIdx - 1])} →` : '';
+  next.style.visibility = hasNext ? '' : 'hidden';
+  next.style.pointerEvents = hasNext ? '' : 'none';
 }
 
 // Hook into getLensFiltered for this-season
