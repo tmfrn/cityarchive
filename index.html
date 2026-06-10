@@ -284,6 +284,13 @@ button{cursor:pointer;font-family:var(--font-body)}
 /* ── PLAYER MODAL ── */
 .player-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.45);backdrop-filter:blur(4px);z-index:1000;overflow-y:auto;padding:40px 20px}
 .player-overlay.active{display:flex;align-items:flex-start;justify-content:center}
+.crowd-filter-btn{background:none;border:1.5px solid var(--border-primary);border-radius:100px;padding:3px 11px;font-size:0.72rem;font-weight:600;cursor:pointer;color:var(--text-secondary);transition:all 0.15s;font-family:var(--font-body)}
+.crowd-filter-btn.active{background:var(--accent);border-color:var(--accent);color:#fff}
+.venue-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.45);backdrop-filter:blur(4px);z-index:1000;overflow-y:auto;padding:40px 20px}
+.venue-overlay.active{display:flex;align-items:flex-start;justify-content:center}
+.venue-modal{background:var(--bg-elevated);border-radius:var(--radius-xl);max-width:600px;width:100%;box-shadow:0 24px 64px rgba(0,0,0,0.18);border:1px solid var(--border-primary);animation:modalIn 0.25s ease;overflow:hidden}
+.venue-modal-header{padding:20px 24px 16px;display:flex;justify-content:space-between;align-items:flex-start;border-bottom:1px solid var(--border-primary)}
+.venue-modal-body{max-height:70vh;overflow-y:auto;overscroll-behavior:contain}
 .player-modal{background:var(--bg-elevated);border-radius:var(--radius-xl);max-width:600px;width:100%;box-shadow:0 24px 64px rgba(0,0,0,0.18);border:1px solid var(--border-primary);animation:modalIn 0.25s ease}
 .player-hd{padding:20px 28px;background:var(--bg-card);border-radius:var(--radius-xl) var(--radius-xl) 0 0;border-bottom:1px solid var(--border-primary);display:flex;justify-content:space-between;align-items:flex-start;gap:16px}
 .player-hd h3{font-family:var(--font-display);font-size:1.2rem;font-weight:800;color:var(--text-bright)}
@@ -425,7 +432,7 @@ button{cursor:pointer;font-family:var(--font-body)}
 .site-nav-inner{max-width:1100px;margin:0 auto;padding:0 24px;display:flex;align-items:center;height:50px;gap:0}
 .site-nav-brand{font-family:var(--font-display);font-size:0.95rem;font-weight:700;color:#fff;white-space:nowrap;padding-right:20px;border-right:1px solid rgba(255,255,255,0.12);letter-spacing:-0.01em;flex-shrink:0;cursor:pointer}
 .site-nav-brand em{color:var(--sky);font-style:normal}
-.site-nav-links{display:flex;align-items:center;gap:2px;padding-left:6px;overflow-x:auto;scrollbar-width:none}
+.site-nav-links{display:flex;align-items:center;gap:2px;padding-left:6px;overflow-x:auto;scrollbar-width:none;min-width:0}
 .site-nav-links::-webkit-scrollbar{display:none}
 .site-nav-link{color:rgba(255,255,255,0.55);font-family:var(--font-body);font-size:0.78rem;font-weight:600;text-transform:uppercase;letter-spacing:0.04em;padding:7px 11px;border-radius:var(--radius-sm);white-space:nowrap;text-decoration:none;transition:color 0.15s,background 0.15s;cursor:pointer}
 .site-nav-link:hover{color:#fff;background:rgba(255,255,255,0.08)}
@@ -545,7 +552,7 @@ button{cursor:pointer;font-family:var(--font-body)}
   <div class="site-nav-inner">
     <span class="site-nav-brand" onclick="showPage('')">Man City <em>Women</em></span>
     <div class="site-nav-links">
-      <span class="site-nav-link active" data-page=""          onclick="showPage('')">Archive</span>
+      <span class="site-nav-link active" data-page=""          onclick="showPage('')">Matches</span>
       <span class="site-nav-link"        data-page="players"   onclick="showPage('players')">Players</span>
       <span class="site-nav-link"        data-page="opponents" onclick="showPage('opponents')">Opponents</span>
       <span class="site-nav-link"        data-page="venues"    onclick="showPage('venues')">Venues</span>
@@ -609,7 +616,17 @@ button{cursor:pointer;font-family:var(--font-body)}
       <button class="lens-btn" id="lensWinless"     onclick="activateLens('winless-streak',this)">Winless run</button>
       <span class="lens-sep"></span>
       <button class="lens-btn" id="lensThisSeason"  onclick="activateThisSeasonLens(this)">This Season</button>
+      <span class="lens-sep"></span>
+      <button class="lens-btn" id="lensBigCrowd"    onclick="activateCrowdLens('biggest',this)">Biggest crowd</button>
+      <button class="lens-btn" id="lensSmallCrowd"  onclick="activateCrowdLens('smallest',this)">Smallest crowd</button>
       <button class="lens-clear" id="lensClear"     onclick="clearLens()">✕ Clear</button>
+    </div>
+    <div id="lensCrowdNav" style="display:none;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:10px">
+      <span style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-muted)">Filter:</span>
+      <button class="crowd-filter-btn active" id="crowdFilterAll"     onclick="setCrowdFilter('all')">All</button>
+      <button class="crowd-filter-btn"        id="crowdFilterHome"    onclick="setCrowdFilter('home')">Home</button>
+      <button class="crowd-filter-btn"        id="crowdFilterAway"    onclick="setCrowdFilter('away')">Away</button>
+      <button class="crowd-filter-btn"        id="crowdFilterNeutral" onclick="setCrowdFilter('neutral')">Neutral</button>
     </div>
     <div id="lensSeasonNav" style="display:none;align-items:center;gap:0;margin:0 0 4px;padding:6px 0">
       <button id="lensSeasonPrev" onclick="stepLensSeason(-1)" aria-label="Previous season" style="background:none;border:1.5px solid var(--border-primary);border-radius:var(--radius-sm);padding:4px 11px;font-size:0.9rem;cursor:pointer;color:var(--text-secondary)">‹</button>
@@ -704,6 +721,23 @@ button{cursor:pointer;font-family:var(--font-body)}
 </div>
 
 <!-- H2H MODAL -->
+<!-- VENUE MODAL -->
+<div class="venue-overlay" id="venueOverlay" onclick="if(event.target===this)closeVenueModal()">
+  <div class="venue-modal">
+    <div class="venue-modal-header">
+      <div>
+        <h3 id="venueName" style="font-family:var(--font-display);font-size:1.1rem;font-weight:800;color:var(--text-bright);margin:0"></h3>
+        <p id="venueSubtitle" style="margin:2px 0 0;font-size:0.8rem;color:var(--text-muted)"></p>
+      </div>
+      <button class="h2h-close" onclick="closeVenueModal()" aria-label="Close venue">✕</button>
+    </div>
+    <div class="venue-modal-body">
+      <div id="venueExtra" class="h2h-extra"></div>
+      <div id="venueMatches" style="padding:0 24px 24px"></div>
+    </div>
+  </div>
+</div>
+
 <div class="h2h-overlay" id="h2hOverlay" onclick="if(event.target===this)closeH2H()">
   <div class="h2h-modal">
     <div class="h2h-hd">
@@ -1426,6 +1460,25 @@ function getLensFiltered() {
     case 'loss-streak':     return streakLensMatches('loss');
     case 'winless-streak':  return streakLensMatches('winless');
 
+    case 'biggest-crowd':
+    case 'smallest-crowd': {
+      const cf = window._crowdFilter || 'all';
+      let ms = MATCHES.filter(m => {
+        if (!m.Attendance || parseFloat(m.Attendance) <= 0) return false;
+        const ha = m['Home/Away'];
+        if (cf === 'home')    return ha === 'H';
+        if (cf === 'away')    return ha === 'A';
+        if (cf === 'neutral') return ha === 'N';
+        return true;
+      });
+      const desc = activeLens === 'biggest-crowd';
+      ms = [...ms].sort((a,b) => {
+        const diff = parseFloat(a.Attendance) - parseFloat(b.Attendance);
+        return desc ? -diff : diff;
+      });
+      return ms.slice(0, 50);
+    }
+
     default:
       return base;
   }
@@ -1557,7 +1610,10 @@ function renderMatches() {
   const rankedLens = activeLens && ['biggest-wins','biggest-losses','highest-scoring'].includes(activeLens);
 
   // Hide sort toggle and stats bar for ranked/sorted lens views
-  document.getElementById('sortToggle').style.display = rankedLens ? 'none' : '';
+  const isCrowdLens  = activeLens && ['biggest-crowd','smallest-crowd'].includes(activeLens);
+  document.getElementById('sortToggle').style.display = (rankedLens || isCrowdLens) ? 'none' : '';
+  const crowdNav = document.getElementById('lensCrowdNav');
+  if (crowdNav) crowdNav.style.display = isCrowdLens ? 'flex' : 'none';
   const showStats = !rankedLens && compInView > 0;
   document.getElementById('statsBar').classList.toggle('visible', showStats);
 
@@ -1598,7 +1654,7 @@ function renderMatches() {
 
   // Build cards
   const grouped   = !hasActiveFilter() && !activeLens && sortOrder==='desc';
-  const showRanks = activeLens && ['biggest-wins','biggest-losses','highest-scoring'].includes(activeLens);
+  const showRanks    = activeLens && ['biggest-wins','biggest-losses','highest-scoring','biggest-crowd','smallest-crowd'].includes(activeLens);
   const isStreakLens = activeLens && ['win-streak','unbeaten-streak','loss-streak','winless-streak'].includes(activeLens);
   const multiRun  = isStreakLens && window._streakInfo?.groupSets?.length > 1;
   let html = '';
@@ -1852,6 +1908,7 @@ function closeMatch() {
 }
 
 window.addEventListener('popstate', () => {
+  if (document.getElementById('venueOverlay').classList.contains('active')) { closeVenueModal(); return; }
   if (!location.hash.startsWith('#match/')) {
     document.getElementById('timelineOverlay').classList.remove('active');
     document.body.style.overflow = '';
@@ -1860,9 +1917,10 @@ window.addEventListener('popstate', () => {
 
 window.addEventListener('keydown', e => {
   if (e.key === 'Escape') {
-    if (document.getElementById('playerOverlay').classList.contains('active')) { closePlayerModal();     return; }
-    if (document.getElementById('h2hOverlay').classList.contains('active'))    { closeH2H();             return; }
-    if (document.getElementById('seasonOverlay').classList.contains('active')) { closeSeasonSummary();   return; }
+    if (document.getElementById('venueOverlay').classList.contains('active'))  { closeVenueModal();       return; }
+    if (document.getElementById('playerOverlay').classList.contains('active')) { closePlayerModal();      return; }
+    if (document.getElementById('h2hOverlay').classList.contains('active'))    { closeH2H();              return; }
+    if (document.getElementById('seasonOverlay').classList.contains('active')) { closeSeasonSummary();    return; }
     closeMatch();
   }
 });
@@ -2062,8 +2120,11 @@ function renderAttStats(data) {
   if (!data.length) return;
   const latest = data[data.length-1], prev = data.length>=2?data[data.length-2]:null;
   const bestAvg  = data.reduce((b,d) => d.avg>b.avg?d:b, data[0]);
-  const bestGate = data.reduce((b,d) => d.peak>b.peak?d:b, data[0]);
-  const total    = data.reduce((s,d) => s+d.count, 0);
+  const bestGate    = data.reduce((b,d) => d.peak>b.peak?d:b, data[0]);
+  const total       = data.reduce((s,d) => s+d.count, 0);
+  const allAttMs    = MATCHES.filter(m => !isFriendly(m) && m.Attendance && parseFloat(m.Attendance)>0);
+  const bestAnywhere= allAttMs.reduce((b,m) => parseFloat(m.Attendance)>parseFloat(b.Attendance||0)?m:b, allAttMs[0]||{});
+  const anyAtt      = bestAnywhere.Attendance ? Math.round(parseFloat(bestAnywhere.Attendance)) : 0;
   let trend = '';
   if (prev) {
     const diff = latest.avg - prev.avg, pct = Math.abs(Math.round(diff/prev.avg*100));
@@ -2073,7 +2134,9 @@ function renderAttStats(data) {
   const pills = [
     {label:`${esc(latest.season)} avg`, value:latest.avg.toLocaleString('en-GB')+trend, sub: prev?`vs ${prev.avg.toLocaleString('en-GB')} prev season`:''},
     {label:'Best season avg', value:bestAvg.avg.toLocaleString('en-GB'), sub:esc(bestAvg.season)},
-    {label:'Record home gate', value:bestGate.peak.toLocaleString('en-GB'), sub:`vs ${esc(bestGate.peakOpp)} (${esc(bestGate.season)})`},
+    {label:'Biggest home crowd', value:bestGate.peak.toLocaleString('en-GB'), sub:`vs ${esc(bestGate.peakOpp)} (${esc(bestGate.season)})`},
+    {label:'Biggest crowd (any venue)', value: anyAtt ? anyAtt.toLocaleString('en-GB') : '—',
+      sub: bestAnywhere.Opposition ? `vs ${esc(bestAnywhere.Opposition)}${bestAnywhere['Home/Away']==='N'?' · neutral':''}` : ''},
     {label:'Home games tracked', value:total, sub:`${data.length} season${data.length!==1?'s':''}`},
   ];
   document.getElementById('attStats').innerHTML = pills.map(p =>
@@ -2378,14 +2441,17 @@ function showPlayerModal(name) {
     .sort((a,b) => (b.match._date||0)-(a.match._date||0));
 
   // ── Render ──
-  const firstSeason = seasonsSorted[0]?.[0] || '';
-  const lastSeason  = seasonsSorted[seasonsSorted.length-1]?.[0] || '';
-  const subtitle    = firstSeason === lastSeason
-    ? firstSeason
-    : `${firstSeason} – ${lastSeason}`;
+  const firstSeason  = seasonsSorted[0]?.[0] || '';
+  const lastSeason   = seasonsSorted[seasonsSorted.length-1]?.[0] || '';
+  const seasonRange  = firstSeason === lastSeason ? firstSeason : `${firstSeason} – ${lastSeason}`;
+  const playerRec    = PLAYER_MAP.get(name) || {};
+  const natRaw       = playerRec.Nationality || '';
+  const flag         = getFlagEmoji(natRaw);
+  const natLabel     = natRaw ? `${flag ? flag+' ' : ''}${natRaw}` : '';
+  const subtitle     = [natLabel, seasonRange].filter(Boolean).join(' · ');
 
-  document.getElementById('playerName').textContent    = name;
-  document.getElementById('playerSubtitle').textContent= subtitle;
+  document.getElementById('playerName').textContent     = name;
+  document.getElementById('playerSubtitle').textContent = subtitle;
   document.getElementById('playerTotalGoals').textContent = total;
 
   // Goals breakdown chip (only if player has scored penalties)
@@ -2470,9 +2536,9 @@ function showPlayerModal(name) {
       const resWord= res==='W'?'Win':res==='D'?'Draw':res==='L'?'Loss':'?';
       const hs     = homeScore(match), as_ = awayScore(match);
       const score  = hs!==null ? `${hs}–${as_}` : '–';
-      const vsLbl  = match['Home/Away']==='A'
-        ? `@ ${esc(match.Opposition)}`
-        : `vs ${esc(match.Opposition)}`;
+      const ha      = match['Home/Away'] || '';
+      const haStyle = ha==='H' ? 'color:#1d4ed8;font-weight:700' : ha==='A' ? 'color:#7c3aed;font-weight:700' : 'color:var(--text-muted)';
+      const vsLbl   = `${esc(match.Opposition)} <span style="${haStyle}">${ha}</span>`;
       const gLabel = goals.length===1 ? '⚽ 1' : `⚽ ${goals.length}`;
       const comp   = esc(compShort(match.Competition));
       const hidden = (!showAllMatches && i >= CAP) ? ' style="display:none"' : '';
@@ -2750,17 +2816,15 @@ function renderPlayersPage() {
   }
 
   function row(p, i) {
-    const safe = p.name.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+    const safe  = p.name.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
     const goals = p.goals>0 ? `<span style="font-family:var(--font-display);font-weight:800;color:var(--accent-deep)">${p.goals}</span>` : '<span class="td-muted">—</span>';
-    const seasons = p.firstSeason==='—' ? '<span class="td-muted">—</span>'
-      : p.firstSeason===p.lastSeason ? esc(shortSeason(p.firstSeason))
-      : `${esc(shortSeason(p.firstSeason))}–${esc(shortSeason(p.lastSeason))}`;
+    const flag  = getFlagEmoji(p.nationality);
+    const nat   = p.nationality !== '—' ? `${flag ? flag+' ' : ''}${esc(p.nationality)}` : '<span class="td-muted">—</span>';
     return `<tr onclick="showPlayerModal('${safe}')">
       <td class="td-rank">${i+1}</td>
       <td class="td-link">${esc(p.name)}</td>
-      <td class="td-muted">${esc(p.nationality)}</td>
+      <td class="td-muted" style="font-size:0.82rem">${nat}</td>
       <td class="td-num">${goals}</td>
-      <td class="td-num td-muted">${seasons}</td>
     </tr>`;
   }
 
@@ -2803,7 +2867,6 @@ function renderPlayersPage() {
             <th data-sort="name" onclick="__thClick('name')">Name<span class="sort-icon">▲▼</span></th>
             <th>Nationality</th>
             <th class="td-num sorted" data-sort="goals" onclick="__thClick('goals')">Goals<span class="sort-icon">▼</span></th>
-            <th class="td-num">Seasons</th>
           </tr></thead>
           <tbody id="playersTbody">${sorted(filtered()).map(row).join('')}</tbody>
         </table>
@@ -2950,10 +3013,25 @@ async function renderVenuesPage() {
     return 'away';
   }
 
+  // Infer the home club for each venue from the match data
+  function inferHomeClub(venueName) {
+    const s = venueStats.get(venueName);
+    if (!s) return null;
+    if (s.home > 0) return 'Man City Women';
+    const awayMs = MATCHES.filter(m => m.Venue === venueName && m['Home/Away'] === 'A' && !isFriendly(m));
+    if (!awayMs.length) return null;
+    const oppCounts = new Map();
+    awayMs.forEach(m => oppCounts.set(m.Opposition, (oppCounts.get(m.Opposition)||0)+1));
+    const top = [...oppCounts.entries()].sort((a,b)=>b[1]-a[1])[0];
+    if (top && top[1] >= 2 && top[1] >= awayMs.length * 0.35) return top[0];
+    return null;
+  }
+
   const venues = [...VENUE_MAP.values()].map(v => ({
     ...v,
     ...(venueStats.get(v.Name) || {count:0, home:0, away:0, neutral:0, last:null, maxAtt:0, maxAttOpp:''}),
-    type: venueType(venueStats.get(v.Name) || {home:0,neutral:0}),
+    type:      venueType(venueStats.get(v.Name) || {home:0,neutral:0}),
+    homeClub:  inferHomeClub(v.Name),
   })).filter(v => v.count > 0).sort((a,b) => b.count - a.count);
 
   const hasMap = venues.some(v => v.Lat && v.Long);
@@ -2970,14 +3048,14 @@ async function renderVenuesPage() {
         <table class="data-table">
           <thead><tr>
             <th>Venue</th>
-            <th>City</th>
+            <th>Home club</th>
             <th class="td-num">Matches</th>
             <th>Last used</th>
           </tr></thead>
           <tbody id="venuesTbody">
             ${venues.map(v => `<tr>
-              <td class="td-link">${esc(v.Name)}</td>
-              <td class="td-muted">${esc(v.City||'—')}</td>
+              <td class="td-link" onclick="showVenueModal('${v.Name.replace(/'/g,"\\'")}')">${esc(v.Name)}</td>
+              <td class="td-muted" style="font-size:0.82rem">${v.homeClub ? esc(v.homeClub) : '—'}</td>
               <td class="td-num">${v.count}</td>
               <td class="td-muted" style="font-size:0.8rem">${v.last ? fmtDate(v.last, true) : '—'}</td>
             </tr>`).join('')}
@@ -3036,7 +3114,7 @@ function initVenueMap(venues) {
       className: '', iconSize: [12,12], iconAnchor: [6,6],
     });
     const typeLabel = v.type === 'home' ? 'Home ground' : v.type === 'neutral' ? 'Neutral venue' : 'Away ground';
-    const pop = `<strong>${esc(v.Name)}</strong><br><em style="color:#888;font-size:0.85em">${typeLabel}</em><br>${esc(v.City||'')}${v.Country&&v.Country!=='England'?', '+esc(v.Country):''}<br>${v.count} match${v.count!==1?'es':''}${v.maxAtt ? '<br>Record gate: '+v.maxAtt.toLocaleString('en-GB') : ''}`;
+    const pop = `<strong>${esc(v.Name)}</strong><br><em style="color:#888;font-size:0.85em">${typeLabel}</em><br>${esc(v.City||'')}${v.Country&&v.Country!=='England'?', '+esc(v.Country):''}<br>${v.count} match${v.count!==1?'es':''}${v.maxAtt ? '<br>City Women highest gate: '+v.maxAtt.toLocaleString('en-GB') : ''}`;
     L.marker([+v.Lat, +v.Long], {icon}).addTo(map).bindPopup(pop);
   });
 }
@@ -3965,6 +4043,8 @@ const _origClearLens = clearLens;
 clearLens = function() {
   const nav = document.getElementById('lensSeasonNav');
   if (nav) nav.style.display = 'none';
+  const crowdNav = document.getElementById('lensCrowdNav');
+  if (crowdNav) crowdNav.style.display = 'none';
   _origClearLens();
 };
 
@@ -4069,6 +4149,20 @@ function renderSeasonPage(season) {
 }
 
 /* ============================================================
+   FLAG EMOJI
+   ============================================================ */
+const FLAG_EMOJI = {
+  'Australia':'🇦🇺','Austria':'🇦🇹','Belgium':'🇧🇪','Brazil':'🇧🇷','Canada':'🇨🇦',
+  'Denmark':'🇩🇰','England':'🏴󠁧󠁢󠁥󠁮󠁧󠁿','France':'🇫🇷','Germany':'🇩🇪',
+  'Ireland':'🇮🇪','Republic of Ireland':'🇮🇪','Jamaica':'🇯🇲','Japan':'🇯🇵',
+  'Netherlands':'🇳🇱','New Zealand':'🇳🇿','Northern Ireland':'🇬🇧',
+  'Norway':'🇳🇴','Portugal':'🇵🇹','Russia':'🇷🇺','Scotland':'🏴󠁧󠁢󠁳󠁣󠁴󠁿',
+  'South Korea':'🇰🇷','Spain':'🇪🇸','Sweden':'🇸🇪','Switzerland':'🇨🇭',
+  'United States':'🇺🇸','Venezuela':'🇻🇪','Wales':'🏴󠁧󠁢󠁷󠁬󠁳󠁿',
+};
+function getFlagEmoji(nat) { return FLAG_EMOJI[nat] || ''; }
+
+/* ============================================================
    ANALYTICS HELPERS
    ============================================================ */
 function getScoreFirstStats() {
@@ -4164,6 +4258,80 @@ function copyMatchLink(e, matchID) {
   navigator.clipboard.writeText(url)
     .then(() => { btn.textContent = 'Copied ✓'; setTimeout(() => btn.textContent = orig, 1800); })
     .catch(() => { btn.textContent = 'Error';   setTimeout(() => btn.textContent = orig, 1500); });
+}
+
+/* ── Crowd lens ── */
+window._crowdFilter = 'all';
+
+function activateCrowdLens(dir, btn) {
+  window._crowdFilter = 'all';
+  document.querySelectorAll('.crowd-filter-btn').forEach(b =>
+    b.classList.toggle('active', b.id === 'crowdFilterAll')
+  );
+  activateLens(dir + '-crowd', btn);
+}
+
+function setCrowdFilter(f) {
+  window._crowdFilter = f;
+  const capId = 'crowdFilter' + f.charAt(0).toUpperCase() + f.slice(1);
+  document.querySelectorAll('.crowd-filter-btn').forEach(b =>
+    b.classList.toggle('active', b.id === capId)
+  );
+  renderMatches();
+}
+
+/* ── Venue modal ── */
+function showVenueModal(name) {
+  const ms = MATCHES.filter(m => m.Venue === name).sort((a,b) => (b._date||0)-(a._date||0));
+  const comp = ms.filter(m => !isFriendly(m) && m._result);
+  const w = comp.filter(m=>m._result==='W').length;
+  const d = comp.filter(m=>m._result==='D').length;
+  const l = comp.filter(m=>m._result==='L').length;
+  const atts = ms.filter(m=>m.Attendance&&parseFloat(m.Attendance)>0);
+  const maxAtt = atts.length ? Math.max(...atts.map(m=>parseFloat(m.Attendance))) : 0;
+  const maxAttM = atts.find(m=>Math.round(parseFloat(m.Attendance))===Math.round(maxAtt));
+
+  const venueRec = VENUE_MAP.get(name) || {};
+  document.getElementById('venueName').textContent = name;
+  document.getElementById('venueSubtitle').textContent =
+    [venueRec.City, venueRec.Country && venueRec.Country !== 'England' ? venueRec.Country : null]
+      .filter(Boolean).join(', ');
+
+  document.getElementById('venueExtra').innerHTML = `
+    <div class="h2h-extra-item"><strong>Matches:</strong> ${ms.length}</div>
+    <div class="h2h-extra-item"><strong>Record:</strong> ${w}W ${d}D ${l}L</div>
+    ${comp.length ? `<div class="h2h-extra-item"><strong>Win rate:</strong> ${Math.round(w/comp.length*100)}%</div>` : ''}
+    ${maxAtt ? `<div class="h2h-extra-item"><strong>City Women record gate:</strong> ${maxAtt.toLocaleString('en-GB')}${maxAttM?' vs '+esc(maxAttM.Opposition):''}</div>` : ''}`;
+
+  const rows = ms.map(m => {
+    const safe    = m.MatchID.replace(/'/g,"\\'");
+    const isF     = isFriendly(m);
+    const res     = m._result;
+    const rowCls  = isF?'row-f':res==='W'?'row-w':res==='D'?'row-d':res==='L'?'row-l':'';
+    const resCls  = isF?'f':res==='W'?'w':res==='D'?'d':res==='L'?'l':'';
+    const resWord = isF?'Fr':res==='W'?'Win':res==='D'?'Draw':res==='L'?'Loss':'?';
+    const ha      = m['Home/Away']||'';
+    const haStyle = ha==='H'?'color:#1d4ed8;font-weight:700':ha==='A'?'color:#7c3aed;font-weight:700':'color:var(--text-muted)';
+    const hs = homeScore(m), as_ = awayScore(m);
+    const score = hs!==null ? `${hs}–${as_}` : '–';
+    return `<div class="h2h-match-row ${rowCls}" onclick="closeVenueModal();showMatchModal('${safe}')">
+      <span class="h2h-match-result ${resCls}">${resWord}</span>
+      <span class="h2h-match-score">${score}</span>
+      <span class="h2h-match-meta">${m._date?fmtDate(m._date):'—'} <span style="${haStyle}">${ha}</span></span>
+      <span class="h2h-match-comp">${esc(compShort(m.Competition))}</span>
+    </div>`;
+  }).join('');
+
+  document.getElementById('venueMatches').innerHTML =
+    `<h4 style="margin:0 0 8px;font-family:var(--font-display);font-size:0.9rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.06em">All matches here (${ms.length})</h4>${rows}`;
+
+  document.getElementById('venueOverlay').classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeVenueModal() {
+  document.getElementById('venueOverlay').classList.remove('active');
+  document.body.style.overflow = '';
 }
 
 /* ============================================================
