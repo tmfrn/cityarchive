@@ -415,7 +415,7 @@ button{cursor:pointer;font-family:var(--font-body)}
 .att-section-hd{font-size:0.95rem}
 
 /* ── SCORER LINK (on match cards + modal) ── */
-.scorer-link{cursor:pointer;text-decoration:underline dotted;text-underline-offset:2px;text-decoration-color:var(--border-primary);transition:color 0.15s}
+.scorer-link{background:none;border:none;padding:0;font-family:inherit;font-size:inherit;color:inherit;cursor:pointer;text-decoration:underline dotted;text-underline-offset:2px;text-decoration-color:var(--border-primary);transition:color 0.15s;display:inline;vertical-align:baseline}
 .scorer-link:hover{color:var(--accent)}
 
 /* ── SITE NAV ── */
@@ -726,7 +726,10 @@ button{cursor:pointer;font-family:var(--font-body)}
         <div class="timeline-modal-title" id="tlTitle"></div>
         <div class="tl-meta" id="tlMeta"></div>
       </div>
-      <button class="timeline-modal-close" onclick="closeMatch()" aria-label="Close match detail">✕</button>
+      <div style="display:flex;align-items:flex-start;gap:10px;flex-shrink:0">
+        <div id="tlWatch"></div>
+        <button class="timeline-modal-close" onclick="closeMatch()" aria-label="Close match detail">✕</button>
+      </div>
     </div>
     <div class="timeline-modal-body" id="tlBody"></div>
   </div>
@@ -1041,6 +1044,16 @@ function onDataReady() {
   computeMilestones();
   displayStreakAndForm();
   displayOTD();
+
+  // Delegated handler for scorer name → player modal.
+  // Avoids inline onclick entirely: more robust on iOS Safari and all browsers.
+  document.getElementById('matchList').addEventListener('click', e => {
+    const btn = e.target.closest('[data-player]');
+    if (!btn) return;
+    e.stopPropagation();
+    showPlayerModal(btn.dataset.player);
+  });
+
   renderMatches();
 
   document.getElementById('streakBox').style.display = '';
@@ -1701,7 +1714,7 @@ function buildMatchCard(m, rank) {
       const rawName = g.Scorer || '?';
       // Make City non-OG scorers clickable (stop propagation so card click doesn't fire)
       const nameHtml = (isCityGoals && !isOG && g.Scorer && PLAYER_MAP.has(g.Scorer))
-        ? `<span class="scorer-link" onclick="showPlayerModal('${g.Scorer.replace(/\\/g,'\\\\').replace(/'/g,"\\'")}'">${esc(rawName)}</span>`
+        ? `<button type="button" class="scorer-link" data-player="${esc(g.Scorer)}">${esc(rawName)}</button>`
         : esc(rawName);
       let s = nameHtml;
       if (isOG)  s += ' <span style="opacity:0.6;font-size:0.85em;">(og)</span>';
@@ -1765,6 +1778,7 @@ function buildMatchCard(m, rank) {
         <span class="match-footer-detail">${date}${venue}${att}${seasonChip}</span>
       </div>
       <div class="match-footer-right" style="display:flex;gap:6px;align-items:center">
+        ${m.HighlightsURL ? `<a href="${esc(m.HighlightsURL)}" target="_blank" rel="noopener noreferrer" class="match-tl-btn" style="text-decoration:none" onclick="event.stopPropagation()" aria-label="Watch highlights">▶ Watch</a>` : ''}
         <button class="match-tl-btn" style="opacity:0.6;font-weight:600" onclick="copyMatchLink(event,'${esc(m.MatchID)}')">Share</button>
         <button class="match-tl-btn" onclick="showMatchModal('${esc(m.MatchID)}')">Details →</button>
       </div>
@@ -1807,6 +1821,18 @@ function showMatchModal(matchID) {
   document.getElementById('tlMeta').innerHTML =
     `<span class="tl-meta-result ${resCls}">${resWord ? resWord+' · ' : ''}${haWord}${aetPens}${friendlyNote}</span>` +
     `<span class="tl-meta-detail">${esc(compLine)} · ${dateStr}${venueStr}${attStr}${mgrStr}</span>`;
+
+  // Watch highlights link
+  const watchEl = document.getElementById('tlWatch');
+  if (watchEl) {
+    watchEl.innerHTML = m.HighlightsURL
+      ? `<a href="${esc(m.HighlightsURL)}" target="_blank" rel="noopener noreferrer"
+           aria-label="Watch match highlights"
+           style="display:inline-flex;align-items:center;gap:5px;font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;padding:5px 10px;border-radius:6px;background:rgba(255,255,255,0.12);color:#fff;text-decoration:none;border:1px solid rgba(255,255,255,0.22);white-space:nowrap;transition:background 0.15s"
+           onmouseover="this.style.background='rgba(255,255,255,0.22)'"
+           onmouseout="this.style.background='rgba(255,255,255,0.12)'">▶ Watch</a>`
+      : '';
+  }
 
   // Body
   document.getElementById('tlBody').innerHTML = buildModalBody(m);
@@ -3067,7 +3093,7 @@ function renderRecordsPage() {
     .sort((a,b)=>b[1]-a[1])
     .map(([season])=>{
       const ss = getTopScorers(season); if(!ss.length) return null;
-      const top=ss[0].g, joint=ss.filter(s=>s.g===top).map(s=>`<span class="scorer-link" onclick="showPlayerModal('${s.n.replace(/'/g,"\\'")}');">${esc(s.n)}</span>`).join(', ');
+      const top=ss[0].g, joint=ss.filter(s=>s.g===top).map(s=>`<button type="button" class="scorer-link" onclick="showPlayerModal('${s.n.replace(/'/g,"\\'")}');">${esc(s.n)}</button>`).join(', ');
       return `<tr><td>${esc(season)}</td><td>${joint}</td><td class="td-num" style="font-family:var(--font-display);font-weight:800;color:var(--accent-deep)">${top}</td></tr>`;
     }).filter(Boolean).join('');
 
