@@ -3202,10 +3202,10 @@ function renderRecordsPage() {
         if(!tricks.length) return '';
         const rows=tricks.map(t=>{
           const safe=t.match.MatchID.replace(/'/g,"\\'");
-          const goalsLabel=t.goals===3?'Hat-trick':t.goals===4?'Four goals':t.goals+' goals';
+          const suffix = t.goals === 3 ? 'Hat-trick' : `${t.goals} goals`;
           return `<tr onclick="showMatchModal('${safe}')">
             <td class="td-link">${esc(t.scorer)}</td>
-            <td><span style="font-size:0.78rem;font-weight:700;background:rgba(234,179,8,0.12);color:#854d0e;padding:2px 8px;border-radius:100px">${goalsLabel}</span></td>
+            <td class="td-muted" style="font-size:0.78rem">${suffix}</td>
             <td class="td-muted">${esc(t.match.Opposition)}</td>
             <td class="td-muted">${esc(compShort(t.match.Competition))}</td>
             <td class="td-muted" style="font-size:0.8rem;white-space:nowrap">${t.match._date?fmtDate(t.match._date,true):''}</td>
@@ -4129,7 +4129,7 @@ function getComebacks() {
       const def = opp-city;
       if (def > maxDef) maxDef = def;
     });
-    if (maxDef > 0) comebacks.push({match:m, deficit:maxDef});
+    if (maxDef >= 2) comebacks.push({match:m, deficit:maxDef});
   });
   return comebacks.sort((a,b) => b.deficit-a.deficit || (b.match._date||0)-(a.match._date||0));
 }
