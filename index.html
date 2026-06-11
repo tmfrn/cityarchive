@@ -3,7 +3,45 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- Primary SEO -->
   <title>Manchester City Women — Match Archive</title>
+  <meta name="description" content="The complete match archive for Manchester City Women FC — every result, goalscorer, attendance and record since 2014. WSL, FA Cup, League Cup and UEFA Women’s Champions League.">
+  <meta name="keywords" content="Manchester City Women, MCWFC, Man City Women, WSL, Women’s Super League, women’s football stats, MCWFC results, women’s football archive, Manchester City Women FC history">
+  <meta name="author" content="tmfrn">
+  <meta name="robots" content="index, follow">
+
+  <!-- Canonical -->
+  <link rel="canonical" href="https://www.pocketcity.co.uk/">
+
+  <!-- Open Graph: read by Bluesky, Discord, iMessage, LinkedIn, Facebook -->
+  <meta property="og:type"        content="website">
+  <meta property="og:site_name"   content="Man City Women Archive">
+  <meta property="og:title"       content="Manchester City Women — Match Archive">
+  <meta property="og:description" content="Every result, goalscorer and attendance for Manchester City Women FC since 2014. 400+ matches, 1,400+ goals.">
+  <meta property="og:url"         content="https://www.pocketcity.co.uk/">
+  <!-- Add a 1200×630 preview.png to your repo root, then uncomment these three lines: -->
+  <!-- <meta property="og:image"        content="https://www.pocketcity.co.uk/preview.png"> -->
+  <!-- <meta property="og:image:width"  content="1200"> -->
+  <!-- <meta property="og:image:height" content="630"> -->
+
+  <!-- JSON-LD structured data -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "Manchester City Women — Match Archive",
+    "url": "https://www.pocketcity.co.uk/",
+    "description": "Complete match archive for Manchester City Women FC since 2014.",
+    "about": {
+      "@type": "SportsOrganization",
+      "name": "Manchester City Women FC",
+      "alternateName": ["Man City Women", "MCWFC"],
+      "sport": "Association Football",
+      "memberOf": { "@type": "SportsOrganization", "name": "Women’s Super League" }
+    }
+  }
+  </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,700;12..96,800&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700;9..40,800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
@@ -430,8 +468,9 @@ button{cursor:pointer;font-family:var(--font-body)}
 /* ── SITE NAV ── */
 .site-nav{background:var(--navy);border-bottom:3px solid var(--sky);position:sticky;top:0;z-index:500;width:100%}
 .site-nav-inner{max-width:1100px;margin:0 auto;padding:0 24px;display:flex;align-items:center;height:50px;gap:0}
-.site-nav-brand{font-family:var(--font-display);font-size:0.95rem;font-weight:700;color:#fff;white-space:nowrap;padding-right:20px;border-right:1px solid rgba(255,255,255,0.12);letter-spacing:-0.01em;flex-shrink:0;cursor:pointer}
-.site-nav-brand em{color:var(--sky);font-style:normal}
+.site-nav-brand{display:flex;flex-direction:column;justify-content:center;gap:1px;flex-shrink:0;padding-right:20px;border-right:1px solid rgba(255,255,255,0.12);cursor:pointer}
+.site-nav-brand .brand-name{font-family:var(--font-display);font-size:1.05rem;font-weight:900;letter-spacing:-0.02em;line-height:1.1;white-space:nowrap}
+.site-nav-brand .brand-sub{font-family:var(--font-display);font-size:0.58rem;font-weight:700;letter-spacing:0.09em;text-transform:uppercase;color:rgba(255,255,255,0.5);line-height:1;white-space:nowrap}
 .site-nav-links{display:flex;align-items:center;gap:2px;padding-left:6px;overflow-x:auto;scrollbar-width:none;min-width:0}
 .site-nav-links::-webkit-scrollbar{display:none}
 .site-nav-link{color:rgba(255,255,255,0.55);font-family:var(--font-body);font-size:0.78rem;font-weight:600;text-transform:uppercase;letter-spacing:0.04em;padding:7px 11px;border-radius:var(--radius-sm);white-space:nowrap;text-decoration:none;transition:color 0.15s,background 0.15s;cursor:pointer}
@@ -555,7 +594,10 @@ button{cursor:pointer;font-family:var(--font-body)}
 <body>
 <nav class="site-nav">
   <div class="site-nav-inner">
-    <span class="site-nav-brand" onclick="showPage('')">Man City <em>Women</em></span>
+    <div class="site-nav-brand" onclick="showPage('')">
+      <span class="brand-name"><span style="color:#fff">Pocket</span> <span style="color:var(--sky)">City</span></span>
+      <span class="brand-sub">Man City Women</span>
+    </div>
     <div class="site-nav-links">
       <span class="site-nav-link active" data-page=""          onclick="showPage('')">Matches</span>
       <span class="site-nav-link"        data-page="players"   onclick="showPage('players')">Players</span>
@@ -571,7 +613,12 @@ button{cursor:pointer;font-family:var(--font-body)}
 
   <div class="header">
     <div class="header-content">
-      <h1>Manchester City Women</h1>
+      <div style="display:inline-flex;align-items:center;gap:6px;margin-bottom:6px">
+        <span style="font-family:var(--font-display);font-size:0.7rem;font-weight:800;letter-spacing:0.14em;text-transform:uppercase;color:var(--sky)">Pocket</span>
+        <span style="width:3px;height:3px;border-radius:50%;background:var(--sky);display:inline-block;opacity:0.5"></span>
+        <span style="font-family:var(--font-display);font-size:0.7rem;font-weight:800;letter-spacing:0.14em;text-transform:uppercase;color:var(--sky)">City</span>
+      </div>
+      <h1>Manchester City <span style="color:var(--sky)">Women</span></h1>
       <p>Match Archive &middot; WSL era 2014&ndash;present</p>
     </div>
   </div>
@@ -1912,6 +1959,7 @@ function buildMatchCard(m, rank) {
       </div>
       <div class="match-footer-right" style="display:flex;gap:6px;align-items:center">
         ${m.HighlightsURL ? `<a href="${esc(m.HighlightsURL)}" target="_blank" rel="noopener noreferrer" class="match-tl-btn" style="text-decoration:none" onclick="event.stopPropagation()" aria-label="Watch highlights">▶ Watch</a>` : ''}
+        <button class="match-tl-btn" style="opacity:0.6;font-weight:600" onclick="shareOnBluesky(event,'${esc(m.MatchID)}')">Bluesky</button>
         <button class="match-tl-btn" style="opacity:0.6;font-weight:600" onclick="copyMatchLink(event,'${esc(m.MatchID)}')">Share</button>
         <button class="match-tl-btn" onclick="showMatchModal('${esc(m.MatchID)}')">Details →</button>
       </div>
@@ -4337,14 +4385,198 @@ function getComebacks() {
   return comebacks.sort((a,b) => b.deficit-a.deficit || (b.match._date||0)-(a.match._date||0));
 }
 
-function copyMatchLink(e, matchID) {
+/* ── Share card generator ── */
+function _truncCanvas(ctx, text, maxW) {
+  if (ctx.measureText(text).width <= maxW) return text;
+  let t = text;
+  while (t.length > 2 && ctx.measureText(t + '\u2026').width > maxW) t = t.slice(0, -1);
+  return t + '\u2026';
+}
+
+async function generateShareCard(matchID) {
+  const m = MATCHES.find(x => x.MatchID === matchID);
+  if (!m) return null;
+  await document.fonts.ready;
+
+  const S = 1080;
+  const cvs = document.createElement('canvas');
+  cvs.width = cvs.height = S;
+  const ctx = cvs.getContext('2d');
+
+  const goals = (GOALS_MAP.get(matchID)||[]).sort((a,b)=>parseMin(a.Minute)-parseMin(b.Minute));
+  const ht = homeTeam(m), at = awayTeam(m);
+  const hs = homeScore(m), as_ = awayScore(m);
+
+  function groupGoals(list) {
+    const map = new Map();
+    list.forEach(g => {
+      if (!g.Scorer) return;
+      const key = g.Scorer + (g.OG==='Y' ? ' (OG)' : '');
+      if (!map.has(key)) map.set(key, []);
+      const min = g.Minute ? g.Minute + "'" : '';
+      if (min) map.get(key).push(min);
+    });
+    return [...map.entries()].map(([n, mins]) => mins.length ? `${n}  ${mins.join(' ')}` : n);
+  }
+
+  const citySc = groupGoals(goals.filter(g => g['For/Against']==='For'));
+  const oppSc  = groupGoals(goals.filter(g => g['For/Against']==='Against'));
+
+  // Background
+  const bg = ctx.createLinearGradient(0, 0, 0, S);
+  bg.addColorStop(0, '#1A2D4A');
+  bg.addColorStop(1, '#0e1f35');
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, S, S);
+
+  // Top accent bar
+  ctx.fillStyle = '#6CABDD';
+  ctx.fillRect(0, 0, S, 10);
+
+  const px = S * 0.08;
+  ctx.textAlign = 'left';
+
+  // "Pocket City" brand
+  ctx.font = `900 ${Math.round(S*0.058)}px "Bricolage Grotesque", system-ui, sans-serif`;
+  ctx.fillStyle = '#ffffff';
+  const pocketW = ctx.measureText('Pocket ').width;
+  ctx.fillText('Pocket ', px, S * 0.105);
+  ctx.fillStyle = '#6CABDD';
+  ctx.fillText('City', px + pocketW, S * 0.105);
+
+  // Sub-brand
+  ctx.fillStyle = 'rgba(108,171,221,0.5)';
+  ctx.font = `600 ${Math.round(S*0.024)}px "DM Sans", system-ui, sans-serif`;
+  ctx.fillText('MAN CITY WOMEN', px, S * 0.136);
+
+  // Divider
+  ctx.strokeStyle = 'rgba(108,171,221,0.18)';
+  ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(px, S*0.165); ctx.lineTo(S-px, S*0.165); ctx.stroke();
+
+  // Competition + date
+  const meta = [compShort(m.Competition||''), m._date ? fmtDate(m._date, true) : ''].filter(Boolean).join(' \u00b7 ');
+  ctx.fillStyle = 'rgba(255,255,255,0.38)';
+  ctx.font = `400 ${Math.round(S*0.024)}px "DM Sans", system-ui, sans-serif`;
+  ctx.fillText(_truncCanvas(ctx, meta, S*0.84), px, S * 0.2);
+
+  // Home team
+  ctx.fillStyle = '#ffffff';
+  ctx.font = `800 ${Math.round(S*0.046)}px "Bricolage Grotesque", system-ui, sans-serif`;
+  ctx.textAlign = 'left';
+  ctx.fillText(_truncCanvas(ctx, ht, S*0.5), px, S * 0.295);
+
+  // Away team
+  ctx.textAlign = 'right';
+  ctx.fillText(_truncCanvas(ctx, at, S*0.5), S-px, S * 0.672);
+
+  // Score
+  const scoreStr = (hs !== null && as_ !== null) ? `${hs}\u2013${as_}` : '\u2013';
+  ctx.textAlign = 'center';
+  ctx.font = `900 ${Math.round(S*0.21)}px "Bricolage Grotesque", system-ui, sans-serif`;
+  ctx.fillStyle = '#ffffff';
+  ctx.fillText(scoreStr, S*0.5, S*0.565);
+
+  // Result chip
+  if (m._result) {
+    const col = m._result==='W'?'#4ade80':m._result==='L'?'#f87171':'#9ca3af';
+    const bgc = m._result==='W'?'rgba(74,222,128,0.15)':m._result==='L'?'rgba(248,113,113,0.15)':'rgba(156,163,175,0.15)';
+    const lbl = m._result==='W'?'WIN':m._result==='L'?'LOSS':'DRAW';
+    const cW=S*0.14, cH=S*0.043, cX=(S-cW)/2, cY=S*0.59;
+    ctx.fillStyle = bgc;
+    ctx.beginPath(); ctx.roundRect(cX,cY,cW,cH,cH/2); ctx.fill();
+    ctx.fillStyle = col;
+    ctx.font = `700 ${Math.round(S*0.022)}px "DM Sans", system-ui, sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.fillText(lbl, S*0.5, cY+cH*0.7);
+  }
+
+  // Scorers
+  let sy = S * 0.735;
+  const lh = S * 0.054;
+  if (citySc.length) {
+    ctx.fillStyle = '#6CABDD';
+    ctx.font = `500 ${Math.round(S*0.030)}px "DM Sans", system-ui, sans-serif`;
+    ctx.textAlign = 'left';
+    citySc.slice(0,3).forEach(line => { ctx.fillText(_truncCanvas(ctx,line,S*0.84), px, sy); sy += lh*0.82; });
+  }
+  if (oppSc.length) {
+    sy += lh * 0.2;
+    ctx.fillStyle = 'rgba(255,255,255,0.38)';
+    ctx.font = `400 ${Math.round(S*0.026)}px "DM Sans", system-ui, sans-serif`;
+    oppSc.slice(0,2).forEach(line => { ctx.fillText(_truncCanvas(ctx,line,S*0.84), px, sy); sy += lh*0.78; });
+  }
+
+  // Venue + attendance
+  const vLine = [m.Venue, m.Attendance&&parseFloat(m.Attendance)>0?'Att. '+Math.round(parseFloat(m.Attendance)).toLocaleString('en-GB'):''].filter(Boolean).join(' \u00b7 ');
+  if (vLine) {
+    ctx.fillStyle = 'rgba(255,255,255,0.22)';
+    ctx.font = `400 ${Math.round(S*0.021)}px "DM Sans", system-ui, sans-serif`;
+    ctx.textAlign = 'left';
+    ctx.fillText(_truncCanvas(ctx,vLine,S*0.84), px, S*0.924);
+  }
+
+  // Footer
+  ctx.fillStyle = '#6CABDD';
+  ctx.fillRect(0, S-72, S, 72);
+  ctx.fillStyle = '#1A2D4A';
+  ctx.font = `700 ${Math.round(S*0.030)}px "Bricolage Grotesque", system-ui, sans-serif`;
+  ctx.textAlign = 'center';
+  ctx.fillText('pocketcity.co.uk', S*0.5, S-22);
+
+  return new Promise(resolve => cvs.toBlob(blob => resolve(blob), 'image/png'));
+}
+
+async function copyMatchLink(e, matchID) {
   e.stopPropagation();
-  const url  = location.origin + location.pathname + '#match/' + matchID;
   const btn  = e.currentTarget;
   const orig = btn.textContent;
-  navigator.clipboard.writeText(url)
-    .then(() => { btn.textContent = 'Copied ✓'; setTimeout(() => btn.textContent = orig, 1800); })
-    .catch(() => { btn.textContent = 'Error';   setTimeout(() => btn.textContent = orig, 1500); });
+  btn.textContent = '\u2026';
+  btn.disabled = true;
+
+  try {
+    const blob = await generateShareCard(matchID);
+    const file = new File([blob], 'pocket-city.png', { type: 'image/png' });
+    const url  = location.origin + location.pathname + '#match/' + matchID;
+
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      await navigator.share({ files: [file], url });
+      return;
+    }
+    if (navigator.share) {
+      const m = MATCHES.find(x => x.MatchID === matchID);
+      const text = m ? `${homeTeam(m)} ${m._gf??''}–${m._ga??''} ${awayTeam(m)}` : '';
+      await navigator.share({ title: 'Pocket City', text, url });
+      return;
+    }
+    const dl = Object.assign(document.createElement('a'), {
+      href: URL.createObjectURL(blob), download: 'pocket-city-match.png'
+    });
+    dl.click();
+    URL.revokeObjectURL(dl.href);
+    btn.textContent = 'Saved \u2713';
+    setTimeout(() => { btn.textContent = orig; btn.disabled = false; }, 2000);
+  } catch (err) {
+    if (err.name !== 'AbortError') {
+      navigator.clipboard.writeText(location.origin + location.pathname + '#match/' + matchID)
+        .then(() => { btn.textContent = 'Copied \u2713'; setTimeout(() => { btn.textContent = orig; btn.disabled = false; }, 1800); })
+        .catch(() => { btn.textContent = orig; btn.disabled = false; });
+    } else {
+      btn.textContent = orig; btn.disabled = false;
+    }
+  } finally {
+    setTimeout(() => { if (btn.textContent==='\u2026'){btn.textContent=orig;btn.disabled=false;} }, 5000);
+  }
+}
+
+function shareOnBluesky(e, matchID) {
+  e.stopPropagation();
+  const url  = location.origin + location.pathname + '#match/' + matchID;
+  const m    = MATCHES.find(x => x.MatchID === matchID);
+  const line = m
+    ? `${homeTeam(m)} ${m._gf??''}–${m._ga??''} ${awayTeam(m)} \u00b7 ${compShort(m.Competition||'')}${m._date?' \u00b7 '+fmtDate(m._date,true):''}`
+    : 'Man City Women match archive';
+  window.open(`https://bsky.app/intent/compose?text=${encodeURIComponent(line+'\n\n'+url)}`, '_blank', 'noopener noreferrer');
 }
 
 /* ── Crowd lens ── */
