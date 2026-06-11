@@ -1959,8 +1959,6 @@ function buildMatchCard(m, rank) {
       </div>
       <div class="match-footer-right" style="display:flex;gap:6px;align-items:center">
         ${m.HighlightsURL ? `<a href="${esc(m.HighlightsURL)}" target="_blank" rel="noopener noreferrer" class="match-tl-btn" style="text-decoration:none" onclick="event.stopPropagation()" aria-label="Watch highlights">▶ Watch</a>` : ''}
-        <button class="match-tl-btn" style="opacity:0.6;font-weight:600" onclick="shareOnBluesky(event,'${esc(m.MatchID)}')">Bluesky</button>
-        <button class="match-tl-btn" style="opacity:0.6;font-weight:600" onclick="copyMatchLink(event,'${esc(m.MatchID)}')">Share</button>
         <button class="match-tl-btn" onclick="showMatchModal('${esc(m.MatchID)}')">Details →</button>
       </div>
     </div>
@@ -2003,16 +2001,24 @@ function showMatchModal(matchID) {
     `<span class="tl-meta-result ${resCls}">${resWord ? resWord+' · ' : ''}${haWord}${aetPens}${friendlyNote}</span>` +
     `<span class="tl-meta-detail">${esc(compLine)} · ${dateStr}${venueStr}${attStr}${mgrStr}</span>`;
 
-  // Watch highlights link
+  // Watch highlights + share buttons in modal header
   const watchEl = document.getElementById('tlWatch');
+  document.getElementById('timelineOverlay').dataset.matchId = matchID;
   if (watchEl) {
-    watchEl.innerHTML = m.HighlightsURL
-      ? `<a href="${esc(m.HighlightsURL)}" target="_blank" rel="noopener noreferrer"
-           aria-label="Watch match highlights"
-           style="display:inline-flex;align-items:center;gap:5px;font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;padding:5px 10px;border-radius:6px;background:rgba(255,255,255,0.12);color:#fff;text-decoration:none;border:1px solid rgba(255,255,255,0.22);white-space:nowrap;transition:background 0.15s"
-           onmouseover="this.style.background='rgba(255,255,255,0.22)'"
-           onmouseout="this.style.background='rgba(255,255,255,0.12)'">▶ Watch</a>`
-      : '';
+    const btnStyle = `display:inline-flex;align-items:center;gap:5px;font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;padding:5px 10px;border-radius:6px;background:rgba(255,255,255,0.12);color:#fff;text-decoration:none;border:1px solid rgba(255,255,255,0.22);white-space:nowrap;cursor:pointer;font-family:var(--font-body);transition:background 0.15s`;
+    watchEl.innerHTML =
+      (m.HighlightsURL
+        ? `<a href="${esc(m.HighlightsURL)}" target="_blank" rel="noopener noreferrer"
+             aria-label="Watch match highlights"
+             style="${btnStyle}"
+             onmouseover="this.style.background='rgba(255,255,255,0.22)'"
+             onmouseout="this.style.background='rgba(255,255,255,0.12)'">▶ Watch</a>`
+        : '') +
+      `<button id="tlBsky"  style="${btnStyle}" aria-label="Share on Bluesky">Bluesky</button>` +
+      `<button id="tlShare" style="${btnStyle}" aria-label="Share match card">Share</button>`;
+
+    document.getElementById('tlBsky').onclick  = e => shareOnBluesky(e, matchID);
+    document.getElementById('tlShare').onclick = e => copyMatchLink(e, matchID);
   }
 
   // Body
@@ -4422,6 +4428,38 @@ async function generateShareCard(matchID) {
   const citySc = groupGoals(goals.filter(g => g['For/Against']==='For'));
   const oppSc  = groupGoals(goals.filter(g => g['For/Against']==='Against'));
 
+  // Helper: auto-shrink font until text fits maxW
+  function fitFont(style, maxPx, text, maxW, minPx=22) {
+    let px = maxPx;
+    while (px > minPx) {
+      ctx.font = `${style} ${px}px "Bricolage Grotesque", system-ui, sans-serif`;
+      if (ctx.measureText(text).width <= maxW) break;
+      px -= 2;
+    }
+    return px;
+  }
+
+  // Helper: draw text wrapping to two lines if needed (right-aligned)
+  function drawTeamName(text, x, y, maxW, fontStyle, maxPx, align) {
+    const px = fitFont(fontStyle, maxPx, text, maxW);
+    ctx.font = `${fontStyle} ${px}px "Bricolage Grotesque", system-ui, sans-serif`;
+    ctx.textAlign = align;
+    if (ctx.measureText(text).width <= maxW) {
+      ctx.fillText(text, x, y);
+    } else {
+      // Split roughly in half at a space
+      const words = text.split(' ');
+      let best = 1;
+      for (let i=1; i<words.length; i++) {
+        if (ctx.measureText(words.slice(0,i).join(' ')).width <= maxW) best = i;
+      }
+      const line1 = words.slice(0, best).join(' ');
+      const line2 = words.slice(best).join(' ');
+      ctx.fillText(line1, x, y - px*0.55);
+      ctx.fillText(line2, x, y + px*0.55);
+    }
+  }
+
   // Background
   const bg = ctx.createLinearGradient(0, 0, 0, S);
   bg.addColorStop(0, '#1A2D4A');
@@ -4434,10 +4472,10 @@ async function generateShareCard(matchID) {
   ctx.fillRect(0, 0, S, 10);
 
   const px = S * 0.08;
-  ctx.textAlign = 'left';
 
   // "Pocket City" brand
   ctx.font = `900 ${Math.round(S*0.058)}px "Bricolage Grotesque", system-ui, sans-serif`;
+  ctx.textAlign = 'left';
   ctx.fillStyle = '#ffffff';
   const pocketW = ctx.measureText('Pocket ').width;
   ctx.fillText('Pocket ', px, S * 0.105);
@@ -4454,21 +4492,21 @@ async function generateShareCard(matchID) {
   ctx.lineWidth = 1;
   ctx.beginPath(); ctx.moveTo(px, S*0.165); ctx.lineTo(S-px, S*0.165); ctx.stroke();
 
-  // Competition + date
-  const meta = [compShort(m.Competition||''), m._date ? fmtDate(m._date, true) : ''].filter(Boolean).join(' \u00b7 ');
-  ctx.fillStyle = 'rgba(255,255,255,0.38)';
-  ctx.font = `400 ${Math.round(S*0.024)}px "DM Sans", system-ui, sans-serif`;
-  ctx.fillText(_truncCanvas(ctx, meta, S*0.84), px, S * 0.2);
+  // Competition + Round + date (prominent)
+  const compRound = [compShort(m.Competition||''), m.Round].filter(Boolean).join(' ');
+  const meta = [compRound, m._date ? fmtDate(m._date, true) : ''].filter(Boolean).join('  \u00b7  ');
+  ctx.fillStyle = 'rgba(255,255,255,0.5)';
+  ctx.font = `500 ${Math.round(S*0.026)}px "DM Sans", system-ui, sans-serif`;
+  ctx.textAlign = 'left';
+  ctx.fillText(_truncCanvas(ctx, meta, S*0.84), px, S * 0.203);
 
   // Home team
   ctx.fillStyle = '#ffffff';
-  ctx.font = `800 ${Math.round(S*0.046)}px "Bricolage Grotesque", system-ui, sans-serif`;
-  ctx.textAlign = 'left';
-  ctx.fillText(_truncCanvas(ctx, ht, S*0.5), px, S * 0.295);
+  drawTeamName(ht, px, S*0.305, S*0.82, '800', Math.round(S*0.046), 'left');
 
-  // Away team
-  ctx.textAlign = 'right';
-  ctx.fillText(_truncCanvas(ctx, at, S*0.5), S-px, S * 0.672);
+  // Away team (right-aligned)
+  ctx.fillStyle = '#ffffff';
+  drawTeamName(at, S-px, S*0.672, S*0.82, '800', Math.round(S*0.046), 'right');
 
   // Score
   const scoreStr = (hs !== null && as_ !== null) ? `${hs}\u2013${as_}` : '\u2013';
@@ -4477,43 +4515,50 @@ async function generateShareCard(matchID) {
   ctx.fillStyle = '#ffffff';
   ctx.fillText(scoreStr, S*0.5, S*0.565);
 
-  // Result chip
-  if (m._result) {
-    const col = m._result==='W'?'#4ade80':m._result==='L'?'#f87171':'#9ca3af';
-    const bgc = m._result==='W'?'rgba(74,222,128,0.15)':m._result==='L'?'rgba(248,113,113,0.15)':'rgba(156,163,175,0.15)';
-    const lbl = m._result==='W'?'WIN':m._result==='L'?'LOSS':'DRAW';
-    const cW=S*0.14, cH=S*0.043, cX=(S-cW)/2, cY=S*0.59;
-    ctx.fillStyle = bgc;
-    ctx.beginPath(); ctx.roundRect(cX,cY,cW,cH,cH/2); ctx.fill();
-    ctx.fillStyle = col;
-    ctx.font = `700 ${Math.round(S*0.022)}px "DM Sans", system-ui, sans-serif`;
-    ctx.textAlign = 'center';
-    ctx.fillText(lbl, S*0.5, cY+cH*0.7);
-  }
-
   // Scorers
-  let sy = S * 0.735;
+  let sy = S * 0.745;
   const lh = S * 0.054;
   if (citySc.length) {
     ctx.fillStyle = '#6CABDD';
     ctx.font = `500 ${Math.round(S*0.030)}px "DM Sans", system-ui, sans-serif`;
     ctx.textAlign = 'left';
-    citySc.slice(0,3).forEach(line => { ctx.fillText(_truncCanvas(ctx,line,S*0.84), px, sy); sy += lh*0.82; });
+    citySc.slice(0,4).forEach(line => { ctx.fillText(_truncCanvas(ctx,line,S*0.84), px, sy); sy += lh*0.80; });
   }
   if (oppSc.length) {
-    sy += lh * 0.2;
+    sy += lh * 0.15;
     ctx.fillStyle = 'rgba(255,255,255,0.38)';
     ctx.font = `400 ${Math.round(S*0.026)}px "DM Sans", system-ui, sans-serif`;
-    oppSc.slice(0,2).forEach(line => { ctx.fillText(_truncCanvas(ctx,line,S*0.84), px, sy); sy += lh*0.78; });
+    oppSc.slice(0,2).forEach(line => { ctx.fillText(_truncCanvas(ctx,line,S*0.84), px, sy); sy += lh*0.75; });
   }
 
-  // Venue + attendance
-  const vLine = [m.Venue, m.Attendance&&parseFloat(m.Attendance)>0?'Att. '+Math.round(parseFloat(m.Attendance)).toLocaleString('en-GB'):''].filter(Boolean).join(' \u00b7 ');
-  if (vLine) {
-    ctx.fillStyle = 'rgba(255,255,255,0.22)';
-    ctx.font = `400 ${Math.round(S*0.021)}px "DM Sans", system-ui, sans-serif`;
+  // Venue + attendance — more prominent, with a rule above
+  const venueName = m.Venue || '';
+  const attNum    = m.Attendance && parseFloat(m.Attendance)>0
+    ? Math.round(parseFloat(m.Attendance)).toLocaleString('en-GB') : '';
+
+  if (venueName || attNum) {
+    const rulerY = S * 0.882;
+    ctx.strokeStyle = 'rgba(108,171,221,0.15)';
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(px, rulerY); ctx.lineTo(S-px, rulerY); ctx.stroke();
+
     ctx.textAlign = 'left';
-    ctx.fillText(_truncCanvas(ctx,vLine,S*0.84), px, S*0.924);
+    // Venue
+    if (venueName) {
+      ctx.fillStyle = 'rgba(255,255,255,0.65)';
+      ctx.font = `600 ${Math.round(S*0.026)}px "DM Sans", system-ui, sans-serif`;
+      ctx.fillText(_truncCanvas(ctx, venueName, S*0.84), px, S*0.914);
+    }
+    // Attendance as a bigger, clearer number
+    if (attNum) {
+      ctx.fillStyle = '#6CABDD';
+      ctx.font = `700 ${Math.round(S*0.030)}px "Bricolage Grotesque", system-ui, sans-serif`;
+      ctx.textAlign = 'right';
+      ctx.fillText(attNum, S-px, S*0.914);
+      ctx.fillStyle = 'rgba(108,171,221,0.6)';
+      ctx.font = `400 ${Math.round(S*0.020)}px "DM Sans", system-ui, sans-serif`;
+      ctx.fillText('ATT.', S-px - ctx.measureText(attNum).width - S*0.018, S*0.914);
+    }
   }
 
   // Footer
