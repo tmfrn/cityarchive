@@ -57,7 +57,7 @@
   --border-subtle: #eae8e1;
   --text-primary:  #1a1a18;
   --text-secondary:#5a5a52;
-  --text-muted:    #8a8a80;
+  --text-muted:    #767670;
   --text-bright:   #0d0d0c;
   /* City blue: navy for fills/interactive, sky for decorative accents */
   --accent:        #1A2D4A;
@@ -103,6 +103,7 @@ button{cursor:pointer;font-family:var(--font-body)}
 .otd-banner{background:var(--bg-elevated);border-bottom:1px solid var(--border-primary);border-left:3px solid var(--accent)}
 .otd-summary{display:flex;align-items:center;gap:10px;padding:13px 32px;cursor:pointer;user-select:none}
 .otd-summary:hover{background:var(--bg-surface)}
+.otd-summary:focus-visible,[role="button"]:focus-visible{outline:2px solid var(--sky);outline-offset:2px;border-radius:4px}
 .otd-title{font-size:0.84rem;font-weight:600;color:var(--accent);flex:1}
 .otd-chevron{font-size:0.78em;color:var(--text-muted);transition:transform 0.2s}
 .otd-banner.open .otd-chevron{transform:rotate(180deg)}
@@ -223,7 +224,7 @@ button{cursor:pointer;font-family:var(--font-body)}
 .match-footer{border-top:1px solid var(--border-subtle);padding:7px 14px;background:var(--bg-surface);display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center}
 .match-footer-comp{display:block;font-size:0.71rem;font-weight:700;color:var(--text-secondary);line-height:1.4}
 .match-footer-detail{display:block;font-size:0.67rem;font-weight:500;color:var(--text-muted);line-height:1.5}
-.match-tl-btn{display:inline-block;font-size:0.64rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--accent);cursor:pointer;padding:4px 9px;border:1px solid var(--accent-border);border-radius:6px;background:var(--accent-surface);white-space:nowrap;transition:background 0.15s}
+.match-tl-btn{display:inline-flex;align-items:center;justify-content:center;font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--accent);cursor:pointer;padding:8px 12px;min-height:34px;border:1px solid var(--accent-border);border-radius:8px;background:var(--accent-surface);white-space:nowrap;transition:background 0.15s}
 .match-tl-btn:hover{background:rgba(42,99,149,0.1)}
 
 .show-more-btn{display:block;margin:24px auto 0;padding:10px 28px;background:var(--bg-card);border:1.5px solid var(--border-primary);border-radius:100px;font-size:0.82rem;font-weight:600;color:var(--text-secondary);cursor:pointer;transition:all 0.2s;font-family:var(--font-body)}
@@ -325,7 +326,7 @@ button{cursor:pointer;font-family:var(--font-body)}
 /* ── PLAYER MODAL ── */
 .player-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.45);backdrop-filter:blur(4px);z-index:1000;overflow-y:auto;padding:40px 20px}
 .player-overlay.active{display:flex;align-items:flex-start;justify-content:center}
-.crowd-filter-btn{background:none;border:1.5px solid var(--border-primary);border-radius:100px;padding:3px 11px;font-size:0.72rem;font-weight:600;cursor:pointer;color:var(--text-secondary);transition:all 0.15s;font-family:var(--font-body)}
+.crowd-filter-btn{background:none;border:1.5px solid var(--border-primary);border-radius:100px;padding:7px 14px;min-height:34px;font-size:0.74rem;font-weight:600;cursor:pointer;color:var(--text-secondary);transition:all 0.15s;font-family:var(--font-body)}
 .crowd-filter-btn.active{background:var(--accent);border-color:var(--accent);color:#fff}
 .venue-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.45);backdrop-filter:blur(4px);z-index:1000;overflow-y:auto;padding:40px 20px}
 .venue-overlay.active{display:flex;align-items:flex-start;justify-content:center}
@@ -631,15 +632,19 @@ button{cursor:pointer;font-family:var(--font-body)}
   </div>
 
   <div class="otd-banner" id="otdBanner" style="display:none">
-    <div class="otd-summary" onclick="document.getElementById('otdBanner').classList.toggle('open')">
-      <span style="font-size:1em">🗓</span>
+    <div class="otd-summary" id="otdSummary" role="button" tabindex="0" aria-expanded="false" aria-controls="otdDetail"
+         onclick="toggleOtdBanner()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleOtdBanner()}">
+      <span style="font-size:1em" aria-hidden="true">🗓</span>
       <span class="otd-title" id="otdTitle">On this day</span>
-      <span class="otd-chevron">▾</span>
+      <span class="otd-chevron" aria-hidden="true">▾</span>
     </div>
-    <div class="otd-detail">
+    <div class="otd-detail" id="otdDetail">
       <div class="otd-matches" id="otdMatches"></div>
       <div id="otdSeeAll" style="display:none;padding:8px 0 2px">
-        <span onclick="document.getElementById('otdBanner').classList.remove('open');activateLens('on-this-day',document.getElementById('lensOTD'))" style="font-size:0.8rem;font-weight:700;color:var(--accent);cursor:pointer;text-decoration:underline dotted;text-underline-offset:2px">See all on this day →</span>
+        <span role="button" tabindex="0"
+              onclick="document.getElementById('otdBanner').classList.remove('open');document.getElementById('otdSummary').setAttribute('aria-expanded','false');activateLens('on-this-day',document.getElementById('lensOTD'))"
+              onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click()}"
+              style="font-size:0.8rem;font-weight:700;color:var(--accent);cursor:pointer;text-decoration:underline dotted;text-underline-offset:2px">See all on this day →</span>
       </div>
     </div>
   </div>
@@ -1239,6 +1244,21 @@ function awayTeam(m)  { return m['Home/Away']==='A' ? 'Man City Women' : m.Oppos
 function homeScore(m) { return m['Home/Away']==='A' ? m._ga : m._gf; }
 function awayScore(m) { return m['Home/Away']==='A' ? m._gf : m._ga; }
 function cityIsHome(m){ return m['Home/Away'] !== 'A'; }
+
+function toggleOtdBanner() {
+  const banner = document.getElementById('otdBanner');
+  const summary = document.getElementById('otdSummary');
+  const isOpen = banner.classList.toggle('open');
+  summary.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+}
+
+// Consistent H/A/N badge — matches the .badge pill style used on match cards,
+// so player/H2H/venue modals don't rely on a different (colour-only) convention.
+function haBadge(ha) {
+  const cls = ha==='H' ? 'home' : ha==='A' ? 'away' : 'neutral';
+  const word = ha || 'N';
+  return `<span class="badge ${cls}" style="margin-left:4px">${word}</span>`;
+}
 
 function borderClass(m) {
   if (!m._result) return 'border-none';
@@ -2665,8 +2685,7 @@ function showPlayerModal(name) {
       const hs     = homeScore(match), as_ = awayScore(match);
       const score  = hs!==null ? `${hs}-${as_}` : '-';
       const ha      = match['Home/Away'] || '';
-      const haStyle = ha==='H' ? 'color:#1d4ed8;font-weight:700' : ha==='A' ? 'color:#7c3aed;font-weight:700' : 'color:var(--text-muted)';
-      const vsLbl   = `${esc(match.Opposition)} <span style="${haStyle}">${ha}</span>`;
+      const vsLbl   = `${esc(match.Opposition)} ${haBadge(ha)}`;
       const gLabel = goals.length===1 ? '⚽ 1' : `⚽ ${goals.length}`;
       const comp   = esc(compShort(match.Competition));
       const hidden = (!showAllMatches && i >= CAP) ? ' style="display:none"' : '';
@@ -2814,17 +2833,12 @@ function showH2H(opp) {
     const hs    = homeScore(m), as_ = awayScore(m);
     const score = (res || isF) && hs!==null ? `${hs}-${as_}` : '-';
     const ha    = {H:'H',A:'A',N:'N'}[m['Home/Away']] || '';
-    const haStyle = m['Home/Away']==='H'
-      ? 'color:#1d4ed8;font-weight:700'
-      : m['Home/Away']==='A'
-        ? 'color:#7c3aed;font-weight:700'
-        : 'color:var(--text-muted)';
     const compShortStr = esc(compShort(m.Competition)) + (m.Round ? ` · ${esc(m.Round)}` : '');
     const safe = m.MatchID.replace(/'/g,"\\'");
     return `<div class="h2h-match-row ${rowCls}" onclick="openMatchFromH2H('${safe}')">
       <span class="h2h-match-result ${resCls}">${resWord}</span>
       <span class="h2h-match-score">${score}</span>
-      <span class="h2h-match-meta">${fmtDate(m._date)} <span style="${haStyle}">${ha}</span></span>
+      <span class="h2h-match-meta">${fmtDate(m._date)} ${haBadge(ha)}</span>
       <span class="h2h-match-comp">${compShortStr}</span>
     </div>`;
   }).join('');
@@ -4817,13 +4831,12 @@ function showVenueModal(name) {
     const resCls  = isF?'f':res==='W'?'w':res==='D'?'d':res==='L'?'l':'';
     const resWord = isF?'Fr':res==='W'?'Win':res==='D'?'Draw':res==='L'?'Loss':'?';
     const ha      = m['Home/Away']||'';
-    const haStyle = ha==='H'?'color:#1d4ed8;font-weight:700':ha==='A'?'color:#7c3aed;font-weight:700':'color:var(--text-muted)';
     const hs = homeScore(m), as_ = awayScore(m);
     const score = hs!==null ? `${hs}-${as_}` : '-';
     return `<div class="h2h-match-row ${rowCls}" onclick="closeVenueModal();showMatchModal('${safe}')">
       <span class="h2h-match-result ${resCls}">${resWord}</span>
       <span class="h2h-match-score">${score}</span>
-      <span class="h2h-match-meta">${m._date?fmtDate(m._date):'—'} <span style="${haStyle}">${ha}</span></span>
+      <span class="h2h-match-meta">${m._date?fmtDate(m._date):'—'} ${haBadge(ha)}</span>
       <span class="h2h-match-comp">${esc(compShort(m.Competition))}</span>
     </div>`;
   }).join('');
