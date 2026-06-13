@@ -2014,10 +2014,8 @@ function showMatchModal(matchID) {
              onmouseover="this.style.background='rgba(255,255,255,0.22)'"
              onmouseout="this.style.background='rgba(255,255,255,0.12)'">▶ Watch</a>`
         : '') +
-      `<button id="tlBsky"  style="${btnStyle}" aria-label="Share on Bluesky">Bluesky</button>` +
       `<button id="tlShare" style="${btnStyle}" aria-label="Share match card">Share</button>`;
 
-    document.getElementById('tlBsky').onclick  = e => shareOnBluesky(e, matchID);
     document.getElementById('tlShare').onclick = e => copyMatchLink(e, matchID);
   }
 
@@ -4404,32 +4402,73 @@ async function generateShareCard(matchID) {
   if (!m) return null;
   await document.fonts.ready;
 
-  const S = 1080;
+  const S   = 1080;
   const cvs = document.createElement('canvas');
   cvs.width = cvs.height = S;
   const ctx = cvs.getContext('2d');
 
-  const goals = (GOALS_MAP.get(matchID)||[]).sort((a,b)=>parseMin(a.Minute)-parseMin(b.Minute));
-  const ht = homeTeam(m), at = awayTeam(m);
-  const hs = homeScore(m), as_ = awayScore(m);
+  const goals  = (GOALS_MAP.get(matchID)||[]).sort((a,b)=>parseMin(a.Minute)-parseMin(b.Minute));
+  const ht     = homeTeam(m), at = awayTeam(m);
+  const hs     = homeScore(m), as_ = awayScore(m);
+  const isAway = m['Home/Away'] === 'A';
 
+  // Group goal scorers: "Shaw  38' 67'"
   function groupGoals(list) {
     const map = new Map();
     list.forEach(g => {
       if (!g.Scorer) return;
       const key = g.Scorer + (g.OG==='Y' ? ' (OG)' : '');
       if (!map.has(key)) map.set(key, []);
-      const min = g.Minute ? g.Minute + "'" : '';
+      const min = g.Minute ? g.Minute+"'" : '';
       if (min) map.get(key).push(min);
     });
-    return [...map.entries()].map(([n, mins]) => mins.length ? `${n}  ${mins.join(' ')}` : n);
+    return [...map.entries()].map(([n, mins]) => ({ name: n, mins: mins.join('  ') }));
   }
 
   const citySc = groupGoals(goals.filter(g => g['For/Against']==='For'));
   const oppSc  = groupGoals(goals.filter(g => g['For/Against']==='Against'));
 
-  // Helper: auto-shrink font until text fits maxW
-  function fitFont(style, maxPx, text, maxW, minPx=22) {
+  // When City are away, home team (opposition) scorers go first — match-report convention
+  const sections = isAway
+    ? [ { rows: oppSc,  navy: false },  { rows: citySc, navy: true  } ]
+    : [ { rows: citySc, navy: true  },  { rows: oppSc,  navy: false } ];
+
+  // ── White background ──────────────────────────────────────
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, S, S);
+
+  // ── Sky blue sidebar ──────────────────────────────────────
+  const sideW = Math.round(S * 0.09);
+  ctx.fillStyle = '#6CABDD';
+  ctx.fillRect(0, 0, sideW, S);
+
+  // Vertical "POCKET CITY" — reads bottom to top
+  ctx.save();
+  ctx.translate(Math.round(sideW / 2), Math.round(S * 0.48));
+  ctx.rotate(-Math.PI / 2);
+  ctx.textAlign = 'center';
+  ctx.fillStyle = '#1A2D4A';
+  ctx.font = `900 ${Math.round(S*0.028)}px "Bricolage Grotesque", system-ui, sans-serif`;
+  ctx.fillText('POCKET  CITY', 0, Math.round(S*0.008));
+  ctx.restore();
+
+  // Vertical URL at bottom of sidebar
+  ctx.save();
+  ctx.translate(Math.round(sideW / 2), Math.round(S * 0.855));
+  ctx.rotate(-Math.PI / 2);
+  ctx.textAlign = 'center';
+  ctx.fillStyle = 'rgba(26,45,74,0.52)';
+  ctx.font = `600 ${Math.round(S*0.017)}px "Bricolage Grotesque", system-ui, sans-serif`;
+  ctx.fillText('pocketcity.co.uk', 0, Math.round(S*0.007));
+  ctx.restore();
+
+  // ── Main content ──────────────────────────────────────────
+  const mx   = sideW + Math.round(S * 0.072);  // left edge of content
+  const mEnd = S - Math.round(S * 0.072);       // right edge
+  const mw   = mEnd - mx;                        // usable width
+
+  // Helper: shrink font until text fits
+  function fitLine(text, style, maxPx, minPx, maxW) {
     let px = maxPx;
     while (px > minPx) {
       ctx.font = `${style} ${px}px "Bricolage Grotesque", system-ui, sans-serif`;
@@ -4439,135 +4478,99 @@ async function generateShareCard(matchID) {
     return px;
   }
 
-  // Helper: draw text wrapping to two lines if needed (right-aligned)
-  function drawTeamName(text, x, y, maxW, fontStyle, maxPx, align) {
-    const px = fitFont(fontStyle, maxPx, text, maxW);
-    ctx.font = `${fontStyle} ${px}px "Bricolage Grotesque", system-ui, sans-serif`;
-    ctx.textAlign = align;
-    if (ctx.measureText(text).width <= maxW) {
-      ctx.fillText(text, x, y);
-    } else {
-      // Split roughly in half at a space
-      const words = text.split(' ');
-      let best = 1;
-      for (let i=1; i<words.length; i++) {
-        if (ctx.measureText(words.slice(0,i).join(' ')).width <= maxW) best = i;
-      }
-      const line1 = words.slice(0, best).join(' ');
-      const line2 = words.slice(best).join(' ');
-      ctx.fillText(line1, x, y - px*0.55);
-      ctx.fillText(line2, x, y + px*0.55);
-    }
-  }
-
-  // Background
-  const bg = ctx.createLinearGradient(0, 0, 0, S);
-  bg.addColorStop(0, '#1A2D4A');
-  bg.addColorStop(1, '#0e1f35');
-  ctx.fillStyle = bg;
-  ctx.fillRect(0, 0, S, S);
-
-  // Top accent bar
-  ctx.fillStyle = '#6CABDD';
-  ctx.fillRect(0, 0, S, 10);
-
-  const px = S * 0.08;
-
-  // "Pocket City" brand
-  ctx.font = `900 ${Math.round(S*0.058)}px "Bricolage Grotesque", system-ui, sans-serif`;
+  // Competition + Round
   ctx.textAlign = 'left';
-  ctx.fillStyle = '#ffffff';
-  const pocketW = ctx.measureText('Pocket ').width;
-  ctx.fillText('Pocket ', px, S * 0.105);
   ctx.fillStyle = '#6CABDD';
-  ctx.fillText('City', px + pocketW, S * 0.105);
-
-  // Sub-brand
-  ctx.fillStyle = 'rgba(108,171,221,0.5)';
-  ctx.font = `600 ${Math.round(S*0.024)}px "DM Sans", system-ui, sans-serif`;
-  ctx.fillText('MAN CITY WOMEN', px, S * 0.136);
-
-  // Divider
-  ctx.strokeStyle = 'rgba(108,171,221,0.18)';
-  ctx.lineWidth = 1;
-  ctx.beginPath(); ctx.moveTo(px, S*0.165); ctx.lineTo(S-px, S*0.165); ctx.stroke();
-
-  // Competition + Round + date (prominent)
+  ctx.font = `700 ${Math.round(S*0.022)}px "DM Sans", system-ui, sans-serif`;
   const compRound = [compShort(m.Competition||''), m.Round].filter(Boolean).join(' ');
-  const meta = [compRound, m._date ? fmtDate(m._date, true) : ''].filter(Boolean).join('  \u00b7  ');
-  ctx.fillStyle = 'rgba(255,255,255,0.5)';
-  ctx.font = `500 ${Math.round(S*0.026)}px "DM Sans", system-ui, sans-serif`;
-  ctx.textAlign = 'left';
-  ctx.fillText(_truncCanvas(ctx, meta, S*0.84), px, S * 0.203);
+  ctx.fillText(_truncCanvas(ctx, compRound, mw), mx, S * 0.098);
 
-  // Home team
-  ctx.fillStyle = '#ffffff';
-  drawTeamName(ht, px, S*0.305, S*0.82, '800', Math.round(S*0.046), 'left');
+  // Date
+  ctx.fillStyle = '#999';
+  ctx.font = `400 ${Math.round(S*0.022)}px "DM Sans", system-ui, sans-serif`;
+  ctx.fillText(m._date ? fmtDate(m._date, true) : '', mx, S * 0.13);
 
-  // Away team (right-aligned)
-  ctx.fillStyle = '#ffffff';
-  drawTeamName(at, S-px, S*0.672, S*0.82, '800', Math.round(S*0.046), 'right');
+  // Rule
+  const rule = (y) => {
+    ctx.strokeStyle = '#e8e8e8'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(mx, y); ctx.lineTo(mEnd, y); ctx.stroke();
+  };
+  rule(S * 0.158);
 
-  // Score
+  // Home team name
+  ctx.fillStyle = '#1A2D4A';
+  const htPx = fitLine(ht, '900', Math.round(S*0.048), 22, mw);
+  ctx.font = `900 ${htPx}px "Bricolage Grotesque", system-ui, sans-serif`;
+  ctx.fillText(ht, mx, S * 0.228);
+
+  // Score — big navy number
   const scoreStr = (hs !== null && as_ !== null) ? `${hs}\u2013${as_}` : '\u2013';
-  ctx.textAlign = 'center';
-  ctx.font = `900 ${Math.round(S*0.21)}px "Bricolage Grotesque", system-ui, sans-serif`;
-  ctx.fillStyle = '#ffffff';
-  ctx.fillText(scoreStr, S*0.5, S*0.565);
+  ctx.fillStyle = '#1A2D4A';
+  ctx.font = `900 ${Math.round(S*0.195)}px "Bricolage Grotesque", system-ui, sans-serif`;
+  ctx.fillText(scoreStr, mx, S * 0.556);
+
+  // Away team
+  ctx.fillStyle = '#888';
+  const atPx = fitLine(at, '800', Math.round(S*0.042), 22, mw);
+  ctx.font = `800 ${atPx}px "Bricolage Grotesque", system-ui, sans-serif`;
+  ctx.fillText(at, mx, S * 0.624);
+
+  // Rule before scorers
+  rule(S * 0.656);
 
   // Scorers
-  let sy = S * 0.745;
-  const lh = S * 0.054;
-  if (citySc.length) {
-    ctx.fillStyle = '#6CABDD';
-    ctx.font = `500 ${Math.round(S*0.030)}px "DM Sans", system-ui, sans-serif`;
+  let sy       = S * 0.705;
+  const lh     = S * 0.050;
+  const scPx   = Math.round(S*0.027);
+  const minPx  = Math.round(S*0.024);
+
+  for (const sec of sections) {
+    if (!sec.rows.length) continue;
+    sec.rows.slice(0, 3).forEach(({ name, mins }) => {
+      // Name
+      ctx.fillStyle = sec.navy ? '#1A2D4A' : '#888';
+      ctx.font = `600 ${scPx}px "DM Sans", system-ui, sans-serif`;
+      ctx.textAlign = 'left';
+      const nameMaxW = mw * 0.68;
+      const displayName = _truncCanvas(ctx, name, nameMaxW);
+      ctx.fillText(displayName, mx, sy);
+      // Minutes — sky blue, right of name
+      if (mins) {
+        const nw = ctx.measureText(displayName).width;
+        ctx.fillStyle = '#6CABDD';
+        ctx.font = `400 ${minPx}px "DM Sans", system-ui, sans-serif`;
+        ctx.fillText(mins, mx + nw + S*0.013, sy);
+      }
+      sy += lh * 0.8;
+    });
+    sy += lh * 0.2; // gap between sections
+  }
+
+  // ── Venue + attendance ────────────────────────────────────
+  rule(S * 0.876);
+
+  const attY = S * 0.916;
+
+  if (m.Venue) {
     ctx.textAlign = 'left';
-    citySc.slice(0,4).forEach(line => { ctx.fillText(_truncCanvas(ctx,line,S*0.84), px, sy); sy += lh*0.80; });
-  }
-  if (oppSc.length) {
-    sy += lh * 0.15;
-    ctx.fillStyle = 'rgba(255,255,255,0.38)';
-    ctx.font = `400 ${Math.round(S*0.026)}px "DM Sans", system-ui, sans-serif`;
-    oppSc.slice(0,2).forEach(line => { ctx.fillText(_truncCanvas(ctx,line,S*0.84), px, sy); sy += lh*0.75; });
+    ctx.fillStyle = '#555';
+    ctx.font = `600 ${Math.round(S*0.024)}px "DM Sans", system-ui, sans-serif`;
+    ctx.fillText(_truncCanvas(ctx, m.Venue, mw * 0.58), mx, attY);
   }
 
-  // Venue + attendance — more prominent, with a rule above
-  const venueName = m.Venue || '';
-  const attNum    = m.Attendance && parseFloat(m.Attendance)>0
-    ? Math.round(parseFloat(m.Attendance)).toLocaleString('en-GB') : '';
-
-  if (venueName || attNum) {
-    const rulerY = S * 0.882;
-    ctx.strokeStyle = 'rgba(108,171,221,0.15)';
-    ctx.lineWidth = 1;
-    ctx.beginPath(); ctx.moveTo(px, rulerY); ctx.lineTo(S-px, rulerY); ctx.stroke();
-
-    ctx.textAlign = 'left';
-    // Venue
-    if (venueName) {
-      ctx.fillStyle = 'rgba(255,255,255,0.65)';
-      ctx.font = `600 ${Math.round(S*0.026)}px "DM Sans", system-ui, sans-serif`;
-      ctx.fillText(_truncCanvas(ctx, venueName, S*0.84), px, S*0.914);
-    }
-    // Attendance as a bigger, clearer number
-    if (attNum) {
-      ctx.fillStyle = '#6CABDD';
-      ctx.font = `700 ${Math.round(S*0.030)}px "Bricolage Grotesque", system-ui, sans-serif`;
-      ctx.textAlign = 'right';
-      ctx.fillText(attNum, S-px, S*0.914);
-      ctx.fillStyle = 'rgba(108,171,221,0.6)';
-      ctx.font = `400 ${Math.round(S*0.020)}px "DM Sans", system-ui, sans-serif`;
-      ctx.fillText('ATT.', S-px - ctx.measureText(attNum).width - S*0.018, S*0.914);
-    }
+  if (m.Attendance && parseFloat(m.Attendance) > 0) {
+    const attNum = Math.round(parseFloat(m.Attendance)).toLocaleString('en-GB');
+    // Draw number right-aligned first (so we know its width)
+    ctx.font = `800 ${Math.round(S*0.032)}px "Bricolage Grotesque", system-ui, sans-serif`;
+    ctx.fillStyle = '#1A2D4A';
+    ctx.textAlign = 'right';
+    ctx.fillText(attNum, mEnd, attY);
+    const numW = ctx.measureText(attNum).width;
+    // Draw "ATT." label immediately to its left
+    ctx.font = `600 ${Math.round(S*0.017)}px "DM Sans", system-ui, sans-serif`;
+    ctx.fillStyle = '#bbb';
+    ctx.fillText('ATT. ', mEnd - numW, attY);
   }
-
-  // Footer
-  ctx.fillStyle = '#6CABDD';
-  ctx.fillRect(0, S-72, S, 72);
-  ctx.fillStyle = '#1A2D4A';
-  ctx.font = `700 ${Math.round(S*0.030)}px "Bricolage Grotesque", system-ui, sans-serif`;
-  ctx.textAlign = 'center';
-  ctx.fillText('pocketcity.co.uk', S*0.5, S-22);
 
   return new Promise(resolve => cvs.toBlob(blob => resolve(blob), 'image/png'));
 }
