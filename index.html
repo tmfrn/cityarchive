@@ -4413,7 +4413,7 @@ async function generateShareCard(matchID) {
   const hs     = homeScore(m), as_ = awayScore(m);
   const isAway = m['Home/Away'] === 'A';
 
-  // Group goal scorers: "Shaw  38' 67'"
+  // Group goal scorers: { name, mins: "23' 56' 81'" }
   function groupGoals(list) {
     const map = new Map();
     list.forEach(g => {
@@ -4431,146 +4431,284 @@ async function generateShareCard(matchID) {
 
   // When City are away, home team (opposition) scorers go first — match-report convention
   const sections = isAway
-    ? [ { rows: oppSc,  navy: false },  { rows: citySc, navy: true  } ]
-    : [ { rows: citySc, navy: true  },  { rows: oppSc,  navy: false } ];
+    ? [ { rows: oppSc,  navy: false }, { rows: citySc, navy: true  } ]
+    : [ { rows: citySc, navy: true  }, { rows: oppSc,  navy: false } ];
 
-  // ── White background ──────────────────────────────────────
+  /* ── Layout helpers (measurement-based, not guessed) ── */
+
+  // Real rendered height of a string at the current ctx.font
+  function textHeight(sample) {
+    const mm = ctx.measureText(sample);
+    return (mm.actualBoundingBoxAscent || 0) + (mm.actualBoundingBoxDescent || 0);
+  }
+
+  // Shrink font until `text` fits maxW, down to minPx. Returns {px, ascent, descent, w}
+  function fitFont(text, weight, maxPx, minPx, maxW) {
+    let px = maxPx;
+    while (px > minPx) {
+      ctx.font = `${weight} ${px}px "Bricolage Grotesque", system-ui, sans-serif`;
+      if (ctx.measureText(text).width <= maxW) break;
+      px -= 1;
+    }
+    ctx.font = `${weight} ${px}px "Bricolage Grotesque", system-ui, sans-serif`;
+    const mm = ctx.measureText(text);
+    return { px, ascent: mm.actualBoundingBoxAscent||0, descent: mm.actualBoundingBoxDescent||0, w: mm.width };
+  }
+
+  // Team name: try one line (shrinking down to minPx); if it still doesn't fit,
+  // wrap onto two lines at minPx. Returns layout info for drawing + height.
+  function layoutTeamName(text, weight, maxPx, minPx, maxW) {
+    const one = fitFont(text, weight, maxPx, minPx, maxW);
+    if (one.w <= maxW || one.px > minPx) {
+      return { lines: [text], px: one.px, ascent: one.ascent, descent: one.descent,
+               height: one.ascent + one.descent };
+    }
+    // Doesn't fit even at minPx — wrap to two lines at the best space
+    ctx.font = `${weight} ${minPx}px "Bricolage Grotesque", system-ui, sans-serif`;
+    const words = text.split(' ');
+    let best = Math.max(1, Math.floor(words.length/2));
+    for (let i=1; i<words.length; i++) {
+      if (ctx.measureText(words.slice(0,i).join(' ')).width <= maxW) best = i;
+    }
+    const line1 = words.slice(0,best).join(' ') || words[0];
+    const line2 = words.slice(best).join(' ');
+    const mm = ctx.measureText('Ag'); // representative glyphs for line metrics
+    const lineH = (mm.actualBoundingBoxAscent||0) + (mm.actualBoundingBoxDescent||0);
+    const gap = lineH * 0.28;
+    return { lines: line2 ? [line1, line2] : [line1], px: minPx,
+             ascent: mm.actualBoundingBoxAscent||0, descent: mm.actualBoundingBoxDescent||0,
+             height: line2 ? lineH*2 + gap : lineH, lineGap: gap };
+  }
+
+  /* ── Background ── */
   ctx.fillStyle = '#ffffff';
   ctx.fillRect(0, 0, S, S);
 
-  // ── Sky blue sidebar ──────────────────────────────────────
+  // Sky blue sidebar
   const sideW = Math.round(S * 0.09);
   ctx.fillStyle = '#6CABDD';
   ctx.fillRect(0, 0, sideW, S);
 
-  // Vertical "POCKET CITY" — reads bottom to top
   ctx.save();
-  ctx.translate(Math.round(sideW / 2), Math.round(S * 0.48));
-  ctx.rotate(-Math.PI / 2);
+  ctx.translate(Math.round(sideW/2), Math.round(S*0.48));
+  ctx.rotate(-Math.PI/2);
   ctx.textAlign = 'center';
   ctx.fillStyle = '#1A2D4A';
   ctx.font = `900 ${Math.round(S*0.028)}px "Bricolage Grotesque", system-ui, sans-serif`;
   ctx.fillText('POCKET  CITY', 0, Math.round(S*0.008));
   ctx.restore();
 
-  // Vertical URL at bottom of sidebar
   ctx.save();
-  ctx.translate(Math.round(sideW / 2), Math.round(S * 0.855));
-  ctx.rotate(-Math.PI / 2);
+  ctx.translate(Math.round(sideW/2), Math.round(S*0.855));
+  ctx.rotate(-Math.PI/2);
   ctx.textAlign = 'center';
   ctx.fillStyle = 'rgba(26,45,74,0.52)';
   ctx.font = `600 ${Math.round(S*0.017)}px "Bricolage Grotesque", system-ui, sans-serif`;
   ctx.fillText('pocketcity.co.uk', 0, Math.round(S*0.007));
   ctx.restore();
 
-  // ── Main content ──────────────────────────────────────────
-  const mx   = sideW + Math.round(S * 0.072);  // left edge of content
-  const mEnd = S - Math.round(S * 0.072);       // right edge
-  const mw   = mEnd - mx;                        // usable width
+  /* ── Content bounds ── */
+  const mx   = sideW + Math.round(S*0.072);
+  const mEnd = S - Math.round(S*0.072);
+  const mw   = mEnd - mx;
 
-  // Helper: shrink font until text fits
-  function fitLine(text, style, maxPx, minPx, maxW) {
-    let px = maxPx;
-    while (px > minPx) {
-      ctx.font = `${style} ${px}px "Bricolage Grotesque", system-ui, sans-serif`;
-      if (ctx.measureText(text).width <= maxW) break;
-      px -= 2;
-    }
-    return px;
-  }
-
-  // Competition + Round
-  ctx.textAlign = 'left';
-  ctx.fillStyle = '#6CABDD';
-  ctx.font = `700 ${Math.round(S*0.022)}px "DM Sans", system-ui, sans-serif`;
-  const compRound = [compShort(m.Competition||''), m.Round].filter(Boolean).join(' ');
-  ctx.fillText(_truncCanvas(ctx, compRound, mw), mx, S * 0.098);
-
-  // Date
-  ctx.fillStyle = '#999';
-  ctx.font = `400 ${Math.round(S*0.022)}px "DM Sans", system-ui, sans-serif`;
-  ctx.fillText(m._date ? fmtDate(m._date, true) : '', mx, S * 0.13);
-
-  // Rule
   const rule = (y) => {
     ctx.strokeStyle = '#e8e8e8'; ctx.lineWidth = 1;
     ctx.beginPath(); ctx.moveTo(mx, y); ctx.lineTo(mEnd, y); ctx.stroke();
   };
-  rule(S * 0.158);
+
+  /* ── Top zone (fixed) ── */
+  ctx.textAlign = 'left';
+  ctx.fillStyle = '#6CABDD';
+  ctx.font = `700 ${Math.round(S*0.022)}px "DM Sans", system-ui, sans-serif`;
+  const compRound = [compShort(m.Competition||''), m.Round].filter(Boolean).join(' ');
+  ctx.fillText(_truncCanvas(ctx, compRound, mw), mx, S*0.098);
+
+  ctx.fillStyle = '#999';
+  ctx.font = `400 ${Math.round(S*0.022)}px "DM Sans", system-ui, sans-serif`;
+  ctx.fillText(m._date ? fmtDate(m._date, true) : '', mx, S*0.13);
+
+  const ruleTopY = S * 0.158;
+  rule(ruleTopY);
+
+  /* ── Bottom zone (fixed) ── */
+  const venueBaselineY = S * 0.916;   // venue / attendance text baseline
+  const ruleBottomY    = S * 0.876;   // rule above venue line
+  const contentBottom  = ruleBottomY - S * 0.022; // last scorer row must end above this
+
+  /* ── Dynamic middle zone: home team / score / away team / rule / scorers ── */
+  let cursorY = ruleTopY + S * 0.034; // top of the middle zone
 
   // Home team name
+  const homeLayout = layoutTeamName(ht, '900', Math.round(S*0.048), 22, mw);
   ctx.fillStyle = '#1A2D4A';
-  const htPx = fitLine(ht, '900', Math.round(S*0.048), 22, mw);
-  ctx.font = `900 ${htPx}px "Bricolage Grotesque", system-ui, sans-serif`;
-  ctx.fillText(ht, mx, S * 0.228);
-
-  // Score — big navy number
-  const scoreStr = (hs !== null && as_ !== null) ? `${hs}-${as_}` : '-';
-  ctx.fillStyle = '#1A2D4A';
-  ctx.font = `900 ${Math.round(S*0.195)}px "Bricolage Grotesque", system-ui, sans-serif`;
-  ctx.fillText(scoreStr, mx, S * 0.556);
-
-  // Away team
-  ctx.fillStyle = '#888';
-  const atPx = fitLine(at, '800', Math.round(S*0.042), 22, mw);
-  ctx.font = `800 ${atPx}px "Bricolage Grotesque", system-ui, sans-serif`;
-  ctx.fillText(at, mx, S * 0.624);
-
-  // Rule before scorers
-  rule(S * 0.656);
-
-  // Scorers
-  let sy       = S * 0.705;
-  const lh     = S * 0.050;
-  const scPx   = Math.round(S*0.027);
-  const minPx  = Math.round(S*0.024);
-
-  for (const sec of sections) {
-    if (!sec.rows.length) continue;
-    sec.rows.slice(0, 3).forEach(({ name, mins }) => {
-      // Name
-      ctx.fillStyle = sec.navy ? '#1A2D4A' : '#888';
-      ctx.font = `600 ${scPx}px "DM Sans", system-ui, sans-serif`;
-      ctx.textAlign = 'left';
-      const nameMaxW = mw * 0.68;
-      const displayName = _truncCanvas(ctx, name, nameMaxW);
-      ctx.fillText(displayName, mx, sy);
-      // Minutes — sky blue, right of name
-      if (mins) {
-        const nw = ctx.measureText(displayName).width;
-        ctx.fillStyle = '#6CABDD';
-        ctx.font = `400 ${minPx}px "DM Sans", system-ui, sans-serif`;
-        ctx.fillText(mins, mx + nw + S*0.013, sy);
-      }
-      sy += lh * 0.8;
-    });
-    sy += lh * 0.2; // gap between sections
+  ctx.textAlign = 'left';
+  if (homeLayout.lines.length === 1) {
+    ctx.font = `900 ${homeLayout.px}px "Bricolage Grotesque", system-ui, sans-serif`;
+    cursorY += homeLayout.ascent;
+    ctx.fillText(homeLayout.lines[0], mx, cursorY);
+    cursorY += homeLayout.descent;
+  } else {
+    ctx.font = `900 ${homeLayout.px}px "Bricolage Grotesque", system-ui, sans-serif`;
+    cursorY += homeLayout.ascent;
+    ctx.fillText(homeLayout.lines[0], mx, cursorY);
+    cursorY += homeLayout.descent + homeLayout.lineGap + homeLayout.ascent;
+    ctx.fillText(homeLayout.lines[1], mx, cursorY);
+    cursorY += homeLayout.descent;
   }
 
-  // ── Venue + attendance ────────────────────────────────────
-  rule(S * 0.876);
+  // Score — big navy number, auto-shrinks if score is unusually wide (e.g. "12-11")
+  cursorY += S * 0.018;
+  const scoreStr = (hs !== null && as_ !== null) ? `${hs}-${as_}` : '-';
+  const scoreFit = fitFont(scoreStr, '900', Math.round(S*0.195), Math.round(S*0.13), mw);
+  ctx.fillStyle = '#1A2D4A';
+  ctx.font = `900 ${scoreFit.px}px "Bricolage Grotesque", system-ui, sans-serif`;
+  cursorY += scoreFit.ascent;
+  ctx.fillText(scoreStr, mx, cursorY);
+  cursorY += scoreFit.descent;
 
-  const attY = S * 0.916;
+  // AET / penalties subtitle, if relevant — sits just under the score
+  const subParts = [];
+  if (m.AET === 'Y') subParts.push('After extra time');
+  if (m['Pen For'] && m['Pen Against']) subParts.push(`Pens ${m['Pen For']}-${m['Pen Against']}`);
+  if (subParts.length) {
+    cursorY += S * 0.014;
+    ctx.fillStyle = '#999';
+    ctx.font = `600 ${Math.round(S*0.022)}px "DM Sans", system-ui, sans-serif`;
+    const subLine = subParts.join('  ·  ');
+    const subM = ctx.measureText(subLine);
+    cursorY += subM.actualBoundingBoxAscent || 0;
+    ctx.fillText(subLine, mx, cursorY);
+    cursorY += subM.actualBoundingBoxDescent || 0;
+  }
+
+  // Away team name
+  cursorY += S * 0.022;
+  const awayLayout = layoutTeamName(at, '800', Math.round(S*0.042), 22, mw);
+  ctx.fillStyle = '#888';
+  ctx.textAlign = 'left';
+  if (awayLayout.lines.length === 1) {
+    ctx.font = `800 ${awayLayout.px}px "Bricolage Grotesque", system-ui, sans-serif`;
+    cursorY += awayLayout.ascent;
+    ctx.fillText(awayLayout.lines[0], mx, cursorY);
+    cursorY += awayLayout.descent;
+  } else {
+    ctx.font = `800 ${awayLayout.px}px "Bricolage Grotesque", system-ui, sans-serif`;
+    cursorY += awayLayout.ascent;
+    ctx.fillText(awayLayout.lines[0], mx, cursorY);
+    cursorY += awayLayout.descent + awayLayout.lineGap + awayLayout.ascent;
+    ctx.fillText(awayLayout.lines[1], mx, cursorY);
+    cursorY += awayLayout.descent;
+  }
+
+  // Rule before scorers
+  cursorY += S * 0.026;
+  rule(cursorY);
+  cursorY += S * 0.022;
+
+  /* ── Scorers — dynamically sized to fit remaining space ── */
+  const allRows = sections.flatMap(sec => sec.rows.map(r => ({ ...r, navy: sec.navy })));
+  const remaining = Math.max(0, contentBottom - cursorY);
+
+  if (allRows.length) {
+    // Pick the largest scorer font size (down to a floor) that fits every row
+    const maxScPx = Math.round(S*0.027);
+    const minScPx = Math.round(S*0.017);
+    let scPx = maxScPx, fits = false, rowH = 0, rowGap = 0;
+
+    for (let px = maxScPx; px >= minScPx; px -= 1) {
+      ctx.font = `600 ${px}px "DM Sans", system-ui, sans-serif`;
+      const mm = ctx.measureText('Ag0\'');
+      rowH  = (mm.actualBoundingBoxAscent||0) + (mm.actualBoundingBoxDescent||0);
+      rowGap = rowH * 0.55;
+      const sectionGap = (sections[0].rows.length && sections[1].rows.length) ? rowH * 0.45 : 0;
+      const totalH = allRows.length * (rowH + rowGap) - rowGap + sectionGap;
+      if (totalH <= remaining) { scPx = px; fits = true; break; }
+      scPx = px;
+    }
+
+    // If even the smallest size can't fit every row, work out how many DO fit —
+    // City's own goals are prioritised; the opposition's list is trimmed first.
+    ctx.font = `600 ${scPx}px "DM Sans", system-ui, sans-serif`;
+    let mm = ctx.measureText('Ag0\'');
+    rowH  = (mm.actualBoundingBoxAscent||0) + (mm.actualBoundingBoxDescent||0);
+    rowGap = rowH * 0.55;
+    const moreLineH = rowH + rowGap;
+
+    let rowsToShow = allRows;
+    let hiddenCount = 0;
+    if (!fits) {
+      const sectionGap = (sections[0].rows.length && sections[1].rows.length) ? rowH * 0.45 : 0;
+      const budgetForRows = remaining - moreLineH; // reserve a line for "+N more"
+      let maxRows = Math.max(0, Math.floor((budgetForRows - sectionGap) / (rowH + rowGap)) + 1);
+      if (maxRows < allRows.length) {
+        // Build a priority order: City's rows first (never trimmed if avoidable),
+        // then opposition's rows fill any remaining space.
+        const cityRows = allRows.filter(r => r.navy);
+        const oppRows  = allRows.filter(r => !r.navy);
+        const oppKeep  = Math.max(0, Math.min(oppRows.length, maxRows - cityRows.length));
+        rowsToShow  = isAway
+          ? [...oppRows.slice(0, oppKeep), ...cityRows.slice(0, maxRows - oppKeep)]
+          : [...cityRows.slice(0, Math.min(cityRows.length, maxRows)), ...oppRows.slice(0, Math.max(0, maxRows - cityRows.length))];
+        hiddenCount = allRows.length - rowsToShow.length;
+      }
+    }
+
+    const minPx = Math.round(scPx * 0.88); // minutes slightly smaller than name
+    rowsToShow.forEach(({ name, mins, navy }) => {
+      ctx.font = `600 ${scPx}px "DM Sans", system-ui, sans-serif`;
+      const m2 = ctx.measureText('Ag0\'');
+      cursorY += m2.actualBoundingBoxAscent || 0;
+
+      ctx.fillStyle = navy ? '#1A2D4A' : '#888';
+      ctx.textAlign = 'left';
+      // Reserve space on the right for the minutes column so long names truncate cleanly
+      const minsW = mins ? ctx.measureText(mins).width * (minPx/scPx) + S*0.013 : 0;
+      const nameMaxW = mw - minsW;
+      const displayName = _truncCanvas(ctx, name, nameMaxW);
+      ctx.fillText(displayName, mx, cursorY);
+
+      if (mins) {
+        ctx.fillStyle = '#6CABDD';
+        ctx.font = `400 ${minPx}px "DM Sans", system-ui, sans-serif`;
+        ctx.textAlign = 'right';
+        ctx.fillText(mins, mEnd, cursorY);
+      }
+
+      cursorY += (m2.actualBoundingBoxDescent || 0) + rowGap;
+    });
+
+    if (hiddenCount > 0) {
+      ctx.font = `500 ${Math.round(scPx*0.85)}px "DM Sans", system-ui, sans-serif`;
+      const m3 = ctx.measureText('Ag');
+      cursorY += m3.actualBoundingBoxAscent || 0;
+      ctx.fillStyle = '#bbb';
+      ctx.textAlign = 'left';
+      ctx.fillText(`+${hiddenCount} more goal${hiddenCount===1?'':'s'}`, mx, cursorY);
+      cursorY += m3.actualBoundingBoxDescent || 0;
+    }
+  }
+
+  /* ── Venue + attendance ── */
+  rule(ruleBottomY);
 
   if (m.Venue) {
     ctx.textAlign = 'left';
     ctx.fillStyle = '#555';
     ctx.font = `600 ${Math.round(S*0.024)}px "DM Sans", system-ui, sans-serif`;
-    ctx.fillText(_truncCanvas(ctx, m.Venue, mw * 0.58), mx, attY);
+    ctx.fillText(_truncCanvas(ctx, m.Venue, mw*0.58), mx, venueBaselineY);
   }
 
   if (m.Attendance && parseFloat(m.Attendance) > 0) {
     const attNum = Math.round(parseFloat(m.Attendance)).toLocaleString('en-GB');
-    // Draw number right-aligned first (so we know its width)
     ctx.font = `800 ${Math.round(S*0.032)}px "Bricolage Grotesque", system-ui, sans-serif`;
     ctx.fillStyle = '#1A2D4A';
     ctx.textAlign = 'right';
-    ctx.fillText(attNum, mEnd, attY);
+    ctx.fillText(attNum, mEnd, venueBaselineY);
     const numW = ctx.measureText(attNum).width;
-    // Draw "ATT." label immediately to its left
     ctx.font = `600 ${Math.round(S*0.017)}px "DM Sans", system-ui, sans-serif`;
     ctx.fillStyle = '#bbb';
-    ctx.fillText('ATT. ', mEnd - numW, attY);
+    ctx.fillText('ATT. ', mEnd - numW, venueBaselineY);
   }
 
   return new Promise(resolve => cvs.toBlob(blob => resolve(blob), 'image/png'));
