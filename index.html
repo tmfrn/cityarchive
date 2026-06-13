@@ -234,9 +234,12 @@ button{cursor:pointer;font-family:var(--font-body)}
 .timeline-overlay.active{display:flex;align-items:flex-start;justify-content:center}
 .timeline-modal{background:var(--bg-elevated);border-radius:var(--radius-xl);max-width:680px;width:100%;box-shadow:0 24px 64px rgba(0,0,0,0.18);border:1px solid var(--border-primary);animation:modalIn 0.25s ease}
 @keyframes modalIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
-.timeline-modal-header{padding:22px 28px;background:var(--navy);border-radius:var(--radius-xl) var(--radius-xl) 0 0;border-bottom:3px solid var(--sky);display:flex;justify-content:space-between;align-items:flex-start;gap:16px}
-.timeline-modal-title{font-family:var(--font-display);font-size:1.1rem;font-weight:800;color:#fff;line-height:1.2}
-.tl-meta{margin-top:8px}
+.timeline-modal-header{padding:22px 28px;background:var(--navy);border-radius:var(--radius-xl) var(--radius-xl) 0 0;border-bottom:3px solid var(--sky);display:flex;flex-direction:column;gap:12px}
+.tl-header-row{display:flex;justify-content:space-between;align-items:flex-start;gap:16px}
+.timeline-modal-title{font-family:var(--font-display);font-size:1.1rem;font-weight:800;color:#fff;line-height:1.25;flex:1}
+.tl-actions{display:flex;gap:8px;flex-wrap:wrap}
+.tl-actions:empty{display:none}
+.tl-meta{margin-top:0}
 .tl-meta-result{display:block;font-size:0.68rem;font-weight:800;text-transform:uppercase;letter-spacing:0.07em;margin-bottom:2px}
 .tl-meta-result.win  {color:#6be49b}
 .tl-meta-result.loss {color:#ff8585}
@@ -816,14 +819,12 @@ button{cursor:pointer;font-family:var(--font-body)}
 <div class="timeline-overlay" id="timelineOverlay" onclick="if(event.target===this)closeMatch()">
   <div class="timeline-modal">
     <div class="timeline-modal-header">
-      <div>
+      <div class="tl-header-row">
         <div class="timeline-modal-title" id="tlTitle"></div>
-        <div class="tl-meta" id="tlMeta"></div>
-      </div>
-      <div style="display:flex;align-items:flex-start;gap:10px;flex-shrink:0">
-        <div id="tlWatch"></div>
         <button class="timeline-modal-close" onclick="closeMatch()" aria-label="Close match detail">✕</button>
       </div>
+      <div class="tl-actions" id="tlWatch"></div>
+      <div class="tl-meta" id="tlMeta"></div>
     </div>
     <div class="timeline-modal-body" id="tlBody"></div>
   </div>
@@ -1349,7 +1350,7 @@ function displayOTD() {
 
   document.getElementById('otdMatches').innerHTML = hits.slice(0,5).map(m => {
     const hs = homeScore(m), as_ = awayScore(m);
-    const sc = (m._result&&hs!==null) ? `${hs}–${as_}` : '–';
+    const sc = (m._result&&hs!==null) ? `${hs}-${as_}` : '-';
     const res= m._result ? `<span class="otd-match-result ${m._result.toLowerCase()}">${m._result}</span>` : '';
     return `<div class="otd-match" onclick="openMatchFromOTD('${esc(m.MatchID)}')">
       <span class="otd-match-year">${m._date.getFullYear()}</span>
@@ -1849,7 +1850,7 @@ function buildMatchCard(m, rank) {
   const ht  = homeTeam(m), at = awayTeam(m);
   const hs  = homeScore(m), as_ = awayScore(m);
   const scored = m._result !== null && hs !== null;
-  const scoreStr = scored ? `${hs}–${as_}` : '–';
+  const scoreStr = scored ? `${hs}-${as_}` : '-';
 
   // Tags row: rank badge (lens views) + record tags (always)
   const rankTag  = rank != null
@@ -1874,8 +1875,8 @@ function buildMatchCard(m, rank) {
   const haWord= {H:'Home',A:'Away',N:'Neutral'};
   badges.push(`<span class="badge ${haCls[m['Home/Away']]||'neutral'}">${haWord[m['Home/Away']]||'N'}</span>`);
   if (m.AET==='Y') badges.push('<span class="badge aet">AET</span>');
-  if (m['Pen Result']==='W') badges.push(`<span class="badge won-pens">Won pens${m['Pen For']&&m['Pen Against']?' '+m['Pen For']+'–'+m['Pen Against']:''}</span>`);
-  if (m['Pen Result']==='L') badges.push(`<span class="badge lost-pens">Lost pens${m['Pen For']&&m['Pen Against']?' '+m['Pen For']+'–'+m['Pen Against']:''}</span>`);
+  if (m['Pen Result']==='W') badges.push(`<span class="badge won-pens">Won pens${m['Pen For']&&m['Pen Against']?' '+m['Pen For']+'-'+m['Pen Against']:''}</span>`);
+  if (m['Pen Result']==='L') badges.push(`<span class="badge lost-pens">Lost pens${m['Pen For']&&m['Pen Against']?' '+m['Pen For']+'-'+m['Pen Against']:''}</span>`);
   if (isFriendly(m)) badges.push('<span class="badge friendly">Friendly</span>');
 
   const friendlyCls = isFriendly(m) ? ' is-friendly' : '';
@@ -1977,7 +1978,7 @@ function showMatchModal(matchID) {
   const scored = m._result !== null && hs !== null;
 
   // Title
-  const scoreStr = scored ? `${hs}–${as_}` : '–';
+  const scoreStr = scored ? `${hs}-${as_}` : '-';
   document.getElementById('tlTitle').textContent = `${ht}  ${scoreStr}  ${at}`;
 
   // Meta
@@ -1987,7 +1988,7 @@ function showMatchModal(matchID) {
   let aetPens = '';
   if (m.AET==='Y') aetPens += ' · AET';
   if (m['Pen Result']) aetPens += ` · ${m['Pen Result']==='W'?'Won':'Lost'} on pens`;
-  if (m['Pen For']&&m['Pen Against']) aetPens += ` ${m['Pen For']}–${m['Pen Against']}`;
+  if (m['Pen For']&&m['Pen Against']) aetPens += ` ${m['Pen For']}-${m['Pen Against']}`;
 
   const compLine = [compShort(m.Competition), m.Round].filter(Boolean).join(' · ');
   const dateStr  = m._date ? fmtDate(m._date, true) : '';
@@ -2073,7 +2074,7 @@ function buildModalBody(m) {
       const aggCls = aggResult==='W'?'var(--win)':aggResult==='L'?'var(--loss)':'var(--text-muted)';
       tieHtml = `<div style="background:rgba(26,45,74,0.05);border:1px solid rgba(26,45,74,0.12);border-radius:var(--radius-md);padding:10px 14px;margin-bottom:16px;display:flex;align-items:center;gap:12px;font-size:0.84rem;">
         <span style="font-weight:700;color:var(--navy);font-size:0.72rem;text-transform:uppercase;letter-spacing:0.06em;">${legLabel}</span>
-        <span style="font-family:var(--font-mono);font-weight:700;color:${aggCls};">Agg: ${cityFor}–${cityAga}</span>
+        <span style="font-family:var(--font-mono);font-weight:700;color:${aggCls};">Agg: ${cityFor}-${cityAga}</span>
         ${other ? `<a href="#" onclick="event.preventDefault();showMatchModal('${esc(other.MatchID)}')" style="margin-left:auto;color:var(--accent);font-size:0.78rem;font-weight:600;">Other leg →</a>` : ''}
       </div>`;
     }
@@ -2099,7 +2100,7 @@ function buildModalBody(m) {
   let rows = '';
 
   function runScore() {
-    return isHome ? `${cGF}–${cGA}` : `${cGA}–${cGF}`;
+    return isHome ? `${cGF}-${cGA}` : `${cGA}-${cGF}`;
   }
 
   // Which side shows on which column:
@@ -2190,7 +2191,7 @@ function buildModalBody(m) {
     const penW   = m['Pen Result']==='W';
     const pCol   = penW ? 'var(--win)' : 'var(--loss)';
     const pLabel = penW ? 'Won on pens' : 'Lost on pens';
-    const pScore = `${m['Pen For']}–${m['Pen Against']}`;
+    const pScore = `${m['Pen For']}-${m['Pen Against']}`;
     rows += `<div class="tl-row" style="background:var(--bg-elevated);border-radius:3px;margin-top:2px;">
       <div></div>
       <div class="tl-min" style="font-size:0.68rem;font-weight:700;color:${pCol};letter-spacing:0.04em;text-transform:uppercase">Pens</div>
@@ -2662,7 +2663,7 @@ function showPlayerModal(name) {
       const resCls = res==='W'?'w':res==='D'?'d':res==='L'?'l':'';
       const resWord= res==='W'?'Win':res==='D'?'Draw':res==='L'?'Loss':'?';
       const hs     = homeScore(match), as_ = awayScore(match);
-      const score  = hs!==null ? `${hs}–${as_}` : '–';
+      const score  = hs!==null ? `${hs}-${as_}` : '-';
       const ha      = match['Home/Away'] || '';
       const haStyle = ha==='H' ? 'color:#1d4ed8;font-weight:700' : ha==='A' ? 'color:#7c3aed;font-weight:700' : 'color:var(--text-muted)';
       const vsLbl   = `${esc(match.Opposition)} <span style="${haStyle}">${ha}</span>`;
@@ -2745,9 +2746,9 @@ function showH2H(opp) {
 
   function matchScore(m) {
     const hs = homeScore(m), as_ = awayScore(m);
-    return `${hs}–${as_}`;
+    return `${hs}-${as_}`;
   }
-  function matchScoreCity(m) { return `${m._gf}–${m._ga}`; }
+  function matchScoreCity(m) { return `${m._gf}-${m._ga}`; }
 
   function h2hMatchLink(m, label) {
     if (!m) return '<span style="color:var(--text-muted)">—</span>';
@@ -2811,7 +2812,7 @@ function showH2H(opp) {
     const resCls= isF ? 'f'     : res==='W'?'w'    :res==='D'?'d'    :res==='L'?'l'    :'';
     const resWord=isF ? 'Fr'    : res==='W'?'Win'  :res==='D'?'Draw' :res==='L'?'Loss' :'?';
     const hs    = homeScore(m), as_ = awayScore(m);
-    const score = (res || isF) && hs!==null ? `${hs}–${as_}` : '–';
+    const score = (res || isF) && hs!==null ? `${hs}-${as_}` : '-';
     const ha    = {H:'H',A:'A',N:'N'}[m['Home/Away']] || '';
     const haStyle = m['Home/Away']==='H'
       ? 'color:#1d4ed8;font-weight:700'
@@ -3053,7 +3054,7 @@ function renderOpponentsPage() {
       <td class="td-num" style="color:var(--win)">${opp.w}</td>
       <td class="td-num" style="color:var(--draw)">${opp.d}</td>
       <td class="td-num" style="color:var(--loss)">${opp.l}</td>
-      <td class="td-num">${opp.gf}–${opp.ga}</td>
+      <td class="td-num">${opp.gf}-${opp.ga}</td>
       <td class="td-num" style="color:${gdCol}">${gdStr}</td>
       <td class="td-num">${badge}</td>
       <td class="td-muted" style="font-size:0.8rem;white-space:nowrap">${lastMet}</td>
@@ -3260,7 +3261,7 @@ function renderRecordsPage() {
     const safe = m.MatchID.replace(/'/g,"\\'");
     return `<div class="records-card" onclick="showMatchModal('${safe}')">
       <div class="rc-lbl">${label}</div>
-      <div class="rc-val">${m._gf}–${m._ga}</div>
+      <div class="rc-val">${m._gf}-${m._ga}</div>
       <div class="rc-ctx">vs ${esc(m.Opposition)} · ${m._date?fmtDate(m._date,true):''} · ${esc(compShort(m.Competition))}</div>
     </div>`;
   }
@@ -3355,7 +3356,7 @@ function renderRecordsPage() {
             <td>${resultBadge}</td>
             <td style="font-size:0.78rem;font-weight:700;color:var(--text-muted)">from ${esc(defLabel)}</td>
             <td class="td-link">${esc(m.Opposition)}</td>
-            <td class="td-num" style="font-family:var(--font-mono);font-size:0.9rem">${m._gf}–${m._ga}</td>
+            <td class="td-num" style="font-family:var(--font-mono);font-size:0.9rem">${m._gf}-${m._ga}</td>
             <td class="td-muted">${esc(compShort(m.Competition))}</td>
             <td class="td-muted" style="font-size:0.78rem;white-space:nowrap">${m._date?fmtDate(m._date,true):''}</td>
           </tr>`;
@@ -3827,7 +3828,7 @@ function drawSeasonFormGuide() {
       ctx.fillStyle = 'rgba(255,255,255,0.9)';
       ctx.font = `bold ${isMob?6:7}px "DM Sans",sans-serif`;
       ctx.textAlign = 'center';
-      ctx.fillText(`${m._gf}–${m._ga}`, x + sqSize/2, y + sqSize/2 + 2.5);
+      ctx.fillText(`${m._gf}-${m._ga}`, x + sqSize/2, y + sqSize/2 + 2.5);
     }
 
     canvas._formHits.push({x, y, w: sqSize, h: sqSize, match: m});
@@ -4219,9 +4220,9 @@ function renderSeasonPage(season) {
     const ha   = m['Home/Away']==='H' ? 'Home' : 'Away';
     const safe = m.MatchID.replace(/'/g,"\\'");
     const penBit = m['Pen Result'] && m['Pen For'] && m['Pen Against']
-      ? ` <span style="font-size:0.72rem;color:var(--text-muted)">(${m['Pen For']}–${m['Pen Against']} pens)</span>` : '';
+      ? ` <span style="font-size:0.72rem;color:var(--text-muted)">(${m['Pen For']}-${m['Pen Against']} pens)</span>` : '';
     return `<div class="sp-match" onclick="showMatchModal('${safe}')">
-      <div class="sp-score ${rc}">${m._gf}–${m._ga}${penBit}</div>
+      <div class="sp-score ${rc}">${m._gf}-${m._ga}${penBit}</div>
       <div><div class="sp-opp">${esc(m.Opposition)}</div>
         <div class="sp-meta">${ha}${m.Venue?' · '+esc(m.Venue):''}</div></div>
       <div class="sp-date">${m._date?fmtDate(m._date,true):''}</div>
@@ -4504,7 +4505,7 @@ async function generateShareCard(matchID) {
   ctx.fillText(ht, mx, S * 0.228);
 
   // Score — big navy number
-  const scoreStr = (hs !== null && as_ !== null) ? `${hs}\u2013${as_}` : '\u2013';
+  const scoreStr = (hs !== null && as_ !== null) ? `${hs}-${as_}` : '-';
   ctx.fillStyle = '#1A2D4A';
   ctx.font = `900 ${Math.round(S*0.195)}px "Bricolage Grotesque", system-ui, sans-serif`;
   ctx.fillText(scoreStr, mx, S * 0.556);
@@ -4593,7 +4594,7 @@ async function copyMatchLink(e, matchID) {
     }
     if (navigator.share) {
       const m = MATCHES.find(x => x.MatchID === matchID);
-      const text = m ? `${homeTeam(m)} ${m._gf??''}–${m._ga??''} ${awayTeam(m)}` : '';
+      const text = m ? `${homeTeam(m)} ${m._gf??''}-${m._ga??''} ${awayTeam(m)}` : '';
       await navigator.share({ title: 'Pocket City', text, url });
       return;
     }
@@ -4622,7 +4623,7 @@ function shareOnBluesky(e, matchID) {
   const url  = location.origin + location.pathname + '#match/' + matchID;
   const m    = MATCHES.find(x => x.MatchID === matchID);
   const line = m
-    ? `${homeTeam(m)} ${m._gf??''}–${m._ga??''} ${awayTeam(m)} \u00b7 ${compShort(m.Competition||'')}${m._date?' \u00b7 '+fmtDate(m._date,true):''}`
+    ? `${homeTeam(m)} ${m._gf??''}-${m._ga??''} ${awayTeam(m)} \u00b7 ${compShort(m.Competition||'')}${m._date?' \u00b7 '+fmtDate(m._date,true):''}`
     : 'Man City Women match archive';
   window.open(`https://bsky.app/intent/compose?text=${encodeURIComponent(line+'\n\n'+url)}`, '_blank', 'noopener noreferrer');
 }
@@ -4680,7 +4681,7 @@ function showVenueModal(name) {
     const ha      = m['Home/Away']||'';
     const haStyle = ha==='H'?'color:#1d4ed8;font-weight:700':ha==='A'?'color:#7c3aed;font-weight:700':'color:var(--text-muted)';
     const hs = homeScore(m), as_ = awayScore(m);
-    const score = hs!==null ? `${hs}–${as_}` : '–';
+    const score = hs!==null ? `${hs}-${as_}` : '-';
     return `<div class="h2h-match-row ${rowCls}" onclick="closeVenueModal();showMatchModal('${safe}')">
       <span class="h2h-match-result ${resCls}">${resWord}</span>
       <span class="h2h-match-score">${score}</span>
