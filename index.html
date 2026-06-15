@@ -3370,6 +3370,25 @@ function renderRecordsPage() {
           <div class="records-card no-cursor"><div class="rc-lbl">${lbl}</div><div class="rc-val" style="font-size:1.4rem">${v}</div></div>`).join('')}
       </div>
 
+      ${(()=>{
+        const milestones = getMilestoneGoals();
+        if (!milestones.length) return '';
+        const cards = milestones.map(({n, match, goal}) => {
+          const safe   = match.MatchID.replace(/'/g,"\\'");
+          const label  = goal.OG==='Y'
+            ? `${esc(goal.Scorer||'Unknown')} <span style="opacity:0.6;font-size:0.85em">(og)</span>`
+            : esc(goal.Scorer || 'Unknown');
+          const minute = goal.Minute ? ` &middot; ${esc(goal.Minute)}'` : '';
+          return `<div class="records-card" onclick="showMatchModal('${safe}')">
+            <div class="rc-lbl">${ordinal(n)} club goal</div>
+            <div class="rc-val" style="font-size:1.05rem;line-height:1.3">${label}</div>
+            <div class="rc-ctx">vs ${esc(match.Opposition)}${minute} &middot; ${match._date?fmtDate(match._date,true):''}</div>
+          </div>`;
+        }).join('');
+        return `<div class="records-section-hd">Milestone goals</div>
+        <div class="records-grid">${cards}</div>`;
+      })()}
+
       <div class="records-section-hd">Best &amp; worst performances</div>
       <div class="records-grid">
         ${matchCard(bigWin,'Biggest win')}
@@ -3482,6 +3501,35 @@ function renderRecordsPage() {
         <div class="dt-wrap">
           <table class="data-table">
             <thead><tr><th>Player</th><th></th><th>Opposition</th><th>Competition</th><th>Date</th></tr></thead>
+            <tbody>${rows}</tbody>
+          </table>
+        </div>`;
+      })()}
+
+      ${(()=>{
+        const nemeses = getNemesisScorers();
+        if (!nemeses.length) return '';
+        const top = nemeses.slice(0, 12);
+        const maxG = top[0]?.goals || 1;
+        const rows = top.map((r,i) => {
+          const clubs    = [...r.clubs].map(esc).join(', ');
+          const pct      = Math.round(r.goals/maxG*100);
+          const single   = r.clubs.size === 1 ? [...r.clubs][0] : null;
+          const safeOpp  = single ? single.replace(/'/g,"\\'") : '';
+          const rowAttrs = single ? ` onclick="showH2H('${safeOpp}')"` : ' style="cursor:default"';
+          return `<tr${rowAttrs}>
+            <td class="td-rank">${i+1}</td>
+            <td style="font-weight:600">${esc(r.name)}</td>
+            <td class="td-muted">${clubs}</td>
+            <td class="td-num" style="font-family:var(--font-display);font-weight:800;color:var(--loss)">${r.goals}</td>
+            <td style="padding-right:16px"><div style="background:var(--bg-surface);border-radius:3px;height:6px;overflow:hidden"><div style="height:6px;border-radius:3px;background:var(--loss);opacity:0.6;width:${pct}%"></div></div></td>
+          </tr>`;
+        }).join('');
+        return `<div class="records-section-hd">Players who've troubled us most</div>
+        <p style="font-size:0.78rem;color:var(--text-muted);margin:-4px 0 12px">Opposition players with the most goals against City &middot; ${nemeses.length} have scored against us in total</p>
+        <div class="dt-wrap">
+          <table class="data-table">
+            <thead><tr><th class="td-rank">#</th><th>Player</th><th>Club</th><th class="td-num">Goals</th><th></th></tr></thead>
             <tbody>${rows}</tbody>
           </table>
         </div>`;
@@ -4395,6 +4443,49 @@ function getComebacks() {
     if (maxDef >= 2) comebacks.push({match:m, deficit:maxDef});
   });
   return comebacks.sort((a,b) => b.deficit-a.deficit || (b.match._date||0)-(a.match._date||0));
+}
+
+// Every 100th competitive goal City have scored, in chronological order.
+// Own goals (OG='Y' on a 'For' goal — i.e. the opposition scored into their
+// own net) count towards the total, same as the headline Goals For figure.
+function getMilestoneGoals() {
+  const chron = MATCHES
+    .filter(m => !isFriendly(m) && m._result !== null)
+    .sort((a,b) => (a._date||0)-(b._date||0));
+
+  const milestones = [];
+  let count = 0;
+  chron.forEach(m => {
+    const goals = (GOALS_MAP.get(m.MatchID)||[])
+      .filter(g => g['For/Against']==='For')
+      .sort((a,b) => parseMin(a.Minute)-parseMin(b.Minute));
+    goals.forEach(g => {
+      count++;
+      if (count % 100 === 0) milestones.push({ n: count, match: m, goal: g });
+    });
+  });
+  return milestones;
+}
+
+// Opposition players who've scored most often against City — own goals by
+// City players (OG='Y' on an 'Against' goal) are excluded since the "scorer"
+// in that case is one of our own.
+function getNemesisScorers() {
+  const byPlayer = new Map(); // name -> {goals, clubs:Set, lastDate}
+  MATCHES.filter(m => !isFriendly(m) && m._result !== null).forEach(m => {
+    const goals = (GOALS_MAP.get(m.MatchID)||[])
+      .filter(g => g['For/Against']==='Against' && g.OG!=='Y' && g.Scorer && g.Scorer.trim());
+    goals.forEach(g => {
+      if (!byPlayer.has(g.Scorer)) byPlayer.set(g.Scorer, { goals:0, clubs:new Set(), lastDate:null });
+      const rec = byPlayer.get(g.Scorer);
+      rec.goals++;
+      if (m.Opposition) rec.clubs.add(m.Opposition);
+      if (!rec.lastDate || (m._date && m._date > rec.lastDate)) rec.lastDate = m._date;
+    });
+  });
+  return [...byPlayer.entries()]
+    .map(([name, r]) => ({ name, ...r }))
+    .sort((a,b) => b.goals-a.goals || (b.lastDate||0)-(a.lastDate||0));
 }
 
 /* ── Share card generator ── */
