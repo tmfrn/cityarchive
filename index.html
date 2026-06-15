@@ -1149,6 +1149,12 @@ function computeRecords() {
     });
   });
 
+  // Club milestone goals (100th, 200th, 300th... competitive goal) — surfaced
+  // as a tag on the match where it happened, right in the archive feed.
+  getMilestoneGoals().forEach(({n, match}) => {
+    addTag(match.MatchID, `${ordinal(n)} club goal`, true);
+  });
+
   window.RECORDS = tags;
 }
 
@@ -3151,6 +3157,35 @@ function renderOpponentsPage() {
           <tbody id="oppsTbody">${sorted(filtered()).map(row).join('')}</tbody>
         </table>
       </div>
+
+      ${(()=>{
+        const nemeses = getNemesisScorers();
+        if (!nemeses.length) return '';
+        const top = nemeses.slice(0, 6);
+        const maxG = top[0]?.goals || 1;
+        const rows = top.map((r,i) => {
+          const clubs    = [...r.clubs].map(esc).join(', ');
+          const pct      = Math.round(r.goals/maxG*100);
+          const single   = r.clubs.size === 1 ? [...r.clubs][0] : null;
+          const safeOpp  = single ? single.replace(/'/g,"\\'") : '';
+          const rowAttrs = single ? ` onclick="showH2H('${safeOpp}')"` : ' style="cursor:default"';
+          return `<tr${rowAttrs}>
+            <td class="td-rank">${i+1}</td>
+            <td style="font-weight:600">${esc(r.name)}</td>
+            <td class="td-muted">${clubs}</td>
+            <td class="td-num" style="font-family:var(--font-display);font-weight:800;color:var(--loss)">${r.goals}</td>
+            <td style="padding-right:16px"><div style="background:var(--bg-surface);border-radius:3px;height:6px;overflow:hidden"><div style="height:6px;border-radius:3px;background:var(--loss);opacity:0.6;width:${pct}%"></div></div></td>
+          </tr>`;
+        }).join('');
+        return `<div class="records-section-hd" style="margin-top:28px">Frequent scorers against us</div>
+        <p style="font-size:0.78rem;color:var(--text-muted);margin:-4px 0 12px">${nemeses.length} different players have scored against City &middot; click a row to view the H2H where the club is unambiguous</p>
+        <div class="dt-wrap">
+          <table class="data-table">
+            <thead><tr><th class="td-rank">#</th><th>Player</th><th>Club</th><th class="td-num">Goals</th><th></th></tr></thead>
+            <tbody>${rows}</tbody>
+          </table>
+        </div>`;
+      })()}
     </div>`;
 
   window.__oppThClick = thClick;
@@ -3370,25 +3405,6 @@ function renderRecordsPage() {
           <div class="records-card no-cursor"><div class="rc-lbl">${lbl}</div><div class="rc-val" style="font-size:1.4rem">${v}</div></div>`).join('')}
       </div>
 
-      ${(()=>{
-        const milestones = getMilestoneGoals();
-        if (!milestones.length) return '';
-        const cards = milestones.map(({n, match, goal}) => {
-          const safe   = match.MatchID.replace(/'/g,"\\'");
-          const label  = goal.OG==='Y'
-            ? `${esc(goal.Scorer||'Unknown')} <span style="opacity:0.6;font-size:0.85em">(og)</span>`
-            : esc(goal.Scorer || 'Unknown');
-          const minute = goal.Minute ? ` &middot; ${esc(goal.Minute)}'` : '';
-          return `<div class="records-card" onclick="showMatchModal('${safe}')">
-            <div class="rc-lbl">${ordinal(n)} club goal</div>
-            <div class="rc-val" style="font-size:1.05rem;line-height:1.3">${label}</div>
-            <div class="rc-ctx">vs ${esc(match.Opposition)}${minute} &middot; ${match._date?fmtDate(match._date,true):''}</div>
-          </div>`;
-        }).join('');
-        return `<div class="records-section-hd">Milestone goals</div>
-        <div class="records-grid">${cards}</div>`;
-      })()}
-
       <div class="records-section-hd">Best &amp; worst performances</div>
       <div class="records-grid">
         ${matchCard(bigWin,'Biggest win')}
@@ -3501,35 +3517,6 @@ function renderRecordsPage() {
         <div class="dt-wrap">
           <table class="data-table">
             <thead><tr><th>Player</th><th></th><th>Opposition</th><th>Competition</th><th>Date</th></tr></thead>
-            <tbody>${rows}</tbody>
-          </table>
-        </div>`;
-      })()}
-
-      ${(()=>{
-        const nemeses = getNemesisScorers();
-        if (!nemeses.length) return '';
-        const top = nemeses.slice(0, 12);
-        const maxG = top[0]?.goals || 1;
-        const rows = top.map((r,i) => {
-          const clubs    = [...r.clubs].map(esc).join(', ');
-          const pct      = Math.round(r.goals/maxG*100);
-          const single   = r.clubs.size === 1 ? [...r.clubs][0] : null;
-          const safeOpp  = single ? single.replace(/'/g,"\\'") : '';
-          const rowAttrs = single ? ` onclick="showH2H('${safeOpp}')"` : ' style="cursor:default"';
-          return `<tr${rowAttrs}>
-            <td class="td-rank">${i+1}</td>
-            <td style="font-weight:600">${esc(r.name)}</td>
-            <td class="td-muted">${clubs}</td>
-            <td class="td-num" style="font-family:var(--font-display);font-weight:800;color:var(--loss)">${r.goals}</td>
-            <td style="padding-right:16px"><div style="background:var(--bg-surface);border-radius:3px;height:6px;overflow:hidden"><div style="height:6px;border-radius:3px;background:var(--loss);opacity:0.6;width:${pct}%"></div></div></td>
-          </tr>`;
-        }).join('');
-        return `<div class="records-section-hd">Players who've troubled us most</div>
-        <p style="font-size:0.78rem;color:var(--text-muted);margin:-4px 0 12px">Opposition players with the most goals against City &middot; ${nemeses.length} have scored against us in total</p>
-        <div class="dt-wrap">
-          <table class="data-table">
-            <thead><tr><th class="td-rank">#</th><th>Player</th><th>Club</th><th class="td-num">Goals</th><th></th></tr></thead>
             <tbody>${rows}</tbody>
           </table>
         </div>`;
