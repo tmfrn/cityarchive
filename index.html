@@ -69,10 +69,14 @@
   --navy:          #1A2D4A;
   --win:           #166534;
   --win-bg:        rgba(22,101,52,0.08);
+  --win-on-dark:   #6be49b;
   --draw:          #4b5563;
   --draw-bg:       rgba(75,85,99,0.10);
+  --draw-on-dark:  #94a3b8;
   --loss:          #991b1b;
   --loss-bg:       rgba(153,27,27,0.08);
+  --loss-on-dark:  #ff8585;
+  --neutral-grey:  #9ca3af;
   --font-display:  'Bricolage Grotesque', 'Georgia', sans-serif;
   --font-body:     'DM Sans', -apple-system, sans-serif;
   --font-mono:     'JetBrains Mono', 'Courier New', monospace;
@@ -95,6 +99,9 @@ button{cursor:pointer;font-family:var(--font-body)}
 .header::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,transparent,var(--sky),transparent);opacity:0.7}
 .header h1{font-family:var(--font-display);font-size:clamp(2rem,5vw,3.2rem);font-weight:800;color:var(--text-bright);letter-spacing:-0.03em;line-height:1.1;margin-bottom:10px}
 .header p{font-size:0.88rem;color:var(--text-muted);letter-spacing:0.08em;text-transform:uppercase}
+.sky{color:var(--sky)}
+.pocket-city-kicker{display:inline-flex;align-items:center;gap:6px;margin-bottom:6px;font-family:var(--font-display);font-size:0.7rem;font-weight:800;letter-spacing:0.14em;text-transform:uppercase;color:var(--sky)}
+.pocket-city-kicker .kicker-dot{width:3px;height:3px;border-radius:50%;background:var(--sky);display:inline-block;opacity:0.5}
 
 /* ── ERROR BANNER ── */
 .error-banner{display:none;padding:14px 32px;background:var(--loss-bg);border-bottom:1px solid rgba(248,113,113,0.3);color:var(--loss);text-align:center;font-weight:600;font-size:0.9rem}
@@ -190,7 +197,7 @@ button{cursor:pointer;font-family:var(--font-body)}
 
 .border-win   {border-top:3px solid var(--win)}
 .border-loss  {border-top:3px solid var(--loss)}
-.border-draw  {border-top:3px solid #9ca3af}
+.border-draw  {border-top:3px solid var(--neutral-grey)}
 .border-friendly{border-top:3px solid var(--sky)}
 .border-none  {border-top:3px solid var(--border-primary)}
 
@@ -208,7 +215,7 @@ button{cursor:pointer;font-family:var(--font-body)}
 .badge.home     {background:rgba(42,99,149,0.08);color:var(--accent)}
 .badge.away     {background:rgba(26,45,74,0.08);color:var(--navy)}
 .badge.neutral  {background:rgba(0,0,0,0.04);color:var(--text-muted)}
-.badge.friendly {background:rgba(108,171,221,0.12);color:#0e7490;border:1px solid rgba(108,171,221,0.25)}
+.badge.friendly {background:rgba(108,171,221,0.12);color:var(--accent);border:1px solid rgba(108,171,221,0.25)}
 .badge.aet      {background:rgba(100,100,100,0.08);color:var(--text-secondary)}
 .badge.won-pens {background:var(--win-bg);color:var(--win)}
 .badge.lost-pens{background:var(--loss-bg);color:var(--loss)}
@@ -242,9 +249,9 @@ button{cursor:pointer;font-family:var(--font-body)}
 .tl-actions:empty{display:none}
 .tl-meta{margin-top:0}
 .tl-meta-result{display:block;font-size:0.68rem;font-weight:800;text-transform:uppercase;letter-spacing:0.07em;margin-bottom:2px}
-.tl-meta-result.win  {color:#6be49b}
-.tl-meta-result.loss {color:#ff8585}
-.tl-meta-result.draw {color:#94a3b8}
+.tl-meta-result.win  {color:var(--win-on-dark)}
+.tl-meta-result.loss {color:var(--loss-on-dark)}
+.tl-meta-result.draw {color:var(--draw-on-dark)}
 .tl-meta-result.friendly{color:var(--sky)}
 .tl-meta-detail{display:block;font-size:0.72rem;color:rgba(255,255,255,0.5);line-height:1.5}
 .timeline-modal-close{background:rgba(255,255,255,0.12);border:none;color:rgba(255,255,255,0.8);width:32px;height:32px;border-radius:50%;font-size:1em;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background 0.15s}
@@ -307,14 +314,14 @@ button{cursor:pointer;font-family:var(--font-body)}
 .h2h-match-row:last-child{border-bottom:none}
 .h2h-match-row:hover{background:var(--bg-surface)}
 .h2h-match-row.row-w{border-left-color:var(--win)}
-.h2h-match-row.row-d{border-left-color:#9ca3af}
+.h2h-match-row.row-d{border-left-color:var(--neutral-grey)}
 .h2h-match-row.row-l{border-left-color:var(--loss)}
 .h2h-match-row.row-f{border-left-color:var(--sky)}
 .h2h-match-result{font-size:0.66rem;font-weight:800;text-transform:uppercase;letter-spacing:0.05em;line-height:1.2}
 .h2h-match-result.w{color:var(--win)}
 .h2h-match-result.d{color:var(--draw)}
 .h2h-match-result.l{color:var(--loss)}
-.h2h-match-result.f{color:#0e7490}
+.h2h-match-result.f{color:var(--accent)}
 .h2h-match-score{font-weight:800;color:var(--text-bright);font-family:var(--font-display);white-space:nowrap}
 .h2h-match-meta{color:var(--text-muted);font-size:0.79rem}
 .h2h-match-comp{color:var(--text-muted);font-size:0.76rem;text-align:right}
@@ -360,7 +367,7 @@ button{cursor:pointer;font-family:var(--font-body)}
 .player-milestone-item{display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid var(--border-subtle)}
 .player-milestone-item:last-child{border-bottom:none}
 .player-milestone-badge{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.9em;flex-shrink:0;background:var(--bg-primary)}
-.player-milestone-badge.first{background:rgba(234,179,8,0.15)}
+.player-milestone-badge.first{background:rgba(108,171,221,0.18)}
 .player-milestone-label{font-size:0.83rem;font-weight:600;color:var(--text-primary)}
 .player-milestone-meta{font-size:0.74rem;color:var(--text-muted);margin-top:2px}
 .player-matches{padding:14px 20px 22px;max-height:320px;overflow-y:auto}
@@ -369,7 +376,7 @@ button{cursor:pointer;font-family:var(--font-body)}
 .player-match-row:last-child{border-bottom:none}
 .player-match-row:hover{background:var(--bg-surface)}
 .player-match-row.row-w{border-left-color:var(--win)}
-.player-match-row.row-d{border-left-color:#9ca3af}
+.player-match-row.row-d{border-left-color:var(--neutral-grey)}
 .player-match-row.row-l{border-left-color:var(--loss)}
 .player-match-result{font-size:0.66rem;font-weight:800;text-transform:uppercase;letter-spacing:0.05em}
 .player-match-result.w{color:var(--win)}
@@ -396,12 +403,12 @@ button{cursor:pointer;font-family:var(--font-body)}
 
 /* ── RANK BADGES ── */
 .match-tags{display:flex;gap:6px;padding:8px 14px 0;flex-wrap:wrap}
-.match-rank{padding:3px 10px;border-radius:100px;font-size:0.67rem;font-weight:800;text-transform:uppercase;letter-spacing:0.04em;background:rgba(120,100,30,0.10);color:#7b6220}
-.match-rank.rank-1{background:linear-gradient(135deg,#b8860b,#daa520);color:#000}
-.match-rank.rank-2{background:linear-gradient(135deg,#8a8a8a,#b0b0b0);color:#000}
-.match-rank.rank-3{background:linear-gradient(135deg,#7a4f2f,#a0724f);color:#fff}
-.record-tag{padding:3px 10px;border-radius:100px;font-size:0.67rem;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;background:linear-gradient(135deg,#b8860b,#daa520);color:#000}
-.record-tag.silver{background:linear-gradient(135deg,#8a8a8a,#b0b0b0);color:#000}
+.match-rank{padding:3px 10px;border-radius:100px;font-size:0.67rem;font-weight:800;text-transform:uppercase;letter-spacing:0.04em;background:var(--bg-surface);border:1px solid var(--border-primary);color:var(--text-muted)}
+.match-rank.rank-1{background:var(--navy);border-color:var(--navy);color:var(--sky)}
+.match-rank.rank-2{background:rgba(108,171,221,0.16);border-color:rgba(108,171,221,0.35);color:var(--accent)}
+.match-rank.rank-3{background:var(--bg-card);border-color:var(--border-primary);color:var(--text-secondary)}
+.record-tag{padding:3px 10px;border-radius:100px;font-size:0.67rem;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;background:var(--navy);color:var(--sky)}
+.record-tag.silver{background:rgba(108,171,221,0.16);color:var(--accent);border:1px solid rgba(108,171,221,0.35)}
 
 /* ── FRIENDLY CARD TREATMENT ── */
 .match-card.is-friendly{border-color:rgba(108,171,221,0.25);background:rgba(108,171,221,0.02)}
@@ -474,6 +481,8 @@ button{cursor:pointer;font-family:var(--font-body)}
 .site-nav-inner{max-width:1100px;margin:0 auto;padding:0 24px;display:flex;align-items:center;height:50px;gap:0}
 .site-nav-brand{display:flex;flex-direction:column;justify-content:center;gap:1px;flex-shrink:0;padding-right:20px;border-right:1px solid rgba(255,255,255,0.12);cursor:pointer}
 .site-nav-brand .brand-name{font-family:var(--font-display);font-size:1.05rem;font-weight:900;letter-spacing:-0.02em;line-height:1.1;white-space:nowrap}
+.site-nav-brand .brand-name .pocket{color:#fff}
+.site-nav-brand .brand-name .city{color:var(--sky)}
 .site-nav-brand .brand-sub{font-family:var(--font-display);font-size:0.58rem;font-weight:700;letter-spacing:0.09em;text-transform:uppercase;color:rgba(255,255,255,0.5);line-height:1;white-space:nowrap}
 .site-nav-links{display:flex;align-items:center;gap:2px;padding-left:6px;overflow-x:auto;scrollbar-width:none;min-width:0}
 .site-nav-links::-webkit-scrollbar{display:none}
@@ -599,7 +608,7 @@ button{cursor:pointer;font-family:var(--font-body)}
 <nav class="site-nav">
   <div class="site-nav-inner">
     <div class="site-nav-brand" onclick="showPage('')">
-      <span class="brand-name"><span style="color:#fff">Pocket</span> <span style="color:var(--sky)">City</span></span>
+      <span class="brand-name"><span class="pocket">Pocket</span> <span class="city">City</span></span>
       <span class="brand-sub">Man City Women</span>
     </div>
     <div class="site-nav-links">
@@ -617,18 +626,18 @@ button{cursor:pointer;font-family:var(--font-body)}
 
   <div class="header">
     <div class="header-content">
-      <div style="display:inline-flex;align-items:center;gap:6px;margin-bottom:6px">
-        <span style="font-family:var(--font-display);font-size:0.7rem;font-weight:800;letter-spacing:0.14em;text-transform:uppercase;color:var(--sky)">Pocket</span>
-        <span style="width:3px;height:3px;border-radius:50%;background:var(--sky);display:inline-block;opacity:0.5"></span>
-        <span style="font-family:var(--font-display);font-size:0.7rem;font-weight:800;letter-spacing:0.14em;text-transform:uppercase;color:var(--sky)">City</span>
+      <div class="pocket-city-kicker">
+        <span>Pocket</span>
+        <span class="kicker-dot"></span>
+        <span>City</span>
       </div>
-      <h1>Manchester City <span style="color:var(--sky)">Women</span></h1>
+      <h1>Manchester City <span class="sky">Women</span></h1>
       <p>Match Archive &middot; WSL era 2014&ndash;present</p>
     </div>
   </div>
 
   <div class="error-banner" id="errorBanner">
-    Failed to load archive data &mdash; check the Spreadsheet ID and confirm the sheet is publicly viewable.
+    Couldn't load the archive right now &mdash; please try again in a moment.
   </div>
 
   <div class="otd-banner" id="otdBanner" style="display:none">
@@ -665,10 +674,10 @@ button{cursor:pointer;font-family:var(--font-body)}
       <button class="search-clear" id="searchClear" onclick="clearSearch()" aria-label="Clear search">✕</button>
     </div>
     <div class="lenses-row" id="lensesRow">
-      <button class="lens-btn" id="lensBigWins"     onclick="activateLens('biggest-wins',this)">🏆 Biggest Wins</button>
-      <button class="lens-btn" id="lensBigLosses"   onclick="activateLens('biggest-losses',this)">📉 Biggest Losses</button>
-      <button class="lens-btn" id="lensHighScoring" onclick="activateLens('highest-scoring',this)">⚽ Highest Scoring</button>
-      <button class="lens-btn" id="lensOTD"         onclick="activateLens('on-this-day',this)">🗓 On This Day</button>
+      <button class="lens-btn" id="lensBigWins"     onclick="activateLens('biggest-wins',this)">Biggest Wins</button>
+      <button class="lens-btn" id="lensBigLosses"   onclick="activateLens('biggest-losses',this)">Biggest Losses</button>
+      <button class="lens-btn" id="lensHighScoring" onclick="activateLens('highest-scoring',this)">Highest Scoring</button>
+      <button class="lens-btn" id="lensOTD"         onclick="activateLens('on-this-day',this)">On This Day</button>
       <span class="lens-sep"></span>
       <button class="lens-btn" id="lensWinRun"      onclick="activateLens('win-streak',this)">Winning run</button>
       <button class="lens-btn" id="lensUnbeaten"    onclick="activateLens('unbeaten-streak',this)">Unbeaten run</button>
@@ -893,7 +902,7 @@ async function loadData() {
   document.getElementById('resultCount').innerHTML =
     '<div class="loading-wrap" style="min-height:40vh"><div class="loading-head">Loading archive…</div>' +
     '<div class="loading-track"><div class="loading-bar"></div></div>' +
-    '<div class="loading-sub">Fetching 9 data sources</div></div>';
+    '<div class="loading-sub">Pulling together 13 seasons of results…</div></div>';
 
   try {
     const [rM, rG, rE, rP, rO, rC, rV, rMgr, rS] = await Promise.all([
@@ -912,10 +921,16 @@ async function loadData() {
     onDataReady();
 
   } catch(err) {
-    document.getElementById('resultCount').textContent = 'Failed to load data';
+    console.error('Pocket City: failed to load archive data —', err);
+    document.getElementById('resultCount').innerHTML =
+      `<div class="empty-state">
+        <div class="empty-state-title">Couldn't load the archive</div>
+        <div class="empty-state-sub">Something went wrong fetching the data. Check your connection and try again.</div>
+        <div class="empty-state-action">
+          <button style="background:none;border:1.5px solid var(--border-primary);border-radius:100px;padding:6px 16px;font-size:0.78rem;font-weight:600;cursor:pointer;color:var(--text-secondary);font-family:var(--font-body)" onclick="location.reload()">Try again</button>
+        </div>
+      </div>`;
     document.getElementById('errorBanner').style.display = 'block';
-    document.getElementById('errorBanner').textContent =
-      'Failed to load archive. Check Spreadsheet ID and confirm it is publicly viewable. Error: ' + (err.message || err);
   }
 }
 
@@ -1489,9 +1504,14 @@ function activateLens(type, btn) {
 function clearLens() {
   activeLens = null;
   window._randomMatch = null;
+  window._analysisFilter = null;
   document.querySelectorAll('.lens-btn').forEach(b => b.classList.remove('active'));
   document.getElementById('lensesRow').classList.remove('has-active');
   document.getElementById('lensClear').classList.remove('visible');
+  const seasonNav = document.getElementById('lensSeasonNav');
+  if (seasonNav) seasonNav.style.display = 'none';
+  const crowdNav = document.getElementById('lensCrowdNav');
+  if (crowdNav) crowdNav.style.display = 'none';
   listCap = 20;
   renderMatches();
 }
@@ -1558,6 +1578,16 @@ function getLensFiltered() {
       return ms.slice(0, 50);
     }
 
+    case 'this-season': {
+      const season = getOrderedSeasons()[_lensSeasonIdx];
+      return MATCHES.filter(m => m.Season === season);
+    }
+
+    case 'analysis-filter':
+      return window._analysisFilter
+        ? MATCHES.filter(m => window._analysisFilter.matchIds.has(m.MatchID))
+        : base;
+
     default:
       return base;
   }
@@ -1595,7 +1625,7 @@ function findLongestStreak(type) {
     .filter(m => !selectedComp   || m.Competition === selectedComp)
     .sort((a,b) => (a._date||0)-(b._date||0));
 
-  // Find ALL streaks of max length (West: report joint-longest)
+  // Find ALL streaks of max length (report joint-longest equal runs)
   let maxLen = 0, allStreaks = [], current = [];
   for (const m of chron) {
     if (def.qualifies(m)) {
@@ -1669,7 +1699,7 @@ function getFiltered() {
       if ((m.Venue||'').toLowerCase().includes(t)) return true;
       if ((m.Round||'').toLowerCase().includes(t)) return true;
       if ((m.Season||'').toLowerCase().includes(t)) return true;
-      if ((m.Notes||'').toLowerCase().includes(t)) return true;   // West searches Notes
+      if ((m.Notes||'').toLowerCase().includes(t)) return true;
       // Score search — matches both orientations
       if (isScoreSearch && m._gf !== null && m._ga !== null) {
         if (scoreTerm === `${m._gf}-${m._ga}` || scoreTerm === `${m._ga}-${m._gf}`) return true;
@@ -2133,7 +2163,7 @@ function buildModalBody(m) {
   }
 
   items.forEach(e => {
-    // Use base minute (before '+') for HT/FT threshold — West pattern
+    // Use base minute (before '+') for HT/FT threshold
     // "45+6" has base=45 so it correctly stays before the HT row
     const eBase = parseInt(String(e.minStr||'').split('+')[0]) || 0;
     if (!htDone && eBase >= 46) {
@@ -2190,7 +2220,7 @@ function buildModalBody(m) {
     </div>`;
   });
 
-  // West pattern: if all events were in the first half, still insert HT at the end
+  // If all events were in the first half, still insert the HT marker at the end
   if (!htDone && items.length > 0) {
     rows += `<div class="tl-row"><div class="tl-marker">Half time &middot; ${runScore()}</div></div>`;
   }
@@ -2439,7 +2469,7 @@ function buildVisualTrack(m, goals) {
   const htPct    = (45/totalMins)*100;
   const ftPct    = (90/totalMins)*100;
 
-  // Home=top lane, Away=bottom lane (standard football convention, like West)
+  // Home=top lane, Away=bottom lane (standard football convention)
   const isHome   = cityIsHome(m);
   const cityLane = isHome ? 'top-lane' : 'bot-lane';
   const oppLane  = isHome ? 'bot-lane' : 'top-lane';
@@ -3250,7 +3280,7 @@ function initVenueMap(venues) {
 
   venues.forEach(v => {
     if (!v.Lat || !v.Long) return;
-    const colour = v.type === 'home' ? '#1A2D4A' : v.type === 'neutral' ? '#b08000' : '#9ca3af';
+    const colour = v.type === 'home' ? '#1A2D4A' : v.type === 'neutral' ? '#6CABDD' : '#9ca3af';
     const icon   = L.divIcon({
       html: `<div style="width:12px;height:12px;border-radius:50%;background:${colour};border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,0.3)"></div>`,
       className: '', iconSize: [12,12], iconAnchor: [6,6],
@@ -4103,23 +4133,6 @@ function drawCompWinRateChart() {
   };
 }
 
-/* ── Analysis-filter lens support ── */
-// Extend getLensFiltered to support analysis-filter lens
-const _origGetLens2 = getLensFiltered;
-getLensFiltered = function() {
-  if (activeLens === 'analysis-filter' && window._analysisFilter) {
-    return MATCHES.filter(m => window._analysisFilter.matchIds.has(m.MatchID));
-  }
-  return _origGetLens2();
-};
-
-// Extend clearLens to clear analysis filter (season nav clear is already in the prior patch)
-const _origClearLens2 = clearLens;
-clearLens = function() {
-  window._analysisFilter = null;
-  _origClearLens2();
-};
-
 /* ============================================================
    THIS SEASON LENS
    ============================================================ */
@@ -4173,26 +4186,6 @@ function updateLensSeasonNav() {
   next.style.visibility = hasNext ? '' : 'hidden';
   next.style.pointerEvents = hasNext ? '' : 'none';
 }
-
-// Hook into getLensFiltered for this-season
-const _origGetLensFiltered = getLensFiltered;
-getLensFiltered = function() {
-  if (activeLens === 'this-season') {
-    const season = getOrderedSeasons()[_lensSeasonIdx];
-    return MATCHES.filter(m => m.Season === season);
-  }
-  return _origGetLensFiltered();
-};
-
-// Hide season nav when lens is cleared
-const _origClearLens = clearLens;
-clearLens = function() {
-  const nav = document.getElementById('lensSeasonNav');
-  if (nav) nav.style.display = 'none';
-  const crowdNav = document.getElementById('lensCrowdNav');
-  if (crowdNav) crowdNav.style.display = 'none';
-  _origClearLens();
-};
 
 /* ============================================================
    SEASON PAGE
