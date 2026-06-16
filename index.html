@@ -254,7 +254,7 @@ button{cursor:pointer;font-family:var(--font-body)}
 .tl-meta-result.draw {color:var(--draw-on-dark)}
 .tl-meta-result.friendly{color:var(--sky)}
 .tl-meta-detail{display:block;font-size:0.72rem;color:rgba(255,255,255,0.5);line-height:1.5}
-.timeline-modal-close{background:rgba(255,255,255,0.12);border:none;color:rgba(255,255,255,0.8);width:32px;height:32px;border-radius:50%;font-size:1em;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background 0.15s}
+.timeline-modal-close{background:rgba(255,255,255,0.12);border:none;color:rgba(255,255,255,0.8);width:34px;height:34px;border-radius:50%;font-size:1em;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background 0.15s}
 .timeline-modal-close:hover{background:rgba(255,255,255,0.2)}
 .timeline-modal-body{padding:20px 28px 28px}
 
@@ -512,6 +512,8 @@ button{cursor:pointer;font-family:var(--font-body)}
 .data-table tr:last-child td{border-bottom:none}
 .data-table tbody tr{background:var(--bg-card);transition:background 0.1s;cursor:pointer}
 .data-table tbody tr:hover td{background:var(--bg-card-hover)}
+.data-table tbody tr.static-row{cursor:default}
+.data-table tbody tr.static-row:hover td{background:var(--bg-card)}
 .td-num{font-family:var(--font-mono);text-align:right!important;white-space:nowrap}
 .td-link{font-weight:600;color:var(--text-primary);white-space:nowrap}
 .td-link:hover{color:var(--accent)}
@@ -1436,10 +1438,10 @@ function getTopScorers(season) {
 /* ============================================================
    FILTERS
    ============================================================ */
-function filterBySeason()     { selectedSeason = document.getElementById('seasonSelect').value; listCap=20; renderMatches(); }
-function filterByCompetition(){ selectedComp   = document.getElementById('competitionSelect').value; listCap=20; renderMatches(); }
-function filterByResult()     { selectedResult = document.getElementById('resultSelect').value; listCap=20; renderMatches(); }
-function filterByVenue()      { selectedVenue  = document.getElementById('venueSelect').value; listCap=20; renderMatches(); }
+function filterBySeason()     { if (activeLens) deactivateLens(); selectedSeason = document.getElementById('seasonSelect').value; listCap=20; renderMatches(); }
+function filterByCompetition(){ if (activeLens) deactivateLens(); selectedComp   = document.getElementById('competitionSelect').value; listCap=20; renderMatches(); }
+function filterByResult()     { if (activeLens) deactivateLens(); selectedResult = document.getElementById('resultSelect').value; listCap=20; renderMatches(); }
+function filterByVenue()      { if (activeLens) deactivateLens(); selectedVenue  = document.getElementById('venueSelect').value; listCap=20; renderMatches(); }
 
 function toggleSortOrder() {
   sortOrder = sortOrder==='desc' ? 'asc' : 'desc';
@@ -1447,15 +1449,10 @@ function toggleSortOrder() {
   listCap=20; renderMatches();
 }
 
-function clearFilterBar() {
-  // If a lens is active, clear that too
-  if (activeLens) {
-    activeLens = null;
-    window._randomMatch = null;
-    document.querySelectorAll('.lens-btn').forEach(b => b.classList.remove('active'));
-    document.getElementById('lensesRow').classList.remove('has-active');
-    document.getElementById('lensClear').classList.remove('visible');
-  }
+// Resets the filter bar's state + visuals only — does not touch the lens
+// or trigger a re-render. Shared by clearFilterBar() and activateLens(),
+// since filters and lenses are mutually exclusive views of the archive.
+function resetFilterBarState() {
   selectedSeason=''; selectedComp=''; selectedResult=''; selectedVenue=''; searchTerm=''; sortOrder='desc';
   document.getElementById('seasonSelect').value='';
   document.getElementById('competitionSelect').value='';
@@ -1466,10 +1463,16 @@ function clearFilterBar() {
   document.getElementById('sortToggle').textContent='↓ Newest first';
   document.querySelectorAll('.filter-bar select').forEach(s=>s.classList.remove('active-filter'));
   document.getElementById('clearFiltersBtn').classList.remove('visible');
+}
+
+function clearFilterBar() {
+  if (activeLens) deactivateLens();
+  resetFilterBarState();
   listCap=20; renderMatches();
 }
 
 function clearSearch() {
+  if (activeLens) deactivateLens();
   searchTerm='';
   document.getElementById('searchInput').value='';
   document.getElementById('searchClear').classList.remove('visible');
@@ -1496,6 +1499,9 @@ function showMore() { listCap += 20; renderMatches(); }
 function activateLens(type, btn) {
   // Toggle off if same lens clicked again
   if (activeLens === type) { clearLens(); return; }
+  // Lenses are self-contained preset views — clear any manual filtering
+  // first so the two never silently disagree about what's on screen.
+  resetFilterBarState();
   activeLens = type;
   // Update button states
   document.querySelectorAll('.lens-btn').forEach(b => b.classList.remove('active'));
@@ -1506,8 +1512,9 @@ function activateLens(type, btn) {
   renderMatches();
 }
 
-
-function clearLens() {
+// Clears lens state and UI without resetting the filter bar or re-rendering.
+// Used when a filter-bar control is used while a lens is active.
+function deactivateLens() {
   activeLens = null;
   window._randomMatch = null;
   window._analysisFilter = null;
@@ -1518,6 +1525,10 @@ function clearLens() {
   if (seasonNav) seasonNav.style.display = 'none';
   const crowdNav = document.getElementById('lensCrowdNav');
   if (crowdNav) crowdNav.style.display = 'none';
+}
+
+function clearLens() {
+  deactivateLens();
   listCap = 20;
   renderMatches();
 }
@@ -2550,6 +2561,7 @@ function toggleSection(header) {
    SEARCH WIRE-UP
    ============================================================ */
 document.getElementById('searchInput').addEventListener('input', function() {
+  if (activeLens) deactivateLens();
   searchTerm = this.value;
   document.getElementById('searchClear').classList.toggle('visible', !!searchTerm);
   listCap = 20;
@@ -3028,7 +3040,10 @@ function renderPlayersPage() {
     return players.filter(p => p.name.toLowerCase().includes(t) || p.nationality.toLowerCase().includes(t));
   }
   function rerender() {
-    document.getElementById('playersTbody').innerHTML = sorted(filtered()).map(row).join('');
+    const rows = sorted(filtered());
+    document.getElementById('playersTbody').innerHTML = rows.length
+      ? rows.map(row).join('')
+      : `<tr class="static-row"><td colspan="4" style="text-align:center;padding:28px 12px;color:var(--text-muted)">No players match "${esc(filterTerm)}"</td></tr>`;
   }
 
   document.getElementById('playersView').innerHTML = `
@@ -3131,7 +3146,10 @@ function renderOpponentsPage() {
     return opps.filter(o => o.opp.toLowerCase().includes(t));
   }
   function rerender() {
-    document.getElementById('oppsTbody').innerHTML = sorted(filtered()).map(row).join('');
+    const rows = sorted(filtered());
+    document.getElementById('oppsTbody').innerHTML = rows.length
+      ? rows.map(row).join('')
+      : `<tr class="static-row"><td colspan="9" style="text-align:center;padding:28px 12px;color:var(--text-muted)">No opponents match "${esc(filterTerm)}"</td></tr>`;
   }
 
   document.getElementById('opponentsView').innerHTML = `
@@ -3164,12 +3182,9 @@ function renderOpponentsPage() {
         const top = nemeses.slice(0, 6);
         const maxG = top[0]?.goals || 1;
         const rows = top.map((r,i) => {
-          const clubs    = [...r.clubs].map(esc).join(', ');
-          const pct      = Math.round(r.goals/maxG*100);
-          const single   = r.clubs.size === 1 ? [...r.clubs][0] : null;
-          const safeOpp  = single ? single.replace(/'/g,"\\'") : '';
-          const rowAttrs = single ? ` onclick="showH2H('${safeOpp}')"` : ' style="cursor:default"';
-          return `<tr${rowAttrs}>
+          const clubs = [...r.clubs].map(esc).join(', ');
+          const pct   = Math.round(r.goals/maxG*100);
+          return `<tr class="static-row">
             <td class="td-rank">${i+1}</td>
             <td style="font-weight:600">${esc(r.name)}</td>
             <td class="td-muted">${clubs}</td>
@@ -3178,7 +3193,7 @@ function renderOpponentsPage() {
           </tr>`;
         }).join('');
         return `<div class="records-section-hd" style="margin-top:28px">Frequent scorers against us</div>
-        <p style="font-size:0.78rem;color:var(--text-muted);margin:-4px 0 12px">${nemeses.length} different players have scored against City &middot; click a row to view the H2H where the club is unambiguous</p>
+        <p style="font-size:0.78rem;color:var(--text-muted);margin:-4px 0 12px">${nemeses.length} different players have scored against City</p>
         <div class="dt-wrap">
           <table class="data-table">
             <thead><tr><th class="td-rank">#</th><th>Player</th><th>Club</th><th class="td-num">Goals</th><th></th></tr></thead>
@@ -3260,12 +3275,15 @@ async function renderVenuesPage() {
             <th>Last used</th>
           </tr></thead>
           <tbody id="venuesTbody">
-            ${venues.map(v => `<tr>
-              <td class="td-link" onclick="showVenueModal('${v.Name.replace(/'/g,"\\'")}')">${esc(v.Name)}</td>
+            ${venues.map(v => `<tr onclick="showVenueModal('${v.Name.replace(/'/g,"\\'")}')">
+              <td class="td-link">${esc(v.Name)}</td>
               <td class="td-muted" style="font-size:0.82rem">${v.homeClub ? esc(v.homeClub) : '—'}</td>
               <td class="td-num">${v.count}</td>
               <td class="td-muted" style="font-size:0.8rem">${v.last ? fmtDate(v.last, true) : '—'}</td>
             </tr>`).join('')}
+            <tr id="venuesNoResults" class="static-row dt-hidden">
+              <td colspan="4" style="text-align:center;padding:28px 12px;color:var(--text-muted)">No venues found</td>
+            </tr>
           </tbody>
         </table>
       </div>
@@ -3273,10 +3291,16 @@ async function renderVenuesPage() {
 
   document.getElementById('venuesSearch').addEventListener('input', function() {
     const t = this.value.toLowerCase();
-    document.querySelectorAll('#venuesTbody tr').forEach(tr => {
+    let visible = 0;
+    document.querySelectorAll('#venuesTbody tr:not(#venuesNoResults)').forEach(tr => {
       const name = tr.querySelector('td')?.textContent?.toLowerCase() || '';
-      tr.classList.toggle('dt-hidden', t ? !name.includes(t) : false);
+      const hide = t ? !name.includes(t) : false;
+      tr.classList.toggle('dt-hidden', hide);
+      if (!hide) visible++;
     });
+    document.getElementById('venuesNoResults').classList.toggle('dt-hidden', visible > 0);
+    document.getElementById('venuesNoResults').querySelector('td').textContent =
+      t ? `No venues match "${this.value}"` : 'No venues found';
   });
 
   if (hasMap) {
@@ -3375,7 +3399,7 @@ function renderRecordsPage() {
     .map(([season])=>{
       const ss = getTopScorers(season); if(!ss.length) return null;
       const top=ss[0].g, joint=ss.filter(s=>s.g===top).map(s=>`<button type="button" class="scorer-link" onclick="showPlayerModal('${s.n.replace(/'/g,"\\'")}');">${esc(s.n)}</button>`).join(', ');
-      return `<tr><td>${esc(season)}</td><td>${joint}</td><td class="td-num" style="font-family:var(--font-display);font-weight:800;color:var(--accent-deep)">${top}</td></tr>`;
+      return `<tr class="static-row"><td>${esc(season)}</td><td>${joint}</td><td class="td-num" style="font-family:var(--font-display);font-weight:800;color:var(--accent-deep)">${top}</td></tr>`;
     }).filter(Boolean).join('');
 
   // Seasons list for top scorers selector
@@ -3467,7 +3491,7 @@ function renderRecordsPage() {
               ? `${mgr._start.getFullYear()}–${mgr._end.getFullYear()}`
               : `${mgr._start.getFullYear()}–present`
             : '';
-          return `<tr>
+          return `<tr class="static-row">
             <td style="font-weight:700">${esc(mgr.Name)}</td>
             <td class="td-muted">${period}</td>
             <td class="td-num">${p}</td>
@@ -4839,16 +4863,6 @@ async function copyMatchLink(e, matchID) {
   } finally {
     setTimeout(() => { if (btn.textContent==='\u2026'){btn.textContent=orig;btn.disabled=false;} }, 5000);
   }
-}
-
-function shareOnBluesky(e, matchID) {
-  e.stopPropagation();
-  const url  = location.origin + location.pathname + '#match/' + matchID;
-  const m    = MATCHES.find(x => x.MatchID === matchID);
-  const line = m
-    ? `${homeTeam(m)} ${m._gf??''}-${m._ga??''} ${awayTeam(m)} \u00b7 ${compShort(m.Competition||'')}${m._date?' \u00b7 '+fmtDate(m._date,true):''}`
-    : 'Man City Women match archive';
-  window.open(`https://bsky.app/intent/compose?text=${encodeURIComponent(line+'\n\n'+url)}`, '_blank', 'noopener noreferrer');
 }
 
 /* ── Crowd lens ── */
